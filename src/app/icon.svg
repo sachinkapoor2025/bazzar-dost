@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="BazaarDost">
+    <rect width="64" height="64" rx="16" fill="#1B4332"/>
+    <path d="M12 34h40l-4 16H16z" fill="#E8B84A"/>
+    <path d="M16 34c3-10 8-10 11 0c3-10 8-10 11 0c3-10 8-10 11 0" fill="none" stroke="#FBF8F3" stroke-width="3"/>
+  </svg>
