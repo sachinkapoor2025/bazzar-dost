@@ -11,7 +11,7 @@ import { absoluteUrl, site } from "@/lib/site";
 
 export const metadata: Metadata = {
   title: `${site.name} — ${site.tagline}`,
-  description: "Explore everyday essentials, trending products and exciting deals — all in one place.",
+  description: "Shop BazaarDost for home, kitchen, beauty, electronics accessories, toys, travel, and more. Prices and stock come from the live catalogue.",
   alternates: { canonical: "/" },
 };
 
@@ -44,29 +44,37 @@ export default async function HomePage() {
           logo: absoluteUrl("/icon.svg"),
         }}
       />
-      <Container className="grid items-stretch gap-3 py-5 lg:grid-cols-2">
-        <div className="flex flex-col justify-center rounded-3xl bg-forest-800 px-6 py-8 text-cream-50 md:px-10">
-          <p className="text-sm font-semibold text-gold-400">{site.tagline}</p>
-          <h1 className="mt-3 max-w-md font-display text-4xl leading-[1.05] md:text-5xl">Good Finds. Better Prices.</h1>
-          <p className="mt-4 max-w-md text-base leading-7 text-cream-100">Explore everyday essentials, trending products and exciting deals — all in one place.</p>
-          <div className="mt-6 flex flex-wrap gap-3">
-            <Link href="/shop" className={buttonClass("gold")}>Shop now</Link>
-            <Link href="/deals" className={buttonClass("cream")}>Discover Deals</Link>
+      <section className="relative isolate overflow-hidden bg-forest-900 text-cream-50">
+        <div className="pointer-events-none absolute inset-0" aria-hidden="true">
+          <div className="absolute -left-20 -top-24 h-72 w-72 rounded-full bg-gold-400/25 blur-3xl" />
+          <div className="absolute -right-16 bottom-0 h-80 w-80 rounded-full bg-[#2D6A4F]/50 blur-3xl" />
+          <div className="absolute inset-0 opacity-20" style={{ backgroundImage: "radial-gradient(#E8B84A 0.7px, transparent 0.7px)", backgroundSize: "22px 22px" }} />
+        </div>
+        <Container className="relative grid items-center gap-8 py-12 md:py-16 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)] lg:gap-12 lg:py-20">
+          <div className="max-w-xl">
+            <p className="text-sm font-semibold uppercase tracking-[0.16em] text-gold-400">{site.tagline}</p>
+            <h1 className="mt-4 font-display text-4xl leading-[1.08] sm:text-5xl lg:text-6xl">Practical products for home and everyday use.</h1>
+            <p className="mt-5 max-w-lg text-base leading-7 text-cream-100">Browse kitchen tools, personal care, phone accessories, toys, bags, and outdoor items. Every price and stock count on this site comes from the current catalogue.</p>
+            <div className="mt-8">
+              <Link href="/shop" className={`${buttonClass("gold")} px-6 text-base`}>Shop now</Link>
+            </div>
+            <p className="mt-6 text-sm text-cream-200">{data.productCount} products across {data.categories.length} departments.</p>
           </div>
-          <p className="mt-6 text-sm text-cream-200">{data.productCount} active products in the catalogue.</p>
-        </div>
-        <div className="grid grid-cols-2 gap-3">
-          {collage.map((category) => (
-            <Link key={category.slug} href={`/categories/${category.slug}`} className="group relative min-h-40 overflow-hidden rounded-3xl bg-forest-900">
-              <ProductImage src={category.image} alt={category.name} eager />
-              <span className="absolute inset-x-0 bottom-0 bg-forest-950/90 px-3 py-2 font-display text-lg text-cream-50">{category.name}</span>
-            </Link>
-          ))}
-        </div>
-      </Container>
+          {collage.length > 0 ? (
+            <div className="grid grid-cols-4 gap-2 sm:gap-3 lg:grid-cols-2 lg:gap-4">
+              {collage.map((category) => (
+                <Link key={category.slug} href={`/categories/${category.slug}`} className="group relative aspect-square overflow-hidden rounded-2xl bg-forest-950 ring-1 ring-white/15 lg:aspect-[4/5] lg:rounded-3xl">
+                  <ProductImage src={category.image} alt={category.name} eager />
+                  <span className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-forest-950 via-forest-950/80 to-transparent px-2 pb-2 pt-8 text-sm font-semibold leading-tight text-cream-50 lg:px-4 lg:pb-4 lg:text-lg">{category.name}</span>
+                </Link>
+              ))}
+            </div>
+          ) : null}
+        </Container>
+      </section>
 
-      <Container className="pt-8">
-        <SectionTitle id="why" title="Why choose BazaarDost" />
+      <Container className="pt-12">
+        <SectionTitle id="why" title="Why shop at BazaarDost" />
         <ul className="grid overflow-hidden rounded-2xl border border-cream-300 bg-cream-300 sm:grid-cols-2 lg:grid-cols-5">
           {services.map(([title, copy]) => (
             <li key={title} className="bg-cream-50 px-4 py-3">
@@ -77,8 +85,9 @@ export default async function HomePage() {
         </ul>
       </Container>
 
-      <Container className="py-8">
-        <SectionTitle id="categories" eyebrow="Browse" title="Shop by category" action={<Link href="/categories" className="text-sm font-semibold text-forest-800">All categories</Link>} />
+      <Container className="py-10">
+        <SectionTitle id="categories" eyebrow="Departments" title="Shop by category" action={<Link href="/categories" className="text-sm font-semibold text-forest-800">All categories</Link>} />
+        <p className="mb-4 max-w-2xl text-sm leading-6 text-muted">Only departments with products are listed. Open a card to see the items, prices, and options in that category.</p>
         <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
           {data.categories.map((category) => (
             <Link key={category.slug} href={`/categories/${category.slug}`} className="group relative aspect-[4/5] overflow-hidden rounded-2xl bg-forest-800">
@@ -182,35 +191,25 @@ export default async function HomePage() {
       </Container>
 
       <Container className="pb-8">
-        <SectionTitle id="lifestyle" title="Shop by lifestyle" />
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-          {[
-            ["Smart Home Essentials", "home-kitchen"],
-            ["Everyday Style", "fashion-bags"],
-            ["Useful Gadgets", "electronics-accessories"],
-            ["Gifts", "toys-gifts"],
-          ].map(([label, slug]) => {
-            const category = data.categories.find((item) => item.slug === slug);
-            if (!category) return null;
-            return (
-              <Link key={slug} href={`/categories/${category.slug}`} className="rounded-2xl border border-cream-300 bg-white p-4">
-                <h3 className="font-display text-2xl">{label}</h3>
-                <p className="mt-2 text-sm text-muted">{category.name} · {category.productCount} products</p>
+        <SectionTitle id="catalogue" title="What is in the catalogue" />
+        <p className="max-w-3xl text-sm leading-6 text-muted">BazaarDost is organised around the products currently available. Each department below has live items you can open, compare, and add to the cart. Prices stay as stored, and a lower price is shown only when that product has a higher compare-at price.</p>
+        <ul className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {data.categories.map((category) => (
+            <li key={category.slug}>
+              <Link href={`/categories/${category.slug}`} className="block h-full rounded-2xl border border-cream-300 bg-white p-4 hover:border-forest-800">
+                <h3 className="font-display text-2xl text-forest-900">{category.name}</h3>
+                <p className="mt-2 text-sm leading-6 text-muted">{category.description || `${category.productCount} products ready to browse.`}</p>
+                <p className="mt-3 text-sm font-semibold text-forest-800">{category.productCount} products</p>
               </Link>
-            );
-          })}
-        </div>
-      </Container>
-
-      <Container className="pb-8">
-        <SectionTitle id="reviews" title="Customer reviews" />
-        <p className="rounded-2xl border border-dashed border-cream-300 bg-white px-4 py-5 text-sm text-muted">No customer reviews are stored yet. Ratings are hidden until a real review exists, so this section does not show sample quotes.</p>
+            </li>
+          ))}
+        </ul>
       </Container>
 
       <Container className="pb-8">
         <section className="rounded-3xl bg-forest-800 px-6 py-8 text-cream-50">
-          <h2 className="font-display text-3xl">Catalogue notes</h2>
-          <p className="mt-2 max-w-xl text-sm leading-6 text-cream-100">Leave an email if you want news about products already in this catalogue. It is saved for the store team.</p>
+          <h2 className="font-display text-3xl">Hear about catalogue updates</h2>
+          <p className="mt-2 max-w-xl text-sm leading-6 text-cream-100">Leave an email for news about products already listed here. The address is saved for the store team and is not shown on the site.</p>
           <div className="mt-4 max-w-md">
             <NewsletterForm />
           </div>

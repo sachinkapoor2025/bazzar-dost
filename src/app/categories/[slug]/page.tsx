@@ -5,7 +5,7 @@ import { getCategory } from "@/lib/catalog";
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const category = await getCategory((await params).slug);
-  if (!category) notFound();
+  if (!category || category._count.products + category.children.reduce((sum, child) => sum + child._count.products, 0) === 0) notFound();
   return {
     title: category.name,
     description: category.description || `Shop ${category.name} at BazaarDost.`,
@@ -21,7 +21,8 @@ export default async function CategoryPage({
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const category = await getCategory((await params).slug);
-  if (!category) notFound();
+  const stocked = category ? category._count.products + category.children.reduce((sum, child) => sum + child._count.products, 0) : 0;
+  if (!category || stocked === 0) notFound();
   return (
     <CatalogBrowser
       title={category.name}

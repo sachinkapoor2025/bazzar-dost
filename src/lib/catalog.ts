@@ -244,6 +244,7 @@ export async function getCategories(scope: "top" | "all" = "top"): Promise<Categ
         label: category.parent ? `${category.parent.name} · ${category.name}` : category.name,
       };
     })
+    .filter((category) => category.productCount > 0)
     .sort((a, b) => (scope === "all" ? a.label.localeCompare(b.label) : 0));
 }
 
@@ -252,6 +253,7 @@ export async function getCategory(slug: string) {
     where: { slug },
     include: {
       parent: { select: { name: true, slug: true } },
+      _count: { select: { products: { where: { isActive: true } } } },
       children: {
         orderBy: { name: "asc" },
         include: { _count: { select: { products: { where: { isActive: true } } } } },

@@ -6,7 +6,7 @@ import { getCategories } from "@/lib/catalog";
 
 export const metadata: Metadata = {
   title: "Categories",
-  description: "Shop BazaarDost by category, from home and kitchen to office stationery.",
+  description: "Browse BazaarDost departments that currently have products, from home and kitchen to pet supplies.",
   alternates: { canonical: "/categories" },
 };
 
@@ -15,7 +15,7 @@ export default async function CategoriesPage() {
   return (
     <Container className="py-6">
       <h1 className="font-display text-4xl text-forest-900">Categories</h1>
-      <p className="mt-2 max-w-2xl text-sm leading-6 text-muted">Choose a category to see only its products.</p>
+      <p className="mt-2 max-w-2xl text-sm leading-6 text-muted">These departments currently have products in the catalogue. Open one to see its items, prices, and stock.</p>
       <div className="mt-6 grid grid-cols-2 gap-3 md:grid-cols-4">
         {categories.map((category) => (
           <Link key={category.slug} href={`/categories/${category.slug}`} className="overflow-hidden rounded-2xl border border-cream-300 bg-white">
