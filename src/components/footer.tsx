@@ -44,6 +44,13 @@ export function Footer({ categories }: { categories: CategoryLink[] }) {
           <p className="mt-3 text-sm leading-6">Leave your email for catalogue news. It is stored for the store team.</p>
           <NewsletterForm />
           {site.supportEmail ? <p className="mt-3 text-sm">{site.supportEmail}</p> : null}
+          {site.social.length > 0 ? (
+            <ul className="mt-3 space-y-1 text-sm">
+              {site.social.map(([label, href]) => (
+                <li key={label}><a href={href} rel="noreferrer">{label}</a></li>
+              ))}
+            </ul>
+          ) : null}
         </div>
       </Container>
       <div className="border-t border-white/10 py-4 text-center text-xs text-cream-200">© {new Date().getFullYear()} BazaarDost</div>

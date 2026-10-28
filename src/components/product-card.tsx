@@ -4,10 +4,12 @@ import Image from "next/image";
 import Link from "next/link";
 import { useId, useRef } from "react";
 import { useCart } from "@/components/cart-provider";
+import { useCompare } from "@/components/compare-provider";
 import { useWishlist } from "@/components/wishlist-provider";
 import { Price } from "@/components/price";
 import { buttonClass } from "@/components/ui";
 import { MAX_LINE_QTY } from "@/lib/commerce";
+import { unoptimizedImage } from "@/lib/format";
 import type { ProductCardData } from "@/lib/types";
 
 export function ProductImage({
@@ -29,7 +31,7 @@ export function ProductImage({
       width={800}
       height={800}
       priority={eager}
-      unoptimized={src.endsWith(".svg")}
+      unoptimized={unoptimizedImage(src)}
       className="h-full w-full object-cover motion-safe:transition motion-safe:duration-300 motion-safe:group-hover:scale-[1.03]"
     />
   );
@@ -38,9 +40,11 @@ export function ProductImage({
 export function ProductCard({ product, eager = false }: { product: ProductCardData; eager?: boolean }) {
   const cart = useCart();
   const wishlist = useWishlist();
+  const compare = useCompare();
   const dialogRef = useRef<HTMLDialogElement>(null);
   const titleId = useId();
   const saved = wishlist.ids.includes(product.id);
+  const compared = compare.ids.includes(product.id);
 
   function addSimple() {
     cart.add({
@@ -93,9 +97,14 @@ export function ProductCard({ product, eager = false }: { product: ProductCardDa
             </button>
           )}
         </div>
-        <button type="button" className="self-start text-sm font-semibold text-forest-700 underline-offset-2 hover:underline" onClick={() => dialogRef.current?.showModal()}>
-          Quick view
-        </button>
+        <div className="flex gap-3 text-sm font-semibold text-forest-700">
+          <button type="button" className="underline-offset-2 hover:underline" aria-pressed={compared} onClick={() => compare.toggle(product.id)}>
+            {compared ? "In compare" : "Compare"}
+          </button>
+          <button type="button" className="underline-offset-2 hover:underline" onClick={() => dialogRef.current?.showModal()}>
+            Quick view
+          </button>
+        </div>
       </div>
       <dialog ref={dialogRef} aria-labelledby={titleId} className="w-[min(100%,40rem)] rounded-2xl border border-cream-300 bg-cream-50 p-0 text-ink backdrop:bg-forest-950/50">
         <div className="grid gap-4 p-4 sm:grid-cols-2">

@@ -48,6 +48,7 @@ export type CategoryLink = {
   description: string;
   image: string;
   productCount: number;
+  label: string;
 };
 
 export type PublicUser = {

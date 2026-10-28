@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { getCategories, queryCatalog, readCatalogQuery, type CatalogInput } from "@/lib/catalog";
 import { ProductGrid } from "@/components/product-card";
 import { Pagination } from "@/components/pagination";
+import { Breadcrumbs } from "@/components/breadcrumbs";
 import { Container, fieldClass, labelClass } from "@/components/ui";
 import { PAGE_SIZE } from "@/lib/commerce";
 
@@ -13,6 +14,8 @@ export async function CatalogBrowser({
   searchParams,
   preset,
   lockCategory = false,
+  crumbs,
+  links,
 }: {
   title: string;
   intro?: string;
@@ -20,17 +23,31 @@ export async function CatalogBrowser({
   searchParams: Promise<Record<string, string | string[] | undefined>>;
   preset?: Partial<CatalogInput>;
   lockCategory?: boolean;
+  crumbs?: Array<{ name: string; href?: string }>;
+  links?: Array<{ href: string; name: string; count: number }>;
 }) {
   const query = readCatalogQuery(await searchParams, preset);
-  const [result, categories] = await Promise.all([queryCatalog(query), getCategories()]);
+  const [result, categories] = await Promise.all([queryCatalog(query), getCategories("all")]);
   if (result.outOfRange) notFound();
   const start = result.total === 0 ? 0 : (result.page - 1) * PAGE_SIZE + 1;
   const end = Math.min(result.total, result.page * PAGE_SIZE);
 
   return (
     <Container className="py-6">
+      {crumbs ? <Breadcrumbs items={crumbs} /> : null}
       <h1 className="font-display text-4xl text-forest-900">{title}</h1>
       {intro ? <p className="mt-2 max-w-2xl text-sm leading-6 text-muted">{intro}</p> : null}
+      {links && links.length > 0 ? (
+        <ul className="mt-4 flex gap-2 overflow-x-auto pb-1">
+          {links.map((link) => (
+            <li key={link.href}>
+              <Link href={link.href} className="inline-flex min-h-11 items-center whitespace-nowrap rounded-full border border-cream-300 bg-white px-3 text-sm font-semibold text-forest-900">
+                {link.name} <span className="ml-2 text-muted">{link.count}</span>
+              </Link>
+            </li>
+          ))}
+        </ul>
+      ) : null}
       <form action={basePath} method="get" className="mt-5 grid gap-3 rounded-2xl border border-cream-300 bg-white p-3 md:grid-cols-6">
         <div className="md:col-span-2">
           <label className={labelClass} htmlFor="filter-q">Search</label>
@@ -42,7 +59,7 @@ export async function CatalogBrowser({
             <select id="filter-category" name="category" defaultValue={query.category || ""} className={fieldClass}>
               <option value="">All</option>
               {categories.map((category) => (
-                <option key={category.slug} value={category.slug}>{category.name}</option>
+                <option key={category.slug} value={category.slug}>{category.label}</option>
               ))}
             </select>
           </div>
@@ -54,6 +71,13 @@ export async function CatalogBrowser({
         <div>
           <label className={labelClass} htmlFor="filter-max">Max price</label>
           <input id="filter-max" name="max" inputMode="numeric" defaultValue={query.max ?? ""} className={fieldClass} />
+        </div>
+        <div>
+          <label className={labelClass} htmlFor="filter-stock">Availability</label>
+          <select id="filter-stock" name="stock" defaultValue={query.inStockOnly ? "in" : ""} className={fieldClass}>
+            <option value="">Any</option>
+            <option value="in">In stock</option>
+          </select>
         </div>
         <div>
           <label className={labelClass} htmlFor="filter-sort">Sort</label>

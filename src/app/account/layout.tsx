@@ -9,6 +9,7 @@ const links = [
   ["/account/profile", "Profile"],
   ["/account/addresses", "Addresses"],
   ["/account/orders", "Orders"],
+  ["/wishlist", "Wishlist"],
 ];
 
 export default async function AccountLayout({ children }: { children: React.ReactNode }) {

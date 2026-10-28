@@ -7,7 +7,7 @@ import { ProductGrid } from "@/components/product-card";
 import { PurchasePanel } from "@/components/purchase-panel";
 import { RecentlyViewed, RecordView } from "@/components/recently-viewed";
 import { Container } from "@/components/ui";
-import { getProduct, parseSpecs, relatedProducts, toCard } from "@/lib/catalog";
+import { boughtTogether, getProduct, parseSpecs, relatedProducts, toCard } from "@/lib/catalog";
 import { FREE_SHIPPING_ABOVE, SHIPPING_FLAT_RUPEES } from "@/lib/commerce";
 import { formatINR } from "@/lib/format";
 import { absoluteUrl, site } from "@/lib/site";
@@ -34,7 +34,10 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
   if (!product) notFound();
   const card = toCard(product);
   const specs = parseSpecs(product.specifications);
-  const related = await relatedProducts(product.categoryId, product.id);
+  const [related, together] = await Promise.all([
+    relatedProducts(product.categoryId, product.id),
+    boughtTogether(product.id),
+  ]);
   const images = product.images.map((image) => ({ url: image.url, alt: image.alt || product.name }));
 
   return (
@@ -43,7 +46,10 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
       <Breadcrumbs
         items={[
           { name: "Home", href: "/" },
-          { name: "Shop", href: "/shop" },
+          { name: "All products", href: "/shop" },
+          ...(product.category.parent
+            ? [{ name: product.category.parent.name, href: `/categories/${product.category.parent.slug}` }]
+            : []),
           { name: product.category.name, href: `/categories/${product.category.slug}` },
           { name: product.name },
         ]}
@@ -104,6 +110,13 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
           </section>
         ) : null}
       </div>
+      {together.length > 0 ? (
+        <section className="mt-10">
+          <h2 className="mb-2 font-display text-3xl">Frequently bought together</h2>
+          <p className="mb-4 text-sm text-muted">Other products that appeared on the same non-cancelled orders.</p>
+          <ProductGrid products={together} />
+        </section>
+      ) : null}
       {related.length > 0 ? (
         <section className="mt-10">
           <h2 className="mb-4 font-display text-3xl">Related products</h2>

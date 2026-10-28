@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useId, useState } from "react";
 import { useCart } from "@/components/cart-provider";
+import { useCompare } from "@/components/compare-provider";
 import { Logo } from "@/components/logo";
 import { useWishlist } from "@/components/wishlist-provider";
 import { Container } from "@/components/ui";
@@ -10,7 +11,7 @@ import type { CategoryLink } from "@/lib/types";
 
 const links = [
   { href: "/", label: "Home" },
-  { href: "/shop", label: "Shop All" },
+  { href: "/shop", label: "All products" },
   { href: "/new-arrivals", label: "New Arrivals" },
   { href: "/best-sellers", label: "Best Sellers" },
   { href: "/deals", label: "Deals & Offers" },
@@ -20,6 +21,7 @@ const links = [
 export function Header({ categories }: { categories: CategoryLink[] }) {
   const cart = useCart();
   const wishlist = useWishlist();
+  const compare = useCompare();
   const searchId = useId();
   const mobileSearchId = useId();
   const [open, setOpen] = useState(false);
@@ -39,6 +41,10 @@ export function Header({ categories }: { categories: CategoryLink[] }) {
             Search
           </button>
           <Link href="/account" className="hidden min-h-11 items-center rounded-full px-3 text-sm font-semibold hover:bg-cream-200 sm:inline-flex">My Account</Link>
+          <Link href="/compare" className="relative hidden min-h-11 items-center rounded-full px-3 text-sm font-semibold hover:bg-cream-200 sm:inline-flex">
+            Compare
+            <Count value={compare.ids.length} />
+          </Link>
           <Link href="/wishlist" className="relative inline-flex min-h-11 items-center rounded-full px-3 text-sm font-semibold hover:bg-cream-200">
             Wishlist
             <Count value={wishlist.ids.length} />
@@ -68,7 +74,7 @@ export function Header({ categories }: { categories: CategoryLink[] }) {
           ))}
           <div className="group relative">
             <Link href="/categories" className="inline-flex min-h-11 items-center hover:text-forest-700" aria-haspopup="true">Categories</Link>
-            <div className="invisible absolute left-0 top-full z-20 w-72 rounded-2xl border border-cream-300 bg-white p-2 opacity-0 shadow-card transition group-hover:visible group-hover:opacity-100 group-focus-within:visible group-focus-within:opacity-100">
+            <div className="invisible absolute left-0 top-full z-20 max-h-96 w-72 overflow-y-auto rounded-2xl border border-cream-300 bg-white p-2 opacity-0 shadow-card transition group-hover:visible group-hover:opacity-100 group-focus-within:visible group-focus-within:opacity-100">
               {categories.map((category) => (
                 <Link key={category.slug} href={`/categories/${category.slug}`} className="block rounded-xl px-3 py-2 hover:bg-cream-100">
                   {category.name}
@@ -86,7 +92,7 @@ export function Header({ categories }: { categories: CategoryLink[] }) {
         <nav id="mobile-menu" aria-label="Mobile" className="border-t border-cream-200 bg-cream-50 md:hidden">
           <Container className="grid gap-1 py-3">
             <Link href="/" className="rounded-xl px-3 py-3 hover:bg-cream-200" onClick={() => setOpen(false)}>Home</Link>
-            <Link href="/shop" className="rounded-xl px-3 py-3 hover:bg-cream-200" onClick={() => setOpen(false)}>Shop All</Link>
+            <Link href="/shop" className="rounded-xl px-3 py-3 hover:bg-cream-200" onClick={() => setOpen(false)}>All products</Link>
             <Link href="/categories" className="rounded-xl px-3 py-3 hover:bg-cream-200" onClick={() => setOpen(false)}>Categories</Link>
             {categories.map((category) => (
               <Link key={category.slug} href={`/categories/${category.slug}`} className="rounded-xl px-3 py-2 pl-6 text-sm hover:bg-cream-200" onClick={() => setOpen(false)}>
@@ -96,11 +102,13 @@ export function Header({ categories }: { categories: CategoryLink[] }) {
             {links.slice(2).map((link) => (
               <Link key={link.href} href={link.href} className="rounded-xl px-3 py-3 hover:bg-cream-200" onClick={() => setOpen(false)}>{link.label}</Link>
             ))}
+            <Link href="/compare" className="rounded-xl px-3 py-3 hover:bg-cream-200" onClick={() => setOpen(false)}>Compare{compare.ids.length ? ` (${compare.ids.length})` : ""}</Link>
             <Link href="/account" className="rounded-xl px-3 py-3 hover:bg-cream-200" onClick={() => setOpen(false)}>My Account</Link>
             <Link href="/track" className="rounded-xl px-3 py-3 hover:bg-cream-200" onClick={() => setOpen(false)}>Order Tracking</Link>
           </Container>
         </nav>
       ) : null}
+      {compare.notice ? <p role="status" className="bg-gold-400 px-4 py-1 text-center text-sm text-forest-950">{compare.notice}</p> : null}
       <div className="h-0.5 bg-gold-400" />
     </header>
   );

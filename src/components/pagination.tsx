@@ -8,6 +8,7 @@ export function pageHref(basePath: string, query: CatalogInput, page: number, lo
   if (query.min != null) params.set("min", String(query.min));
   if (query.max != null) params.set("max", String(query.max));
   if (query.sort && query.sort !== "newest" && !(query.bestSellersOnly && query.sort === "popular")) params.set("sort", query.sort);
+  if (query.inStockOnly) params.set("stock", "in");
   if (page > 1) params.set("page", String(page));
   const qs = params.toString();
   return qs ? `${basePath}?${qs}` : basePath;

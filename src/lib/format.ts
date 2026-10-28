@@ -13,6 +13,10 @@ export function formatDate(value: string | Date): string {
   }).format(new Date(value));
 }
 
+export function unoptimizedImage(src: string): boolean {
+  return src.endsWith(".svg") || src.startsWith("http://") || src.startsWith("https://");
+}
+
 export function cn(...parts: Array<string | false | null | undefined>): string {
   return parts.filter(Boolean).join(" ");
 }

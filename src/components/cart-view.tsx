@@ -5,8 +5,8 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useCart } from "@/components/cart-provider";
 import { buttonClass } from "@/components/ui";
-import { shippingCharge } from "@/lib/commerce";
-import { formatINR } from "@/lib/format";
+import { FREE_SHIPPING_ABOVE, shippingCharge } from "@/lib/commerce";
+import { formatINR, unoptimizedImage } from "@/lib/format";
 import type { CartLine } from "@/lib/types";
 
 type QuoteLine = CartLine & { available: boolean; message?: string };
@@ -37,6 +37,9 @@ export function CartView() {
 
   const payable = lines.filter((line) => line.available);
   const subtotal = payable.reduce((sum, line) => sum + line.unitPrice * line.qty, 0);
+  const shipping = shippingCharge(subtotal);
+  const remaining = Math.max(0, FREE_SHIPPING_ABOVE - subtotal);
+  const progress = Math.min(100, Math.round((subtotal / FREE_SHIPPING_ABOVE) * 100));
 
   if (!cart.ready) return <p>Loading your cart…</p>;
   if (cart.lines.length === 0) {
@@ -54,7 +57,7 @@ export function CartView() {
         {lines.map((line) => (
           <li key={line.key} className="grid grid-cols-[5rem_1fr] gap-3 rounded-2xl border border-cream-300 bg-white p-3">
             <Link href={`/products/${line.slug}`} className="block aspect-square overflow-hidden rounded-xl bg-cream-100">
-              {line.image ? <Image src={line.image} alt="" width={160} height={160} unoptimized={line.image.endsWith(".svg")} className="h-full w-full object-cover" /> : null}
+              {line.image ? <Image src={line.image} alt={line.name} width={160} height={160} unoptimized={unoptimizedImage(line.image)} className="h-full w-full object-cover" /> : null}
             </Link>
             <div>
               <Link href={`/products/${line.slug}`} className="font-semibold">{line.name}{line.variantName ? ` — ${line.variantName}` : ""}</Link>
@@ -72,8 +75,14 @@ export function CartView() {
       </ul>
       <aside className="h-fit rounded-2xl border border-cream-300 bg-white p-4">
         <h2 className="font-display text-2xl">Summary</h2>
+        <p className="mt-3 text-sm">{remaining === 0 ? `This subtotal qualifies for free shipping.` : `Add ${formatINR(remaining)} more for free shipping.`}</p>
+        <div className="mt-2 h-2 overflow-hidden rounded-full bg-cream-200" role="progressbar" aria-valuemin={0} aria-valuemax={FREE_SHIPPING_ABOVE} aria-valuenow={Math.min(subtotal, FREE_SHIPPING_ABOVE)} aria-label="Progress toward free shipping">
+          <div className="h-full bg-forest-700" style={{ width: `${progress}%` }} />
+        </div>
         <p className="mt-3 flex justify-between text-sm"><span>Subtotal</span><span>{formatINR(subtotal)}</span></p>
-        <p className="mt-1 text-xs leading-5 text-muted">Shipping is {formatINR(shippingCharge(subtotal))} at this subtotal. Coupons are applied at checkout. Prices include applicable taxes, and no extra tax line is added.</p>
+        <p className="mt-1 flex justify-between text-sm"><span>Shipping</span><span>{formatINR(shipping)}</span></p>
+        <p className="mt-1 flex justify-between text-sm font-semibold"><span>Estimated total</span><span>{formatINR(subtotal + shipping)}</span></p>
+        <p className="mt-1 text-xs leading-5 text-muted">Coupons are applied at checkout and can change shipping. Prices include applicable taxes, and no extra tax line is added.</p>
         {error ? <p role="alert" className="mt-2 text-sm text-[#7F1D1D]">{error}</p> : null}
         <Link href="/checkout" className={`${buttonClass("primary", "mt-4 w-full")} ${payable.length === 0 ? "pointer-events-none opacity-50" : ""}`} aria-disabled={payable.length === 0}>Checkout</Link>
       </aside>

@@ -106,7 +106,7 @@ const specSchema = z.object({
 });
 
 const imageSchema = z.object({
-  url: z.string().trim().min(1).max(300),
+  url: z.string().trim().min(1).max(800),
   alt: z.string().trim().max(160).optional().default(""),
 });
 
@@ -118,10 +118,10 @@ const variantSchema = z.object({
 });
 
 export const productSchema = z.object({
-  name: z.string().trim().min(2).max(140),
+  name: z.string().trim().min(2).max(200),
   slug: z.string().trim().regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, "Use a lowercase slug."),
   sku: z.string().trim().min(2).max(40),
-  description: z.string().trim().min(10).max(5000),
+  description: z.string().trim().min(10).max(30000),
   shortDescription: z.string().trim().max(220).optional().default(""),
   price: z.number().int().positive(),
   compareAtPrice: z.number().int().positive().nullable().optional(),
@@ -133,7 +133,7 @@ export const productSchema = z.object({
   wholesaleEligible: z.boolean(),
   minOrderQty: z.number().int().positive().max(10000).nullable().optional(),
   wholesalePrice: z.number().int().positive().nullable().optional(),
-  images: z.array(imageSchema).max(6).optional().default([]),
+  images: z.array(imageSchema).max(24).optional().default([]),
   variants: z.array(variantSchema).max(12).optional().default([]),
 }).superRefine((value, ctx) => {
   if (value.compareAtPrice != null && value.compareAtPrice <= value.price) {
@@ -150,11 +150,11 @@ export const productSchema = z.object({
       message: "Wholesale price cannot be higher than the selling price.",
     });
   }
-  if (value.images.some((image) => !image.url.startsWith("/"))) {
+  if (value.images.some((image) => !image.url.startsWith("/") && !image.url.startsWith("https://cdn.shopify.com/"))) {
     ctx.addIssue({
       code: z.ZodIssueCode.custom,
       path: ["images"],
-      message: "Image paths must start with /.",
+      message: "Use an uploaded image path or a Shopify catalogue image URL.",
     });
   }
 });
@@ -163,7 +163,7 @@ export const categorySchema = z.object({
   name: z.string().trim().min(2).max(80),
   slug: z.string().trim().regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/),
   description: z.string().trim().max(400).optional().default(""),
-  image: z.string().trim().max(300).optional().default(""),
+  image: z.string().trim().max(800).optional().default(""),
   sortOrder: z.number().int().min(0).max(999),
 });
 

@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useId, useState } from "react";
 import { buttonClass, fieldClass } from "@/components/ui";
 
 export function NewsletterForm() {
+  const emailId = useId();
   const [message, setMessage] = useState("");
   const [pending, setPending] = useState(false);
 
@@ -25,8 +26,8 @@ export function NewsletterForm() {
 
   return (
     <form onSubmit={onSubmit} className="mt-3 flex flex-col gap-2">
-      <label htmlFor="newsletter-email" className="sr-only">Email address</label>
-      <input id="newsletter-email" name="email" type="email" required placeholder="Email address" className={fieldClass} />
+      <label htmlFor={emailId} className="sr-only">Email address</label>
+      <input id={emailId} name="email" type="email" required placeholder="Email address" className={fieldClass} />
       <button className={buttonClass("gold")} disabled={pending}>{pending ? "Saving…" : "Subscribe"}</button>
       {message ? <p role="status" className="text-sm">{message}</p> : null}
     </form>

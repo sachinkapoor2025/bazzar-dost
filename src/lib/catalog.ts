@@ -7,7 +7,7 @@ import type { Prisma } from "@prisma/client";
 const include = {
   images: { orderBy: { sortOrder: "asc" as const } },
   variants: { orderBy: { name: "asc" as const } },
-  category: true,
+  category: { include: { parent: { select: { name: true, slug: true } } } },
 } satisfies Prisma.ProductInclude;
 
 export type ProductRecord = Prisma.ProductGetPayload<{ include: typeof include }>;
@@ -94,6 +94,7 @@ async function searchIds(query: string): Promise<string[]> {
       lower(name) LIKE ${term}
       OR lower(sku) LIKE ${term}
       OR lower(shortDescription) LIKE ${term}
+      OR lower(description) LIKE ${term}
     )
   `;
   return rows.map((row) => row.id);
@@ -110,6 +111,7 @@ export type CatalogInput = {
   wholesaleOnly?: boolean;
   arrivalsOnly?: boolean;
   bestSellersOnly?: boolean;
+  inStockOnly?: boolean;
 };
 
 export type CatalogResult = {
@@ -128,7 +130,14 @@ export async function queryCatalog(input: CatalogInput): Promise<CatalogResult> 
   }
 
   const where: Prisma.ProductWhereInput = { isActive: true };
-  if (input.category) where.category = { slug: input.category };
+  if (input.category) {
+    const category = await prisma.category.findUnique({
+      where: { slug: input.category },
+      include: { children: { select: { slug: true } } },
+    });
+    const slugs = category ? [category.slug, ...category.children.map((child) => child.slug)] : [input.category];
+    where.category = { slug: { in: slugs } };
+  }
   if (input.wholesaleOnly) where.wholesaleEligible = true;
   if (input.arrivalsOnly) {
     const since = new Date(Date.now() - NEW_ARRIVAL_DAYS * 24 * 60 * 60 * 1000);
@@ -151,7 +160,8 @@ export async function queryCatalog(input: CatalogInput): Promise<CatalogResult> 
       price: true,
       compareAtPrice: true,
       createdAt: true,
-      variants: { select: { price: true } },
+      stock: true,
+      variants: { select: { price: true, stock: true } },
     },
   });
   let filtered = rows;
@@ -164,6 +174,9 @@ export async function queryCatalog(input: CatalogInput): Promise<CatalogResult> 
   const sales = input.bestSellersOnly || input.sort === "popular" ? await salesByProduct() : new Map<string, number>();
   if (input.bestSellersOnly) {
     filtered = filtered.filter((row) => (sales.get(row.id) || 0) > 0);
+  }
+  if (input.inStockOnly) {
+    filtered = filtered.filter((row) => (row.variants.length ? row.variants.some((variant) => variant.stock > 0) : row.stock > 0));
   }
 
   const direction = input.sort || (input.bestSellersOnly ? "popular" : "newest");
@@ -204,25 +217,47 @@ export function readCatalogQuery(raw: Record<string, string | string[] | undefin
     wholesaleOnly: defaults?.wholesaleOnly,
     arrivalsOnly: defaults?.arrivalsOnly,
     bestSellersOnly: defaults?.bestSellersOnly,
+    inStockOnly: first("stock") === "in" || defaults?.inStockOnly,
   };
 }
 
-export async function getCategories(): Promise<CategoryLink[]> {
+export async function getCategories(scope: "top" | "all" = "top"): Promise<CategoryLink[]> {
   const categories = await prisma.category.findMany({
-    orderBy: { sortOrder: "asc" },
-    include: { _count: { select: { products: { where: { isActive: true } } } } },
+    orderBy: [{ sortOrder: "asc" }, { name: "asc" }],
+    include: {
+      parent: { select: { name: true } },
+      children: { select: { id: true } },
+      _count: { select: { products: { where: { isActive: true } } } },
+    },
   });
-  return categories.map((category) => ({
-    name: category.name,
-    slug: category.slug,
-    description: category.description,
-    image: category.image,
-    productCount: category._count.products,
-  }));
+  const own = new Map(categories.map((category) => [category.id, category._count.products]));
+  const listed = scope === "top" ? categories.filter((category) => !category.parentId) : categories;
+  return listed
+    .map((category) => {
+      const childTotal = category.children.reduce((sum, child) => sum + (own.get(child.id) || 0), 0);
+      return {
+        name: category.name,
+        slug: category.slug,
+        description: category.description,
+        image: category.image,
+        productCount: category._count.products + childTotal,
+        label: category.parent ? `${category.parent.name} · ${category.name}` : category.name,
+      };
+    })
+    .sort((a, b) => (scope === "all" ? a.label.localeCompare(b.label) : 0));
 }
 
 export async function getCategory(slug: string) {
-  return prisma.category.findUnique({ where: { slug } });
+  return prisma.category.findUnique({
+    where: { slug },
+    include: {
+      parent: { select: { name: true, slug: true } },
+      children: {
+        orderBy: { name: "asc" },
+        include: { _count: { select: { products: { where: { isActive: true } } } } },
+      },
+    },
+  });
 }
 
 export async function getProduct(slug: string) {
@@ -233,9 +268,35 @@ export async function getProduct(slug: string) {
   return product;
 }
 
+export async function boughtTogether(productId: string): Promise<ProductCardData[]> {
+  const lines = await prisma.orderItem.findMany({
+    where: { productId, order: { status: { not: "cancelled" } } },
+    select: { orderId: true },
+    take: 40,
+  });
+  const orderIds = lines.map((line) => line.orderId);
+  if (orderIds.length === 0) return [];
+  const companions = await prisma.orderItem.groupBy({
+    by: ["productId"],
+    where: { orderId: { in: orderIds }, productId: { not: productId } },
+    _sum: { qty: true },
+    orderBy: { _sum: { qty: "desc" } },
+    take: 3,
+  });
+  const ids = companions.map((row) => row.productId).filter((id): id is string => Boolean(id));
+  return productsByIds(ids);
+}
+
 export async function relatedProducts(categoryId: string, productId: string): Promise<ProductCardData[]> {
+  const category = await prisma.category.findUnique({ where: { id: categoryId }, select: { parentId: true } });
+  const family = category?.parentId
+    ? await prisma.category.findMany({
+        where: { OR: [{ id: category.parentId }, { parentId: category.parentId }] },
+        select: { id: true },
+      })
+    : [{ id: categoryId }];
   const products = await prisma.product.findMany({
-    where: { categoryId, isActive: true, id: { not: productId } },
+    where: { categoryId: { in: family.map((item) => item.id) }, isActive: true, id: { not: productId } },
     include,
     orderBy: { createdAt: "desc" },
     take: 4,

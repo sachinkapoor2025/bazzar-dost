@@ -11,6 +11,7 @@ const links = [
   ["/admin/products", "Products"],
   ["/admin/categories", "Categories"],
   ["/admin/orders", "Orders"],
+  ["/admin/customers", "Customers"],
   ["/admin/inquiries", "Inquiries"],
   ["/admin/promotions", "Promotions"],
   ["/admin/coupons", "Coupons"],

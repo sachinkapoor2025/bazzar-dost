@@ -30,6 +30,19 @@ export default async function CategoryPage({
       searchParams={searchParams}
       preset={{ category: category.slug }}
       lockCategory
+      crumbs={[
+        { name: "Home", href: "/" },
+        { name: "Categories", href: "/categories" },
+        ...(category.parent ? [{ name: category.parent.name, href: `/categories/${category.parent.slug}` }] : []),
+        { name: category.name },
+      ]}
+      links={category.children
+        .filter((child) => child._count.products > 0)
+        .map((child) => ({
+          href: `/categories/${child.slug}`,
+          name: child.name,
+          count: child._count.products,
+        }))}
     />
   );
 }
