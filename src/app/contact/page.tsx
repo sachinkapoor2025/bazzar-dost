@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 
 export default function ContactPage() {
   return (
-    <Info title="Contact us" lede="Messages are saved for the store team. An email notification is sent only when outbound email is configured.">
+    <Info title="Contact us" lede="Ask about a product, an order, or delivery. Messages are saved for the store team. An email notification is sent only when outbound email is configured.">
       {site.supportEmail ? <p>You can also write to {site.supportEmail}.</p> : <p>No public email address is configured yet. Use the form.</p>}
       <ContactForm />
     </Info>

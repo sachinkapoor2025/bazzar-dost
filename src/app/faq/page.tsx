@@ -11,6 +11,7 @@ export const metadata: Metadata = {
 };
 
 const faqs = [
+  ["Why does a product say out of stock?", "The product page and the product card use the quantity stored for that item. When the quantity is zero, Add to cart is turned off and the label says out of stock. In-stock products can still be ordered."],
   ["How do I pay?", "Checkout offers cash on delivery. The order is saved as unpaid. The store can mark it paid after collection. Card numbers are not collected."],
   ["How is shipping calculated?", `Shipping is ${formatINR(SHIPPING_FLAT_RUPEES)} when the payable product total is below ${formatINR(FREE_SHIPPING_ABOVE)}, and free from that amount. No delivery-day promise is made on the website.`],
   ["When is a product a deal?", "Only when the catalogue stores a compare-at price that is higher than the selling price. The percentage is calculated from those two numbers."],

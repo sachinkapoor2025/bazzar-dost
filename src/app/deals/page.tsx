@@ -3,7 +3,7 @@ import { CatalogBrowser } from "@/components/catalog-browser";
 
 export const metadata: Metadata = {
   title: "Deals and offers",
-  description: "Products whose selling price is below the compare-at price stored in the catalogue, plus active coupons.",
+  description: "BazaarDost deals where the selling price is lower than the compare-at price from the product list, plus any active coupon.",
   alternates: { canonical: "/deals" },
 };
 
@@ -11,7 +11,7 @@ export default function DealsPage({ searchParams }: { searchParams: Promise<Reco
   return (
     <CatalogBrowser
       title="Deals and offers"
-      intro="A product is listed here only when its compare-at price is higher than the selling price. Variant products with more than one price are left out, so a badge is not shown for a size that is not discounted."
+      intro="These products have a compare-at price higher than the selling price in the catalogue. The discount is calculated from those two amounts. There is no extra markdown."
       basePath="/deals"
       searchParams={searchParams}
       preset={{ dealsOnly: true }}

@@ -22,7 +22,8 @@ export default async function CategoriesPage() {
             <span className="block aspect-square bg-cream-100"><ProductImage src={category.image} alt="" /></span>
             <span className="block px-3 py-3">
               <span className="block font-display text-xl">{category.name}</span>
-              <span className="text-sm text-muted">{category.productCount} products</span>
+              <span className="mt-1 block text-sm leading-5 text-muted">{category.description}</span>
+              <span className="mt-1 block text-sm text-muted">{category.productCount} products</span>
             </span>
           </Link>
         ))}

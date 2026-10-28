@@ -60,6 +60,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
           <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted">{product.category.name}</p>
           <h1 className="mt-1 font-display text-4xl leading-tight text-forest-900">{product.name}</h1>
           {product.shortDescription ? <p className="mt-3 text-sm leading-6 text-muted">{product.shortDescription}</p> : null}
+          <p className="mt-3 text-sm leading-6 text-muted">{product.name} is listed under {product.category.name}{product.category.parent ? ` in ${product.category.parent.name}` : ""}. The selling price is the amount charged for this item.</p>
           <div className="mt-4">
             <PurchasePanel
               product={{

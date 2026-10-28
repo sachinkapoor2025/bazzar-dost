@@ -12,7 +12,7 @@ export default function ComparePage() {
   return (
     <Container className="py-6">
       <h1 className="font-display text-4xl text-forest-900">Compare products</h1>
-      <p className="mt-2 max-w-2xl text-sm leading-6 text-muted">Up to 3 products. Prices, stock, and options come from the catalogue. There is no rating column because no customer reviews are stored.</p>
+      <p className="mt-2 max-w-2xl text-sm leading-6 text-muted">Compare up to 3 products from the catalogue using the stored price, stock, and description. There is no rating column because customers have not left reviews.</p>
       <div className="mt-5">
         <CompareView />
       </div>

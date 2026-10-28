@@ -3,7 +3,7 @@ import { CatalogBrowser } from "@/components/catalog-browser";
 
 export const metadata: Metadata = {
   title: "All products",
-  description: "Browse every product in the BazaarDost catalogue, filter by category and price, and sort by newest, price, or orders.",
+  description: "Browse every BazaarDost product, from home and kitchen to beauty, electronics accessories, toys, and travel. Filter by department, price, and stock.",
   alternates: { canonical: "/shop" },
 };
 
@@ -11,7 +11,7 @@ export default function ShopPage({ searchParams }: { searchParams: Promise<Recor
   return (
     <CatalogBrowser
       title="All products"
-      intro="Every active product in the catalogue. Search, category, price, and availability filters apply together."
+      intro="Every product currently in the BazaarDost catalogue. Search by name, then narrow by department, price, or availability. A product is marked out of stock only when its recorded quantity is zero."
       basePath="/shop"
       searchParams={searchParams}
     />

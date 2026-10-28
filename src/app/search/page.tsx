@@ -4,7 +4,7 @@ import { Container } from "@/components/ui";
 
 export const metadata: Metadata = {
   title: "Search",
-  description: "Search the BazaarDost catalogue by product name.",
+  description: "Search BazaarDost products by name, from kitchen tools and beauty items to phone accessories, toys, and bags.",
   robots: { index: false, follow: true },
 };
 
@@ -16,7 +16,7 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
     return (
       <Container className="py-8">
         <h1 className="font-display text-4xl">Search</h1>
-        <p className="mt-2 text-sm text-muted">Enter a product name, SKU, or a word from the short description.</p>
+        <p className="mt-2 max-w-2xl text-sm leading-6 text-muted">Search the catalogue by product name, SKU, or a word from the description. Results stay inside the departments that currently have products.</p>
         <form action="/search" method="get" role="search" className="mt-4 flex max-w-xl">
           <label htmlFor="search-page-q" className="sr-only">Search products</label>
           <input id="search-page-q" name="q" className="min-h-11 w-full rounded-l-full border border-r-0 border-cream-300 px-4" />
@@ -25,5 +25,12 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
       </Container>
     );
   }
-  return <CatalogBrowser title={`Search results for “${q.slice(0, 80)}”`} basePath="/search" searchParams={searchParams} />;
+  return (
+    <CatalogBrowser
+      title={`Search results for “${q.slice(0, 80)}”`}
+      intro="Matches come from product names and descriptions in the current catalogue. You can still filter by department, price, and stock."
+      basePath="/search"
+      searchParams={searchParams}
+    />
+  );
 }

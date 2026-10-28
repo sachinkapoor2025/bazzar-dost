@@ -3,7 +3,7 @@ import { CatalogBrowser } from "@/components/catalog-browser";
 
 export const metadata: Metadata = {
   title: "Best sellers",
-  description: "BazaarDost products ranked by quantities actually ordered. Cancelled orders are excluded.",
+  description: "BazaarDost best sellers ranked by units customers have actually ordered. Cancelled orders are not included.",
   alternates: { canonical: "/best-sellers" },
 };
 
@@ -11,7 +11,7 @@ export default function BestSellersPage({ searchParams }: { searchParams: Promis
   return (
     <CatalogBrowser
       title="Best sellers"
-      intro="Only products that have been ordered appear here. The default order is units sold, excluding cancelled orders."
+      intro="Products appear here after a customer places an order. The list uses units sold and leaves out cancelled orders. It stays empty until the first sale."
       basePath="/best-sellers"
       searchParams={searchParams}
       preset={{ bestSellersOnly: true, sort: "popular" }}
