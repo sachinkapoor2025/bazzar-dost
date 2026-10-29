@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useId, useRef } from "react";
+import { useId, useRef, useState } from "react";
 import { useCart } from "@/components/cart-provider";
 import { useCompare } from "@/components/compare-provider";
 import { useWishlist } from "@/components/wishlist-provider";
@@ -21,7 +21,8 @@ export function ProductImage({
   alt: string;
   eager?: boolean;
 }) {
-  if (!src) {
+  const [failed, setFailed] = useState(false);
+  if (!src || failed) {
     return <span className="grid h-full w-full place-items-center bg-cream-200 font-display text-forest-800">BD</span>;
   }
   return (
@@ -33,6 +34,7 @@ export function ProductImage({
       priority={eager}
       unoptimized={unoptimizedImage(src)}
       className="h-full w-full object-cover motion-safe:transition motion-safe:duration-300 motion-safe:group-hover:scale-[1.03]"
+      onError={() => setFailed(true)}
     />
   );
 }

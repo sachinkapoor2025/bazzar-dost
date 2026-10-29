@@ -45,11 +45,11 @@ export default async function HomePage() {
           logo: absoluteUrl("/icon.svg"),
         }}
       />
-      <section className="relative isolate overflow-hidden bg-forest-900 text-cream-50">
+      <section className="relative isolate overflow-hidden bg-forest-950 text-cream-50">
         <div className="pointer-events-none absolute inset-0" aria-hidden="true">
-          <div className="absolute -left-20 -top-24 h-72 w-72 rounded-full bg-gold-400/25 blur-3xl" />
-          <div className="absolute -right-16 bottom-0 h-80 w-80 rounded-full bg-[#2D6A4F]/50 blur-3xl" />
-          <div className="absolute inset-0 opacity-20" style={{ backgroundImage: "radial-gradient(#E8B84A 0.7px, transparent 0.7px)", backgroundSize: "22px 22px" }} />
+          <div className="absolute inset-0 bg-cover bg-[center_right] sm:bg-center" style={{ backgroundImage: "url(/media/hero-wallpaper.jpg)" }} />
+          <div className="absolute inset-0 bg-gradient-to-r from-forest-950 via-forest-950/85 to-forest-950/30" />
+          <div className="absolute inset-0 bg-gradient-to-t from-forest-950/70 via-transparent to-forest-950/35 lg:hidden" />
         </div>
         <Container className="relative grid items-center gap-8 py-12 md:py-16 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)] lg:gap-12 lg:py-20">
           <div className="max-w-xl">

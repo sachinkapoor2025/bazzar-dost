@@ -30,18 +30,16 @@ export function Header({ categories }: { categories: CategoryLink[] }) {
 
   return (
     <header className="sticky top-0 z-40 border-b border-cream-300 bg-cream-50/95 backdrop-blur">
-      <div className="border-b border-cream-200 bg-cream-100">
-        <Container className="flex h-11 items-center justify-end">
-          <StoreControls />
-        </Container>
-      </div>
-      <Container className="flex h-16 items-center gap-3">
+      <Container className="flex flex-wrap items-center gap-x-2 gap-y-1 py-2 lg:h-[4.5rem] lg:flex-nowrap lg:py-0">
         <Logo />
         <form action="/search" method="get" role="search" className="hidden min-w-0 flex-1 md:flex">
           <label htmlFor={searchId} className="sr-only">Search products</label>
           <input id={searchId} name="q" placeholder="Search products" className="min-h-11 w-full rounded-l-full border border-r-0 border-cream-300 bg-white px-4 text-sm" />
           <button className="min-h-11 rounded-r-full bg-forest-800 px-4 text-sm font-semibold text-cream-50">Search</button>
         </form>
+        <div className="order-last flex w-full min-w-0 items-center gap-1 border-t border-cream-200 pt-1 md:order-none md:w-auto md:border-0 md:pt-0">
+          <StoreControls />
+        </div>
         <nav aria-label="Account and cart" className="ml-auto flex items-center gap-1">
           <button type="button" className="min-h-11 rounded-full px-3 text-sm font-semibold md:hidden" aria-expanded={searchOpen} onClick={() => setSearchOpen((value) => !value)}>
             Search

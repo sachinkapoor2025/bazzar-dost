@@ -49,8 +49,8 @@ function LocationButton() {
 
   return (
     <>
-      <button type="button" className="inline-flex min-h-11 items-center rounded-full px-3 text-sm font-semibold hover:bg-cream-200" onClick={openDialog}>
-        {location ? `Deliver to ${location.city}` : "Select delivery location"}
+      <button type="button" className="inline-flex h-10 max-w-[11rem] items-center truncate rounded-full border border-cream-300 bg-white px-3 text-sm font-semibold text-forest-900 hover:border-forest-800 sm:max-w-[14rem]" onClick={openDialog}>
+        <span className="truncate">{location ? `Deliver to ${location.city}` : "Select delivery location"}</span>
       </button>
       {open ? (
         <div className="fixed inset-0 z-50 grid place-items-center bg-forest-950/50 p-4" role="presentation" onClick={() => setOpen(false)}>
@@ -99,7 +99,7 @@ function CurrencyButton() {
     <div className="relative">
       <button
         type="button"
-        className="inline-flex min-h-11 items-center rounded-full px-3 text-sm font-semibold hover:bg-cream-200"
+        className="inline-flex h-10 shrink-0 items-center rounded-full border border-cream-300 bg-white px-3 text-sm font-semibold text-forest-900 hover:border-forest-800"
         aria-expanded={open}
         aria-controls={menuId}
         onClick={() => setOpen((value) => !value)}
