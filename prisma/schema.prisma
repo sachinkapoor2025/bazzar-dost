@@ -192,6 +192,15 @@ model Inquiry {
   @@index([type, email])
 }
 
+model Review {
+  id        String   @id @default(cuid())
+  name      String
+  city      String   @default("")
+  rating    Int
+  comment   String
+  createdAt DateTime @default(now())
+}
+
 model Promotion {
   id        String    @id @default(cuid())
   title     String

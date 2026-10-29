@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useCart } from "@/components/cart-provider";
+import { usePreferences } from "@/components/preferences-provider";
 import { buttonClass, fieldClass, labelClass } from "@/components/ui";
 import { couponDiscount, orderTotal, shippingCharge } from "@/lib/commerce";
 import { formatINR } from "@/lib/format";
@@ -33,6 +34,7 @@ export function CheckoutForm({
   addresses: Address[];
 }) {
   const cart = useCart();
+  const { ready: preferencesReady, location } = usePreferences();
   const [idempotencyKey] = useState(() => crypto.randomUUID());
   const [lines, setLines] = useState<QuoteLine[]>([]);
   const [couponCode, setCouponCode] = useState("");
@@ -52,6 +54,15 @@ export function CheckoutForm({
     pincode: "",
     notes: "",
   });
+
+  useEffect(() => {
+    if (!preferencesReady || !location) return;
+    setForm((current) => ({
+      ...current,
+      city: current.city || location.city,
+      pincode: current.pincode || location.pincode,
+    }));
+  }, [preferencesReady, location]);
 
   useEffect(() => {
     const source = mode === "now" ? readBuyNow() : cart.ready ? cart.lines : null;

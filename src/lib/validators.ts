@@ -198,3 +198,11 @@ export const orderUpdateSchema = z.object({
 export const inquiryStatusSchema = z.object({
   status: z.enum(["new", "in_review", "closed"]),
 });
+
+export const reviewSchema = z.object({
+  name: z.string().trim().min(2, "Enter your name.").max(60),
+  city: z.string().trim().max(40).optional().default(""),
+  rating: z.coerce.number().int().min(1, "Choose a rating.").max(5),
+  comment: z.string().trim().min(10, "Write at least a short review.").max(600),
+  website: z.string().optional().default(""),
+});

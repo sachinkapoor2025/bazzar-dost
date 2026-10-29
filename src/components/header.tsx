@@ -5,6 +5,7 @@ import { useId, useState } from "react";
 import { useCart } from "@/components/cart-provider";
 import { useCompare } from "@/components/compare-provider";
 import { Logo } from "@/components/logo";
+import { StoreControls } from "@/components/store-controls";
 import { useWishlist } from "@/components/wishlist-provider";
 import { Container } from "@/components/ui";
 import type { CategoryLink } from "@/lib/types";
@@ -29,6 +30,11 @@ export function Header({ categories }: { categories: CategoryLink[] }) {
 
   return (
     <header className="sticky top-0 z-40 border-b border-cream-300 bg-cream-50/95 backdrop-blur">
+      <div className="border-b border-cream-200 bg-cream-100">
+        <Container className="flex h-11 items-center justify-end">
+          <StoreControls />
+        </Container>
+      </div>
       <Container className="flex h-16 items-center gap-3">
         <Logo />
         <form action="/search" method="get" role="search" className="hidden min-w-0 flex-1 md:flex">

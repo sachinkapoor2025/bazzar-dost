@@ -375,6 +375,15 @@ export async function productsBySlugs(slugs: string[]): Promise<ProductCardData[
   });
 }
 
+export async function getReviews() {
+  const reviews = await prisma.review.findMany({
+    orderBy: { createdAt: "desc" },
+    take: 12,
+    select: { id: true, name: true, city: true, rating: true, comment: true, createdAt: true },
+  });
+  return reviews.map((review) => ({ ...review, createdAt: review.createdAt.toISOString() }));
+}
+
 export async function productsByIds(ids: string[]): Promise<ProductCardData[]> {
   const unique = [...new Set(ids)].slice(0, 50);
   const products = await prisma.product.findMany({ where: { id: { in: unique }, isActive: true }, include });

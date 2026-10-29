@@ -3,10 +3,11 @@ import Link from "next/link";
 import { NewsletterForm } from "@/components/newsletter-form";
 import { RecentlyViewed } from "@/components/recently-viewed";
 import { JsonLd } from "@/components/json-ld";
+import { HomeReviews } from "@/components/home-reviews";
+import { Money } from "@/components/money";
 import { ProductGrid, ProductImage } from "@/components/product-card";
 import { Container, SectionTitle, buttonClass } from "@/components/ui";
-import { getHomeData } from "@/lib/catalog";
-import { formatINR } from "@/lib/format";
+import { getHomeData, getReviews } from "@/lib/catalog";
 import { absoluteUrl, site } from "@/lib/site";
 
 export const metadata: Metadata = {
@@ -24,7 +25,7 @@ const services = [
 ];
 
 export default async function HomePage() {
-  const data = await getHomeData();
+  const [data, reviews] = await Promise.all([getHomeData(), getReviews()]);
   const collage = data.categories.slice(0, 4);
   const bands = [
     ["₹199 and under", data.budget.under199, "/shop?max=199"],
@@ -130,7 +131,7 @@ export default async function HomePage() {
                         <span className="block aspect-square overflow-hidden rounded-xl bg-cream-100"><ProductImage src={product.image} alt="" /></span>
                         <span>
                           <span className="block font-medium leading-5">{product.name}</span>
-                          <span className="text-sm text-muted">{formatINR(product.price)}</span>
+                          <span className="text-sm text-muted"><Money amount={product.price} /></span>
                         </span>
                       </Link>
                     </li>
@@ -165,7 +166,7 @@ export default async function HomePage() {
                 {data.coupons.map((coupon) => (
                   <li key={coupon.id} className="rounded-2xl border border-gold-400 bg-white px-4 py-3 text-sm">
                     <span className="font-semibold">{coupon.code}</span>
-                    <span className="text-muted"> — {coupon.type === "PERCENT" ? `${coupon.value}% off` : `${formatINR(coupon.value)} off`}{coupon.minSubtotal ? ` from ${formatINR(coupon.minSubtotal)}` : ""}.</span>
+                    <span className="text-muted"> — {coupon.type === "PERCENT" ? `${coupon.value}% off` : <><Money amount={coupon.value} /> off</>}{coupon.minSubtotal ? <> from <Money amount={coupon.minSubtotal} /></> : ""}.</span>
                   </li>
                 ))}
               </ul>
@@ -204,6 +205,11 @@ export default async function HomePage() {
             </li>
           ))}
         </ul>
+      </Container>
+
+      <Container className="pb-8">
+        <SectionTitle id="reviews" title="Customer reviews" />
+        <HomeReviews reviews={reviews} />
       </Container>
 
       <Container className="pb-8">

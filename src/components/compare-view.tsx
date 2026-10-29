@@ -6,11 +6,13 @@ import { ProductImage } from "@/components/product-card";
 import { Price } from "@/components/price";
 import { useCompare } from "@/components/compare-provider";
 import { buttonClass } from "@/components/ui";
-import { formatINR } from "@/lib/format";
+import { formatMoney } from "@/lib/money";
+import { usePreferences } from "@/components/preferences-provider";
 import type { ProductCardData } from "@/lib/types";
 
 export function CompareView() {
   const compare = useCompare();
+  const { currency } = usePreferences();
   const [products, setProducts] = useState<ProductCardData[] | null>(null);
   const [error, setError] = useState("");
 
@@ -35,14 +37,14 @@ export function CompareView() {
     return (
       <div className="rounded-2xl border border-dashed border-cream-300 bg-white p-8">
         <h2 className="font-display text-2xl">Nothing to compare yet</h2>
-        <p className="mt-2 text-sm text-muted">Choose up to 3 products from the shop. Ratings are not shown because this catalogue has no customer reviews.</p>
+        <p className="mt-2 text-sm text-muted">Choose up to 3 products from the shop. Customer reviews stay on the homepage.</p>
         <Link href="/shop" className={`${buttonClass("primary")} mt-4`}>Browse products</Link>
       </div>
     );
   }
 
   const rows: Array<[string, (product: ProductCardData) => string]> = [
-    ["Listed price", (product) => product.compareAtPrice && !product.fromPrice ? formatINR(product.compareAtPrice) : "No higher compare-at price"],
+    ["Listed price", (product) => product.compareAtPrice && !product.fromPrice ? formatMoney(product.compareAtPrice, currency) : "No higher compare-at price"],
     ["Availability", (product) => product.inStock ? `${product.stock} in stock` : "Out of stock"],
     ["SKU", (product) => product.sku],
     ["Category", (product) => product.categoryName],
