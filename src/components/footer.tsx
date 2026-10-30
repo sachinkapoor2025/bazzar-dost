@@ -19,6 +19,7 @@ export function Footer({ categories }: { categories: CategoryLink[] }) {
             <li><Link href="/shop">Shop all</Link></li>
             <li><Link href="/deals">Deals and offers</Link></li>
             <li><Link href="/new-arrivals">New arrivals</Link></li>
+            <li><Link href="/catalogue">Catalogue</Link></li>
             <li><Link href="/wholesale">Wholesale</Link></li>
             {categories.slice(0, 4).map((category) => (
               <li key={category.slug}><Link href={`/categories/${category.slug}`}>{category.name}</Link></li>

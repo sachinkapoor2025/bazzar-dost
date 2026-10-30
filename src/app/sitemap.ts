@@ -15,7 +15,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       select: { slug: true },
     }),
   ]);
-  const staticPaths = ["", "/shop", "/categories", "/new-arrivals", "/best-sellers", "/deals", "/wholesale", "/about", "/contact", "/faq", "/shipping-policy", "/returns", "/privacy", "/terms", "/track"];
+  const staticPaths = ["", "/shop", "/categories", "/catalogue", "/new-arrivals", "/best-sellers", "/deals", "/wholesale", "/about", "/contact", "/faq", "/shipping-policy", "/returns", "/privacy", "/terms", "/track"];
   return [
     ...staticPaths.map((path) => ({ url: absoluteUrl(path || "/"), changeFrequency: "weekly" as const, priority: path === "" ? 1 : 0.6 })),
     ...categories.map((category) => ({ url: absoluteUrl(`/categories/${category.slug}`), changeFrequency: "weekly" as const, priority: 0.7 })),

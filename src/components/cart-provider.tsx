@@ -14,6 +14,8 @@ type CartContextValue = {
   clear: () => void;
   buyNow: (line: AddInput) => void;
   notice: string;
+  drawerOpen: boolean;
+  setDrawerOpen: (open: boolean) => void;
 };
 
 const CartContext = createContext<CartContextValue | null>(null);
@@ -27,6 +29,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   const [lines, setLines] = useState<CartLine[]>([]);
   const [ready, setReady] = useState(false);
   const [notice, setNotice] = useState("");
+  const [drawerOpen, setDrawerOpen] = useState(false);
 
   useEffect(() => {
     try {
@@ -54,6 +57,8 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       ready,
       count: lines.reduce((sum, line) => sum + line.qty, 0),
       notice,
+      drawerOpen,
+      setDrawerOpen,
       add(line) {
         const key = storageKey(line.productId, line.variantId);
         const qty = Math.max(1, line.qty || 1);
@@ -67,6 +72,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
           );
         });
         setNotice(`${line.name} added to cart.`);
+        setDrawerOpen(true);
       },
       setQty(key, qty) {
         setLines((current) =>
@@ -90,7 +96,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         window.location.href = "/checkout?mode=now";
       },
     };
-  }, [lines, notice, ready]);
+  }, [lines, notice, ready, drawerOpen]);
 
   return (
     <CartContext.Provider value={value}>

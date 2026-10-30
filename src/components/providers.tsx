@@ -1,5 +1,6 @@
 "use client";
 
+import { CartDrawer } from "@/components/cart-drawer";
 import { CartProvider } from "@/components/cart-provider";
 import { CompareProvider } from "@/components/compare-provider";
 import { PreferencesProvider } from "@/components/preferences-provider";
@@ -10,7 +11,10 @@ export function Providers({ children }: { children: React.ReactNode }) {
     <PreferencesProvider>
       <CartProvider>
         <WishlistProvider>
-          <CompareProvider>{children}</CompareProvider>
+          <CompareProvider>
+            {children}
+            <CartDrawer />
+          </CompareProvider>
         </WishlistProvider>
       </CartProvider>
     </PreferencesProvider>

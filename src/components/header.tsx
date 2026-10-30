@@ -5,6 +5,7 @@ import { useId, useState } from "react";
 import { useCart } from "@/components/cart-provider";
 import { useCompare } from "@/components/compare-provider";
 import { Logo } from "@/components/logo";
+import { SearchBox } from "@/components/search-box";
 import { StoreControls } from "@/components/store-controls";
 import { useWishlist } from "@/components/wishlist-provider";
 import { Container } from "@/components/ui";
@@ -16,6 +17,7 @@ const links = [
   { href: "/new-arrivals", label: "New Arrivals" },
   { href: "/best-sellers", label: "Best Sellers" },
   { href: "/deals", label: "Deals & Offers" },
+  { href: "/catalogue", label: "Catalogue" },
   { href: "/wholesale", label: "Wholesale" },
 ];
 
@@ -32,11 +34,7 @@ export function Header({ categories }: { categories: CategoryLink[] }) {
     <header className="sticky top-0 z-40 border-b border-cream-300 bg-cream-50/95 backdrop-blur">
       <Container className="flex flex-wrap items-center gap-x-2 gap-y-1 py-2 lg:h-[4.5rem] lg:flex-nowrap lg:py-0">
         <Logo />
-        <form action="/search" method="get" role="search" className="hidden min-w-0 flex-1 md:flex">
-          <label htmlFor={searchId} className="sr-only">Search products</label>
-          <input id={searchId} name="q" placeholder="Search products" className="min-h-11 w-full rounded-l-full border border-r-0 border-cream-300 bg-white px-4 text-sm" />
-          <button className="min-h-11 rounded-r-full bg-forest-800 px-4 text-sm font-semibold text-cream-50">Search</button>
-        </form>
+        <SearchBox id={searchId} className="hidden min-w-0 flex-1 md:block" />
         <div className="order-last flex w-full min-w-0 items-center gap-1 border-t border-cream-200 pt-1 md:order-none md:w-auto md:border-0 md:pt-0">
           <StoreControls />
         </div>
@@ -53,10 +51,10 @@ export function Header({ categories }: { categories: CategoryLink[] }) {
             Wishlist
             <Count value={wishlist.ids.length} />
           </Link>
-          <Link href="/cart" className="relative inline-flex min-h-11 items-center rounded-full px-3 text-sm font-semibold hover:bg-cream-200">
+          <button type="button" className="relative inline-flex min-h-11 items-center rounded-full px-3 text-sm font-semibold hover:bg-cream-200" onClick={() => cart.setDrawerOpen(true)}>
             Cart
             <Count value={cart.count} />
-          </Link>
+          </button>
           <button type="button" className="inline-flex min-h-11 items-center rounded-full px-3 text-sm font-semibold md:hidden" aria-expanded={open} aria-controls="mobile-menu" onClick={() => setOpen((value) => !value)}>
             Menu
           </button>
@@ -64,11 +62,7 @@ export function Header({ categories }: { categories: CategoryLink[] }) {
       </Container>
       {searchOpen ? (
         <Container className="pb-3 md:hidden">
-          <form action="/search" method="get" role="search" className="flex">
-            <label htmlFor={mobileSearchId} className="sr-only">Search products</label>
-            <input id={mobileSearchId} name="q" placeholder="Search products" className="min-h-11 w-full rounded-l-full border border-r-0 border-cream-300 bg-white px-4 text-sm" />
-            <button className="min-h-11 rounded-r-full bg-forest-800 px-4 text-sm font-semibold text-cream-50">Search</button>
-          </form>
+          <SearchBox id={mobileSearchId} />
         </Container>
       ) : null}
       <nav aria-label="Main" className="hidden border-t border-cream-200 md:block">
@@ -133,7 +127,7 @@ export function MobileDock() {
       <Link href="/categories" className={item}>Categories</Link>
       <Link href="/account" className={item}>Account</Link>
       <Link href="/wishlist" className={item}>Wishlist{wishlist.ids.length ? ` ${wishlist.ids.length}` : ""}</Link>
-      <Link href="/cart" className={item}>Cart{cart.count ? ` ${cart.count}` : ""}</Link>
+      <button type="button" className={item} onClick={() => cart.setDrawerOpen(true)}>Cart{cart.count ? ` ${cart.count}` : ""}</button>
     </nav>
   );
 }

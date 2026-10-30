@@ -100,6 +100,13 @@ async function searchIds(query: string): Promise<string[]> {
   return rows.map((row) => row.id);
 }
 
+export async function searchCards(query: string, take = 6): Promise<ProductCardData[]> {
+  const q = query.trim().slice(0, 80);
+  if (q.length < 2) return [];
+  const ids = (await searchIds(q)).slice(0, take);
+  return hydrate(ids);
+}
+
 export type CatalogInput = {
   q?: string;
   category?: string;

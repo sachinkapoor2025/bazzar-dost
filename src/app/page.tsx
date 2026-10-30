@@ -74,6 +74,16 @@ export default async function HomePage() {
         </Container>
       </section>
 
+      <Container className="pt-6">
+        <div className="flex gap-2 overflow-x-auto pb-1">
+          {data.categories.map((category) => (
+            <Link key={category.slug} href={`/categories/${category.slug}`} className="shrink-0 rounded-full border border-cream-300 bg-white px-4 py-2 text-sm font-semibold text-forest-900 hover:border-forest-800">
+              {category.name}
+            </Link>
+          ))}
+        </div>
+      </Container>
+
       <Container className="pt-12">
         <SectionTitle id="why" title="Why shop at BazaarDost" />
         <ul className="grid overflow-hidden rounded-2xl border border-cream-300 bg-cream-300 sm:grid-cols-2 lg:grid-cols-5">
