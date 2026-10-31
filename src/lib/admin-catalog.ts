@@ -4,8 +4,26 @@ import path from "node:path";
 import { prisma, isUniqueConstraint } from "@/lib/db";
 import { productSvg, categorySvg } from "@/lib/art";
 import { productSchema, categorySchema } from "@/lib/validators";
+import { s3Configured, uploadPublicObject } from "@/lib/storage";
 
-export function ensureProductArt(slug: string, name: string) {
+function storageRequired(): void {
+  if (process.env.NODE_ENV === "production" && !s3Configured()) {
+    const error = new Error("Image storage is not configured.");
+    (error as Error & { status?: number }).status = 500;
+    throw error;
+  }
+}
+
+export async function ensureProductArt(slug: string, name: string): Promise<string> {
+  storageRequired();
+  if (s3Configured()) {
+    return uploadPublicObject(
+      `media/products/${slug}.svg`,
+      Buffer.from(productSvg(name)),
+      "image/svg+xml",
+      "public, max-age=86400",
+    );
+  }
   const dir = path.join(process.cwd(), "public", "media", "products");
   fs.mkdirSync(dir, { recursive: true });
   const file = path.join(dir, `${slug}.svg`);
@@ -13,7 +31,16 @@ export function ensureProductArt(slug: string, name: string) {
   return `/media/products/${slug}.svg`;
 }
 
-export function ensureCategoryArt(slug: string, name: string) {
+export async function ensureCategoryArt(slug: string, name: string): Promise<string> {
+  storageRequired();
+  if (s3Configured()) {
+    return uploadPublicObject(
+      `media/categories/${slug}.svg`,
+      Buffer.from(categorySvg(name)),
+      "image/svg+xml",
+      "public, max-age=86400",
+    );
+  }
   const dir = path.join(process.cwd(), "public", "media", "categories");
   fs.mkdirSync(dir, { recursive: true });
   const file = path.join(dir, `${slug}.svg`);
@@ -23,7 +50,10 @@ export function ensureCategoryArt(slug: string, name: string) {
 
 export async function saveProduct(input: unknown, id?: string) {
   const parsed = productSchema.parse(input);
-  const images = (parsed.images.length ? parsed.images : [{ url: ensureProductArt(parsed.slug, parsed.name), alt: parsed.name }]).map((image, index) => ({
+  const images = (parsed.images.length
+    ? parsed.images
+    : [{ url: await ensureProductArt(parsed.slug, parsed.name), alt: parsed.name }]
+  ).map((image, index) => ({
     url: image.url,
     alt: image.alt || parsed.name,
     sortOrder: index,
@@ -75,7 +105,7 @@ export async function saveProduct(input: unknown, id?: string) {
 
 export async function saveCategory(input: unknown, id?: string) {
   const parsed = categorySchema.parse(input);
-  const image = parsed.image || ensureCategoryArt(parsed.slug, parsed.name);
+  const image = parsed.image || await ensureCategoryArt(parsed.slug, parsed.name);
   try {
     if (!id) return await prisma.category.create({ data: { ...parsed, image } });
     return await prisma.category.update({ where: { id }, data: { ...parsed, image } });

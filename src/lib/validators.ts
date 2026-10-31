@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { INDIAN_STATES } from "@/lib/states";
 import { MAX_LINE_QTY } from "@/lib/commerce";
+import { isAllowedImageUrl } from "@/lib/images";
 
 const phone = z
   .string()
@@ -150,7 +151,7 @@ export const productSchema = z.object({
       message: "Wholesale price cannot be higher than the selling price.",
     });
   }
-  if (value.images.some((image) => !image.url.startsWith("/") && !image.url.startsWith("https://cdn.shopify.com/"))) {
+  if (value.images.some((image) => !isAllowedImageUrl(image.url))) {
     ctx.addIssue({
       code: z.ZodIssueCode.custom,
       path: ["images"],
@@ -165,6 +166,14 @@ export const categorySchema = z.object({
   description: z.string().trim().max(400).optional().default(""),
   image: z.string().trim().max(800).optional().default(""),
   sortOrder: z.number().int().min(0).max(999),
+}).superRefine((value, ctx) => {
+  if (value.image && !isAllowedImageUrl(value.image)) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ["image"],
+      message: "Use an uploaded category image, or leave it empty.",
+    });
+  }
 });
 
 export const couponSchema = z.object({

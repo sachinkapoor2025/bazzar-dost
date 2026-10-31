@@ -87,16 +87,20 @@ async function salesByProduct(): Promise<Map<string, number>> {
 }
 
 async function searchIds(query: string): Promise<string[]> {
-  const term = `%${query.toLowerCase().replace(/[%_]/g, "")}%`;
-  const rows = await prisma.$queryRaw<Array<{ id: string }>>`
-    SELECT id FROM Product
-    WHERE isActive = 1 AND (
-      lower(name) LIKE ${term}
-      OR lower(sku) LIKE ${term}
-      OR lower(shortDescription) LIKE ${term}
-      OR lower(description) LIKE ${term}
-    )
-  `;
+  const term = query.toLowerCase().replace(/[%_]/g, "");
+  const contains = { contains: term, mode: "insensitive" as const };
+  const rows = await prisma.product.findMany({
+    where: {
+      isActive: true,
+      OR: [
+        { name: contains },
+        { sku: contains },
+        { shortDescription: contains },
+        { description: contains },
+      ],
+    },
+    select: { id: true },
+  });
   return rows.map((row) => row.id);
 }
 
