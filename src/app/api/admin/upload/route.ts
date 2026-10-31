@@ -4,13 +4,20 @@ import path from "node:path";
 import { NextResponse } from "next/server";
 import { requireAdmin } from "@/lib/auth";
 import { errorResponse } from "@/lib/http";
+import { s3Configured, uploadPublicObject } from "@/lib/storage";
 
 function kind(buffer: Buffer) {
-  if (buffer.length > 8 && buffer[0] === 0x89 && buffer[1] === 0x50 && buffer[2] === 0x4e && buffer[3] === 0x47) return "png";
-  if (buffer.length > 3 && buffer[0] === 0xff && buffer[1] === 0xd8 && buffer[2] === 0xff) return "jpg";
-  if (buffer.length > 12 && buffer.toString("ascii", 0, 4) === "RIFF" && buffer.toString("ascii", 8, 12) === "WEBP") return "webp";
+  if (buffer.length > 8 && buffer[0] === 0x89 && buffer[1] === 0x50 && buffer[2] === 0x4e && buffer[3] === 0x47) return "png" as const;
+  if (buffer.length > 3 && buffer[0] === 0xff && buffer[1] === 0xd8 && buffer[2] === 0xff) return "jpg" as const;
+  if (buffer.length > 12 && buffer.toString("ascii", 0, 4) === "RIFF" && buffer.toString("ascii", 8, 12) === "WEBP") return "webp" as const;
   return null;
 }
+
+const contentTypes = {
+  png: "image/png",
+  jpg: "image/jpeg",
+  webp: "image/webp",
+};
 
 export async function POST(request: Request) {
   try {
@@ -22,9 +29,16 @@ export async function POST(request: Request) {
     const buffer = Buffer.from(await file.arrayBuffer());
     const extension = kind(buffer);
     if (!extension) return NextResponse.json({ error: "Upload a PNG, JPEG, or WebP image." }, { status: 400 });
+    const filename = `${crypto.randomBytes(12).toString("hex")}.${extension}`;
+    if (s3Configured()) {
+      const url = await uploadPublicObject(`uploads/${filename}`, buffer, contentTypes[extension]);
+      return NextResponse.json({ url });
+    }
+    if (process.env.NODE_ENV === "production") {
+      return NextResponse.json({ error: "Image storage is not configured." }, { status: 500 });
+    }
     const dir = path.join(process.cwd(), "public", "uploads");
     await fs.mkdir(dir, { recursive: true });
-    const filename = `${crypto.randomBytes(12).toString("hex")}.${extension}`;
     await fs.writeFile(path.join(dir, filename), buffer);
     return NextResponse.json({ url: `/uploads/${filename}` });
   } catch (error) {

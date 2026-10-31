@@ -4,7 +4,36 @@ import { useState } from "react";
 import { buttonClass, fieldClass, labelClass } from "@/components/ui";
 import { slugify } from "@/lib/format";
 
-type Category = { id: string; name: string; slug: string; description: string; sortOrder: number };
+type Category = { id: string; name: string; slug: string; description: string; image: string; sortOrder: number };
+
+function CategoryImageField({ initial }: { initial: string }) {
+  const [image, setImage] = useState(initial);
+  const [error, setError] = useState("");
+  async function upload(event: React.ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    const body = new FormData();
+    body.set("file", file);
+    const response = await fetch("/api/admin/upload", { method: "POST", body });
+    const data = (await response.json()) as { url?: string; error?: string };
+    if (!response.ok || !data.url) {
+      setError(data.error || "Upload failed.");
+      return;
+    }
+    setError("");
+    setImage(data.url);
+  }
+  return (
+    <div className="grid gap-2 md:col-span-4">
+      <input type="hidden" name="image" value={image} />
+      {image ? <p className="truncate text-sm text-muted">{image}</p> : <p className="text-sm text-muted">No image yet. Saving without one creates a catalogue image.</p>}
+      <label className={labelClass}>Category image
+        <input type="file" accept="image/png,image/jpeg,image/webp" onChange={upload} className="block text-sm" />
+      </label>
+      {error ? <p className="text-sm">{error}</p> : null}
+    </div>
+  );
+}
 
 export function CategoryManager({ categories }: { categories: Category[] }) {
   const [message, setMessage] = useState("");
@@ -18,7 +47,7 @@ export function CategoryManager({ categories }: { categories: Category[] }) {
         name: form.get("name"),
         slug: slugify(String(form.get("slug") || form.get("name") || "")),
         description: form.get("description") || "",
-        image: "",
+        image: String(form.get("image") || ""),
         sortOrder: Number(form.get("sortOrder") || 0),
       }),
     });
@@ -35,6 +64,7 @@ export function CategoryManager({ categories }: { categories: Category[] }) {
           <input name="sortOrder" type="number" defaultValue={category.sortOrder} className={fieldClass} aria-label="Sort order" />
           <button className={buttonClass("outline")}>Update</button>
           <input name="description" defaultValue={category.description} className={`${fieldClass} md:col-span-4`} aria-label="Description" />
+          <CategoryImageField initial={category.image} />
         </form>
       ))}
       <form onSubmit={(event) => save(event)} className="grid max-w-xl gap-2">
@@ -43,6 +73,7 @@ export function CategoryManager({ categories }: { categories: Category[] }) {
         <label className={labelClass}>Slug<input name="slug" required className={fieldClass} /></label>
         <label className={labelClass}>Description<input name="description" className={fieldClass} /></label>
         <label className={labelClass}>Sort order<input name="sortOrder" type="number" defaultValue={categories.length + 1} className={fieldClass} /></label>
+        <CategoryImageField initial="" />
         <button className={buttonClass("primary")}>Add category</button>
       </form>
       {message ? <p className="text-sm">{message}</p> : null}
