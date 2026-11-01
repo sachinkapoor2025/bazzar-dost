@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { saveCategory } from "@/lib/admin-catalog";
 import { requireAdmin } from "@/lib/auth";
-import { prisma } from "@/lib/db";
+import { api } from "@/lib/backend";
 import { errorResponse } from "@/lib/http";
 
 export async function PATCH(request: Request, context: { params: Promise<{ id: string }> }) {
@@ -19,9 +19,7 @@ export async function DELETE(_request: Request, context: { params: Promise<{ id:
   try {
     await requireAdmin();
     const { id } = await context.params;
-    const count = await prisma.product.count({ where: { categoryId: id } });
-    if (count > 0) return NextResponse.json({ error: "Move or archive the products in this category before deleting it." }, { status: 400 });
-    await prisma.category.delete({ where: { id } });
+    await api(`/admin/categories/${encodeURIComponent(id)}`, { method: "DELETE" });
     return NextResponse.json({ ok: true });
   } catch (error) {
     return errorResponse(error);

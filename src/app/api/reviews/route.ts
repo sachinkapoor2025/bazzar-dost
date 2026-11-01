@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/db";
+import { api } from "@/lib/backend";
 import { cleanText } from "@/lib/format";
 import { errorResponse } from "@/lib/http";
 import { rateLimit } from "@/lib/rate-limit";
@@ -12,19 +12,10 @@ export async function POST(request: Request) {
     }
     const body = reviewSchema.parse(await request.json());
     if (body.website) return NextResponse.json({ message: "Review saved." });
-    const review = await prisma.review.create({
-      data: {
-        name: cleanText(body.name, 60),
-        city: cleanText(body.city, 40),
-        rating: body.rating,
-        comment: cleanText(body.comment, 600),
-      },
-      select: { id: true, name: true, city: true, rating: true, comment: true, createdAt: true },
+    const review = await api<{ id: string; name: string; city: string; rating: number; comment: string; createdAt: string }>("/reviews", {
+      body: { name: cleanText(body.name, 60), city: cleanText(body.city, 40), rating: body.rating, comment: cleanText(body.comment, 600) },
     });
-    return NextResponse.json({
-      message: "Review saved. It is now on the homepage.",
-      review: { ...review, createdAt: review.createdAt.toISOString() },
-    });
+    return NextResponse.json({ message: "Review saved. It is now on the homepage.", review });
   } catch (error) {
     return errorResponse(error);
   }

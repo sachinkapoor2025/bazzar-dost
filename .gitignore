@@ -16,6 +16,8 @@ prisma/*.db
 prisma/*.db-journal
 
 public/uploads
+.aws-sam
+apps/api/dist
 
 *.log
 npm-debug.log*

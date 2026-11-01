@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/db";
+import { api } from "@/lib/backend";
 
 export async function POST(_request: Request, context: { params: Promise<{ slug: string }> }) {
   const { slug } = await context.params;
-  await prisma.product.updateMany({ where: { slug, isActive: true }, data: { viewCount: { increment: 1 } } });
+  await api(`/products/${encodeURIComponent(slug)}/view`, { method: "POST", body: {} });
   return NextResponse.json({ ok: true });
 }

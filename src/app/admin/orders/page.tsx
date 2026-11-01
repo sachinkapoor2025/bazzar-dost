@@ -1,9 +1,9 @@
 import Link from "next/link";
-import { prisma } from "@/lib/db";
+import { api } from "@/lib/backend";
 import { formatDate, formatINR } from "@/lib/format";
 
 export default async function AdminOrdersPage() {
-  const orders = await prisma.order.findMany({ orderBy: { createdAt: "desc" }, take: 100 });
+  const orders = await api<Array<{ id: string; orderNumber: string; createdAt: string; name: string; email: string; status: string; paymentStatus: string; total: number }>>("/admin/orders");
   return (
     <div>
       <h1 className="font-display text-4xl">Orders</h1>

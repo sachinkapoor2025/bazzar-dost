@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { api } from "@/lib/backend";
 import { getCurrentUser } from "@/lib/auth";
-import { prisma } from "@/lib/db";
 import { formatDate, formatINR } from "@/lib/format";
 
 export const metadata: Metadata = { title: "My account", robots: { index: false, follow: false } };
@@ -10,7 +10,7 @@ export const metadata: Metadata = { title: "My account", robots: { index: false,
 export default async function AccountPage() {
   const user = await getCurrentUser();
   if (!user) redirect("/login?next=/account");
-  const orders = await prisma.order.findMany({ where: { userId: user.id }, orderBy: { createdAt: "desc" }, take: 5 });
+  const orders = (await api<Array<{ id: string; orderNumber: string; createdAt: string; status: string; total: number }>>("/account/orders")).slice(0, 5);
   return (
     <div>
       <h1 className="font-display text-4xl">My account</h1>

@@ -6,36 +6,32 @@ Tagline: Discover More. Shop Smart. Grow Together.
 
 ## Stack
 
-- Next.js (App Router) and React
-- TypeScript and Tailwind CSS
-- Prisma with PostgreSQL
-- Email/password accounts with a hashed password and an httpOnly session cookie
-- Amazon S3 for product and category images in production
+- Next.js storefront on AWS Amplify (WEB_COMPUTE)
+- AWS Lambda and API Gateway for the API in `apps/api`
+- DynamoDB tables named `bazaardost-products`, `bazaardost-orders`, `bazaardost-carts`, `bazaardost-customers`, `bazaardost-events`, and `bazaardost-config`
+- S3 and CloudFront for new product images
+- Cognito user pool in the same stack, for the same account model as the other shops
+- Email/password accounts stored in the customers table, with an httpOnly session cookie
 
-Checkout does not use a payment provider. Orders are cash on delivery.
+Checkout does not use a payment provider. Orders are cash on delivery. This stack does not use the UsaRakhi, BlossomPot, or SpicyCenter tables.
 
 ## Setup
 
-1. Create an empty PostgreSQL database. Amplify Hosting cannot reach a database that is private to a VPC, so the host used in production must accept TLS connections from the internet.
-2. Copy `.env.example` to `.env`.
-3. Set `DATABASE_URL` to that database.
-4. Set `SESSION_SECRET` to a random string of at least 32 characters.
-5. Set `ADMIN_EMAIL` and `ADMIN_PASSWORD` if you want an admin account. The password is only read when the database is seeded, and it is stored as a hash.
-6. Install and prepare the database:
+1. Copy `.env.example` to `.env`.
+2. Set `SESSION_SECRET` to a random string of at least 32 characters.
+3. Set `ADMIN_EMAIL` and `ADMIN_PASSWORD` if you want an admin account. The API creates it on startup when the email is new.
+4. Install and start the API and the site:
 
 ```bash
 npm install
-npm run db:setup
-npm run dev
+npm run dev:all
 ```
 
-Open http://localhost:3000.
+Open http://localhost:3000. The API listens on http://127.0.0.1:4000 and uses an in-memory catalogue until `USE_MEMORY_DB` is turned off.
 
-`npm run db:setup` applies the committed PostgreSQL migration and, only when the product table is empty, loads a starter catalogue. Running it again does not overwrite products, categories, orders, or accounts that already exist.
+`npm run db:up` starts DynamoDB Local. `npm run db:setup` creates the empty `bazaardost-*` tables there. Point `DYNAMODB_ENDPOINT` at it and set `USE_MEMORY_DB=false` before starting the API when you want that local database.
 
-The old SQLite file is not opened by this schema and is not copied automatically. Leave `prisma/dev.db` in place if you still want that file, then seed the empty PostgreSQL database.
-
-Local development can leave the S3 variables unset. Admin uploads then stay under `public/uploads`, and generated catalogue art stays under `public/media`. Production refuses those disk writes and requires S3.
+Local admin uploads stay under `public/uploads`. Production uploads go through the Lambda API into this stack's S3 bucket and are read from its CloudFront domain.
 
 ## What the shop actually does
 
@@ -59,56 +55,39 @@ Sign in with the admin account and open `/admin`. From there you can edit produc
 ## Scripts
 
 - `npm run dev` — local site
-- `npm run build` — production build
-- `npm test` — price, shipping, and coupon calculations
+- `npm run dev:api` — local Lambda-style API
+- `npm run dev:all` — API and site together
+- `npm run build` — production storefront build
+- `npm test` — price rules and the in-memory order flow
 - `npm run lint` — Next.js lint
-- `npm run db:migrate` — apply the committed PostgreSQL migration
-- `npm run db:setup` — apply the migration and seed when the catalogue is empty
+- `npm run db:up` / `npm run db:down` — DynamoDB Local
+- `npm run db:setup` — create empty local `bazaardost-*` tables
 
-## AWS Amplify Hosting
+## AWS Amplify and the API stack
 
-Deploy this app as Next.js SSR. The Amplify app platform must be **WEB_COMPUTE**. Static hosting (platform `WEB`) cannot serve the API routes, middleware, or server pages. A static app publishes to Amazon S3 and shows Amplify’s default “Your app will appear here once you complete your first deployment” page, because a Next.js server build does not put `index.html` at the root of `.next`.
+Deploy the storefront as Next.js SSR. The Amplify app platform must be **WEB_COMPUTE**. Static hosting (platform `WEB`) cannot serve the shop pages. Do not set the build output to an `out` directory.
 
-Deploy branch `main`. The repository build spec publishes the Next.js server output from `.next`. The Amplify app platform still has to be set to WEB_COMPUTE in the console. Static hosting keeps showing the default S3 placeholder.
+The repository `amplify.yml` builds only the storefront:
 
-Do not set the build output to an `out` directory, and do not run `npm start` or `npm run db:setup` in the Amplify build.
-
-The repository `amplify.yml` is the build spec:
-
-- Node.js 20 (`.nvmrc`, then `nvm install 20` and `nvm use 20`)
-- Install: `npm ci` (this runs `prisma generate`)
-- Build: `npx prisma migrate deploy`, then `npm run build` with `NEXT_PUBLIC_SITE_URL=https://bazaardost.com`
+- Node.js 22
+- `npm ci`, then `npm run build` with `NEXT_PUBLIC_SITE_URL=https://bazaardost.com`
 - Artifacts: `.next`
-- Cache: `node_modules/**/*` and `.next/cache/**/*`
 
-The app root in Amplify must be the repository root, where `package.json` and `amplify.yml` live.
+The app root in Amplify is the repository root. The API is not part of the Amplify build. Deploy it with SAM from `infrastructure/template.yaml` when you are ready to create the BazaarDost resources. That creates the Lambda, HTTP API, DynamoDB tables, private S3 bucket, CloudFront distribution, and Cognito user pool. It does not create a PostgreSQL database and it does not attach to another shop.
 
-Set these environment variables in the Amplify console before the build, for the `main` branch. `npx prisma migrate deploy` connects to PostgreSQL during the build, so the database must already exist and be reachable from the build environment.
+The first API request loads the starter catalogue when the products table is empty, and creates the admin account when `ADMIN_EMAIL` and `ADMIN_PASSWORD` are set on the Lambda. Later requests leave existing products and accounts in place.
 
-Required:
+Amplify environment variables for branch `main`:
 
-- `DATABASE_URL`
-- `SESSION_SECRET`
+- `API_URL` — CloudFormation output `ApiUrl`
+- `SESSION_SECRET` — the same secret passed to the SAM stack
 - `NEXT_PUBLIC_SITE_URL` = `https://bazaardost.com`
-- `AWS_REGION`
-- `AWS_S3_BUCKET`
+- `NEXT_PUBLIC_CDN_URL` — CloudFormation output `CloudFrontUrl`
+- `NEXT_PUBLIC_COGNITO_USER_POOL_ID`, `NEXT_PUBLIC_COGNITO_CLIENT_ID`, and `NEXT_PUBLIC_COGNITO_REGION`
 
-`NEXT_PUBLIC_SITE_URL` is the public site origin for canonical links, the sitemap, Open Graph, and password-reset emails. Production code uses `https://bazaardost.com` even if this variable is left on localhost or an `amplifyapp.com` hostname. Set it to the custom domain anyway, then redeploy, because Next.js inlines `NEXT_PUBLIC_*` values at build time. Do not set it to `https://main.d160fo98boktnf.amplifyapp.com`.
+Shop pages still call same-origin `/api/*`. Those routes call `API_URL`. The login cookie stays on the storefront. Cognito is created with the stack so admin access can later use the `admin` group, the same way the other shops do. Current sign-in uses the customers table.
 
-`AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` are required unless the Amplify SSR compute role is allowed to write to the bucket. `AWS_S3_PUBLIC_BASE_URL` is optional and is only for a CloudFront origin.
-
-Optional application settings: `NEXT_PUBLIC_SUPPORT_EMAIL`, `NEXT_PUBLIC_SOCIAL_INSTAGRAM`, `NEXT_PUBLIC_SOCIAL_FACEBOOK`, `NEXT_PUBLIC_SOCIAL_YOUTUBE`, `ADMIN_EMAIL`, `ADMIN_PASSWORD`, `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD`, and `SMTP_FROM`.
-
-There is no separate API host, payment provider, or OAuth callback URL. Pages call `/api/*` on the same origin. The login cookie is host-only and is marked `Secure` in production. Password reset links are built from the production site URL.
-
-Create these resources yourself before deploying:
-
-- Amazon RDS for PostgreSQL or Aurora PostgreSQL, with an empty database and TLS. Use a security group that allows port 5432 from Amplify. A private-only instance will not connect.
-- An S3 bucket in `AWS_REGION`. Keep ACLs disabled. Allow public `s3:GetObject` with a bucket policy so product and category images can load in the browser. The app uploads with `s3:PutObject` and does not set an object ACL.
-- An IAM user, or an Amplify SSR compute role, with `s3:PutObject` and `s3:GetObject` on that bucket.
-- An Amplify service role so Hosting compute can write logs. App settings → General → Service role.
-
-Starter catalogue images already in `public/media` ship with the app. New admin uploads and newly generated catalogue images are stored in the bucket and saved as public HTTPS URLs. Login rate limits stay in process memory, so on Amplify they apply to each server instance separately. No payment API key is required.
+Starter catalogue images in `public/media` ship with the site. New production uploads are stored by the Lambda in this stack's bucket.
 
 ### Custom domain
 

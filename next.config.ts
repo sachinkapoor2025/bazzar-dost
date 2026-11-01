@@ -9,8 +9,8 @@ function imageHosts(): Array<{ protocol: "https"; hostname: string }> {
     const hostname = `${bucket}.s3.${region}.amazonaws.com`;
     hosts.set(hostname, { protocol: "https", hostname });
   }
-  const base = process.env.AWS_S3_PUBLIC_BASE_URL;
-  if (base) {
+  for (const base of [process.env.AWS_S3_PUBLIC_BASE_URL, process.env.NEXT_PUBLIC_CDN_URL]) {
+    if (!base) continue;
     try {
       const hostname = new URL(base).hostname;
       hosts.set(hostname, { protocol: "https", hostname });

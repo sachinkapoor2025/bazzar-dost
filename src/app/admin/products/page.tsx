@@ -1,9 +1,9 @@
 import Link from "next/link";
-import { prisma } from "@/lib/db";
+import { api } from "@/lib/backend";
 import { formatINR } from "@/lib/format";
 
 export default async function AdminProductsPage() {
-  const products = await prisma.product.findMany({ include: { category: true, variants: true }, orderBy: { name: "asc" } });
+  const products = await api<Array<{ id: string; name: string; price: number; compareAtPrice: number | null; stock: number; isActive: boolean; variants: Array<{ stock: number }>; category: { name: string } }>>("/admin/products");
   return (
     <div>
       <div className="flex items-center justify-between gap-3">

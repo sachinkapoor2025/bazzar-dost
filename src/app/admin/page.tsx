@@ -1,15 +1,10 @@
 import Link from "next/link";
-import { prisma } from "@/lib/db";
+import { api } from "@/lib/backend";
 import { formatINR } from "@/lib/format";
 
 export default async function AdminHomePage() {
-  const [products, orders, inquiries, lowStock] = await Promise.all([
-    prisma.product.count(),
-    prisma.order.count(),
-    prisma.inquiry.count({ where: { status: "new", type: { not: "newsletter" } } }),
-    prisma.product.count({ where: { isActive: true, variants: { none: {} }, stock: { lte: 5 } } }),
-  ]);
-  const recent = await prisma.order.findMany({ orderBy: { createdAt: "desc" }, take: 6 });
+  const data = await api<{ products: number; orders: number; inquiries: number; lowStock: number; recent: Array<{ id: string; orderNumber: string; status: string; total: number }> }>("/admin/dashboard");
+  const { products, orders, inquiries, lowStock, recent } = data;
   return (
     <div>
       <h1 className="font-display text-4xl">Store admin</h1>

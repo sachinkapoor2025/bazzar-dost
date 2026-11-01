@@ -1,8 +1,8 @@
 import { PromotionManager } from "@/components/promo-forms";
-import { prisma } from "@/lib/db";
+import { api } from "@/lib/backend";
 
 export default async function PromotionsPage() {
-  const items = await prisma.promotion.findMany({ orderBy: { createdAt: "desc" } });
+  const items = await api<Array<{ id: string; title: string; message: string; href: string; kind: string; active: boolean }>>("/admin/promotions");
   return (
     <div>
       <h1 className="mb-2 font-display text-4xl">Promotions</h1>

@@ -2,6 +2,7 @@ import crypto from "node:crypto";
 import fs from "node:fs/promises";
 import path from "node:path";
 import { NextResponse } from "next/server";
+import { api } from "@/lib/backend";
 import { requireAdmin } from "@/lib/auth";
 import { errorResponse } from "@/lib/http";
 import { s3Configured, uploadPublicObject } from "@/lib/storage";
@@ -30,12 +31,15 @@ export async function POST(request: Request) {
     const extension = kind(buffer);
     if (!extension) return NextResponse.json({ error: "Upload a PNG, JPEG, or WebP image." }, { status: 400 });
     const filename = `${crypto.randomBytes(12).toString("hex")}.${extension}`;
+    if (process.env.NODE_ENV === "production") {
+      const uploaded = await api<{ url: string }>("/admin/upload", {
+        body: { bodyBase64: buffer.toString("base64"), extension, contentType: contentTypes[extension] },
+      });
+      return NextResponse.json(uploaded);
+    }
     if (s3Configured()) {
       const url = await uploadPublicObject(`uploads/${filename}`, buffer, contentTypes[extension]);
       return NextResponse.json({ url });
-    }
-    if (process.env.NODE_ENV === "production") {
-      return NextResponse.json({ error: "Image storage is not configured." }, { status: 500 });
     }
     const dir = path.join(process.cwd(), "public", "uploads");
     await fs.mkdir(dir, { recursive: true });

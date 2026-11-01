@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
+import { api } from "@/lib/backend";
 import { requireAdmin } from "@/lib/auth";
-import { prisma } from "@/lib/db";
 import { errorResponse } from "@/lib/http";
 import { couponSchema } from "@/lib/validators";
 
@@ -8,17 +8,10 @@ export async function PATCH(request: Request, context: { params: Promise<{ id: s
   try {
     await requireAdmin();
     const body = couponSchema.parse(await request.json());
-    await prisma.coupon.update({
-      where: { id: (await context.params).id },
-      data: {
-        code: body.code.toUpperCase(),
-        type: body.type,
-        value: body.value,
-        minSubtotal: body.minSubtotal,
-        active: body.active,
-        note: body.note || "",
-        expiresAt: body.expiresAt ? new Date(body.expiresAt) : null,
-      },
+    const { id } = await context.params;
+    await api(`/admin/coupons/${encodeURIComponent(id)}`, {
+      method: "PATCH",
+      body: { ...body, code: body.code.toUpperCase(), expiresAt: body.expiresAt || null },
     });
     return NextResponse.json({ ok: true });
   } catch (error) {

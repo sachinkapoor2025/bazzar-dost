@@ -1,9 +1,9 @@
 import { CouponManager } from "@/components/promo-forms";
 import { CouponRow } from "@/components/coupon-row";
-import { prisma } from "@/lib/db";
+import { api } from "@/lib/backend";
 
 export default async function CouponsPage() {
-  const coupons = await prisma.coupon.findMany({ orderBy: { code: "asc" } });
+  const coupons = await api<Array<{ id: string; code: string; type: string; value: number; minSubtotal: number; active: boolean; note: string }>>("/admin/coupons");
   return (
     <div>
       <h1 className="font-display text-4xl">Coupons</h1>

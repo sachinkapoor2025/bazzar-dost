@@ -1,15 +1,12 @@
 import { notFound } from "next/navigation";
 import { ProductForm, type ProductFormValue } from "@/components/product-form";
-import { parseSpecs } from "@/lib/catalog";
-import { prisma } from "@/lib/db";
+import { api } from "@/lib/backend";
+import { parseSpecs, type ProductRecord } from "@/lib/catalog";
 
 export default async function EditProductPage({ params }: { params: Promise<{ id: string }> }) {
-  const product = await prisma.product.findUnique({
-    where: { id: (await params).id },
-    include: { images: { orderBy: { sortOrder: "asc" } }, variants: true },
-  });
+  const product = await api<ProductRecord>(`/admin/products/${encodeURIComponent((await params).id)}`).catch(() => null);
   if (!product) notFound();
-  const categories = await prisma.category.findMany({ orderBy: { sortOrder: "asc" } });
+  const categories = await api<Array<{ id: string; name: string }>>("/admin/categories");
   const initial: ProductFormValue = {
     id: product.id,
     name: product.name,

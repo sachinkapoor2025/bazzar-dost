@@ -1,8 +1,7 @@
 import "server-only";
 import { cookies } from "next/headers";
-import { SignJWT, jwtVerify } from "jose";
-import bcrypt from "bcryptjs";
-import { prisma } from "@/lib/db";
+import { SignJWT } from "jose";
+import { api } from "@/lib/backend";
 import { getSessionSecret, SESSION_COOKIE } from "@/lib/secret";
 import type { PublicUser } from "@/lib/types";
 
@@ -13,14 +12,6 @@ const cookieOptions = {
   path: "/",
   maxAge: 60 * 60 * 24 * 14,
 };
-
-export async function hashPassword(password: string): Promise<string> {
-  return bcrypt.hash(password, 12);
-}
-
-export async function verifyPassword(password: string, hash: string): Promise<boolean> {
-  return bcrypt.compare(password, hash);
-}
 
 export async function signSession(userId: string): Promise<string | null> {
   const secret = getSessionSecret();
@@ -47,16 +38,9 @@ export async function getCurrentUser(): Promise<PublicUser | null> {
   const secret = getSessionSecret();
   if (!secret) return null;
   const jar = await cookies();
-  const token = jar.get(SESSION_COOKIE)?.value;
-  if (!token) return null;
+  if (!jar.get(SESSION_COOKIE)?.value) return null;
   try {
-    const { payload } = await jwtVerify(token, secret);
-    if (!payload.sub) return null;
-    const user = await prisma.user.findUnique({
-      where: { id: payload.sub },
-      select: { id: true, email: true, name: true, phone: true, role: true },
-    });
-    return user;
+    return await api<PublicUser>("/auth/me");
   } catch {
     return null;
   }

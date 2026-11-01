@@ -2,19 +2,23 @@
   "name": "bazaardost",
   "version": "0.1.0",
   "private": true,
+  "workspaces": [
+    "apps/*"
+  ],
   "scripts": {
     "dev": "next dev",
+    "dev:api": "npm run dev -w @bazaardost/api",
+    "dev:all": "concurrently -n api,web -c blue,green \"npm run dev:api\" \"npm run dev\"",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "test": "node --import tsx --test tests/commerce.test.ts tests/site.test.ts",
-    "db:migrate": "prisma migrate deploy",
-    "db:setup": "prisma migrate deploy && tsx prisma/seed.ts",
-    "postinstall": "prisma generate"
+    "test": "node --import tsx --test tests/commerce.test.ts tests/site.test.ts apps/api/src/store.test.ts",
+    "db:up": "docker compose up -d",
+    "db:down": "docker compose down",
+    "db:setup": "tsx apps/api/src/setup-local-db.ts"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1161.0",
-    "@prisma/client": "^6.16.2",
     "bcryptjs": "^2.4.3",
     "jose": "^6.1.0",
     "next": "^15.5.4",
@@ -32,10 +36,10 @@
     "@types/react": "^19.1.13",
     "@types/react-dom": "^19.1.9",
     "autoprefixer": "^10.4.21",
+    "concurrently": "^9.1.2",
     "eslint": "^9.36.0",
     "eslint-config-next": "^15.5.4",
     "postcss": "^8.5.6",
-    "prisma": "^6.16.2",
     "tailwindcss": "^3.4.17",
     "tsx": "^4.20.5",
     "typescript": "^5.9.2"

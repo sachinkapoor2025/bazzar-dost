@@ -1,19 +1,8 @@
-import { prisma } from "@/lib/db";
+import { api } from "@/lib/backend";
 import { formatDate } from "@/lib/format";
 
 export default async function AdminCustomersPage() {
-  const customers = await prisma.user.findMany({
-    orderBy: { createdAt: "desc" },
-    select: {
-      id: true,
-      name: true,
-      email: true,
-      phone: true,
-      role: true,
-      createdAt: true,
-      _count: { select: { orders: true } },
-    },
-  });
+  const customers = await api<Array<{ id: string; name: string; email: string; phone: string; role: string; createdAt: string; _count: { orders: number } }>>("/admin/customers");
 
   return (
     <div>

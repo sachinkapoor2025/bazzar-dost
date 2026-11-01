@@ -1,13 +1,13 @@
 import "server-only";
 import fs from "node:fs";
 import path from "node:path";
-import { prisma, isUniqueConstraint } from "@/lib/db";
+import { ApiError, api } from "@/lib/backend";
 import { productSvg, categorySvg } from "@/lib/art";
 import { productSchema, categorySchema } from "@/lib/validators";
 import { s3Configured, uploadPublicObject } from "@/lib/storage";
 
 function storageRequired(): void {
-  if (process.env.NODE_ENV === "production" && !s3Configured()) {
+  if (process.env.NODE_ENV === "production" && !process.env.API_URL && !process.env.NEXT_PUBLIC_API_URL) {
     const error = new Error("Image storage is not configured.");
     (error as Error & { status?: number }).status = 500;
     throw error;
@@ -16,6 +16,12 @@ function storageRequired(): void {
 
 export async function ensureProductArt(slug: string, name: string): Promise<string> {
   storageRequired();
+  if (process.env.NODE_ENV === "production") {
+    const uploaded = await api<{ url: string }>("/admin/upload", {
+      body: { bodyBase64: Buffer.from(productSvg(name)).toString("base64"), extension: "svg", contentType: "image/svg+xml" },
+    });
+    return uploaded.url;
+  }
   if (s3Configured()) {
     return uploadPublicObject(
       `media/products/${slug}.svg`,
@@ -33,6 +39,12 @@ export async function ensureProductArt(slug: string, name: string): Promise<stri
 
 export async function ensureCategoryArt(slug: string, name: string): Promise<string> {
   storageRequired();
+  if (process.env.NODE_ENV === "production") {
+    const uploaded = await api<{ url: string }>("/admin/upload", {
+      body: { bodyBase64: Buffer.from(categorySvg(name)).toString("base64"), extension: "svg", contentType: "image/svg+xml" },
+    });
+    return uploaded.url;
+  }
   if (s3Configured()) {
     return uploadPublicObject(
       `media/categories/${slug}.svg`,
@@ -76,27 +88,18 @@ export async function saveProduct(input: unknown, id?: string) {
     wholesalePrice: parsed.wholesaleEligible ? parsed.wholesalePrice ?? null : null,
   };
   try {
-    if (!id) {
-      return await prisma.product.create({
-        data: {
-          ...data,
-          images: { create: images },
-          variants: { create: parsed.variants.map((variant) => ({ name: variant.name, sku: variant.sku, price: variant.price ?? null, stock: variant.stock })) },
-        },
-      });
-    }
-    return await prisma.product.update({
-      where: { id },
-      data: {
+    return await api<{ id: string }>(id ? `/admin/products/${id}` : "/admin/products", {
+      method: id ? "PATCH" : "POST",
+      body: {
         ...data,
-        images: { deleteMany: {}, create: images },
-        variants: { deleteMany: {}, create: parsed.variants.map((variant) => ({ name: variant.name, sku: variant.sku, price: variant.price ?? null, stock: variant.stock })) },
+        images,
+        variants: parsed.variants.map((variant) => ({ name: variant.name, sku: variant.sku, price: variant.price ?? null, stock: variant.stock })),
       },
     });
   } catch (error) {
-    if (isUniqueConstraint(error)) {
-      const failure = new Error("That slug or SKU is already used.");
-      (failure as Error & { status?: number }).status = 400;
+    if (error instanceof ApiError) {
+      const failure = new Error(error.message);
+      (failure as Error & { status?: number }).status = error.status;
       throw failure;
     }
     throw error;
@@ -107,12 +110,14 @@ export async function saveCategory(input: unknown, id?: string) {
   const parsed = categorySchema.parse(input);
   const image = parsed.image || await ensureCategoryArt(parsed.slug, parsed.name);
   try {
-    if (!id) return await prisma.category.create({ data: { ...parsed, image } });
-    return await prisma.category.update({ where: { id }, data: { ...parsed, image } });
+    return await api<{ id: string }>(id ? `/admin/categories/${id}` : "/admin/categories", {
+      method: id ? "PATCH" : "POST",
+      body: { ...parsed, image },
+    });
   } catch (error) {
-    if (isUniqueConstraint(error)) {
-      const failure = new Error("That category slug is already used.");
-      (failure as Error & { status?: number }).status = 400;
+    if (error instanceof ApiError) {
+      const failure = new Error(error.message);
+      (failure as Error & { status?: number }).status = error.status;
       throw failure;
     }
     throw error;

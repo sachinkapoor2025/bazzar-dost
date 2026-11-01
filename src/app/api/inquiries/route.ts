@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/db";
+import { api } from "@/lib/backend";
 import { errorResponse } from "@/lib/http";
 import { rateLimit } from "@/lib/rate-limit";
 import { cleanText } from "@/lib/format";
@@ -11,8 +11,8 @@ export async function POST(request: Request) {
     if (!rateLimit("inquiry", 30, 60 * 60 * 1000)) return NextResponse.json({ error: "Too many messages. Try again later." }, { status: 429 });
     if (json.type === "wholesale") {
       const body = wholesaleSchema.parse(json);
-      await prisma.inquiry.create({
-        data: {
+      await api("/inquiries", {
+        body: {
           type: "wholesale",
           name: cleanText(body.name, 80),
           business: cleanText(body.business, 120),
@@ -27,8 +27,8 @@ export async function POST(request: Request) {
       return NextResponse.json({ message: "Enquiry saved. The store will review it. This did not create an order or reserve stock." });
     }
     const body = contactSchema.parse(json);
-    await prisma.inquiry.create({
-      data: {
+    await api("/inquiries", {
+      body: {
         type: "contact",
         name: cleanText(body.name, 80),
         email: body.email.toLowerCase(),

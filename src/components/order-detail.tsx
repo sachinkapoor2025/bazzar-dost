@@ -27,13 +27,13 @@ export type OrderView = {
   items: Array<{ id: string; name: string; sku: string; qty: number; unitPrice: number; image: string }>;
 };
 
-export function toOrderView(order: Omit<OrderView, "createdAt"> & { createdAt: Date }): OrderView {
+export function toOrderView(order: Omit<OrderView, "createdAt"> & { createdAt: Date | string }): OrderView {
   return {
     orderNumber: order.orderNumber,
     status: order.status,
     paymentMethod: order.paymentMethod,
     paymentStatus: order.paymentStatus,
-    createdAt: order.createdAt.toISOString(),
+    createdAt: new Date(order.createdAt).toISOString(),
     subtotal: order.subtotal,
     discount: order.discount,
     shipping: order.shipping,
