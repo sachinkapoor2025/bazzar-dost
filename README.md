@@ -67,34 +67,64 @@ Sign in with the admin account and open `/admin`. From there you can edit produc
 
 ## AWS Amplify Hosting
 
-Deploy this app as Next.js SSR (WEB_COMPUTE). Static hosting cannot serve the API routes. Do not set the build output to an `out` directory, and do not run `npm start` or `npm run db:setup` in the Amplify build.
+Deploy this app as Next.js SSR. The Amplify app platform must be **WEB_COMPUTE**. Static hosting (platform `WEB`) cannot serve the API routes, middleware, or server pages. A static app publishes to Amazon S3 and shows Amplify’s default “Your app will appear here once you complete your first deployment” page, because a Next.js server build does not put `index.html` at the root of `.next`.
+
+Deploy branch `main`. The repository build spec publishes the Next.js server output from `.next`. The Amplify app platform still has to be set to WEB_COMPUTE in the console. Static hosting keeps showing the default S3 placeholder.
+
+Do not set the build output to an `out` directory, and do not run `npm start` or `npm run db:setup` in the Amplify build.
 
 The repository `amplify.yml` is the build spec:
 
-- Node.js 20 (`nvm use 20`)
+- Node.js 20 (`.nvmrc`, then `nvm install 20` and `nvm use 20`)
 - Install: `npm ci` (this runs `prisma generate`)
-- Build: `npx prisma migrate deploy`, then `npm run build`
+- Build: `npx prisma migrate deploy`, then `npm run build` with `NEXT_PUBLIC_SITE_URL=https://bazaardost.com`
 - Artifacts: `.next`
 - Cache: `node_modules/**/*` and `.next/cache/**/*`
 
-Set these environment variables in the Amplify console before the first build. `NEXT_PUBLIC_SITE_URL` is inlined at build time. `npx prisma migrate deploy` connects to PostgreSQL during the build, so the database must already exist and be reachable.
+The app root in Amplify must be the repository root, where `package.json` and `amplify.yml` live.
+
+Set these environment variables in the Amplify console before the build, for the `main` branch. `npx prisma migrate deploy` connects to PostgreSQL during the build, so the database must already exist and be reachable from the build environment.
 
 Required:
 
 - `DATABASE_URL`
 - `SESSION_SECRET`
-- `NEXT_PUBLIC_SITE_URL`
+- `NEXT_PUBLIC_SITE_URL` = `https://bazaardost.com`
 - `AWS_REGION`
 - `AWS_S3_BUCKET`
+
+`NEXT_PUBLIC_SITE_URL` is the public site origin for canonical links, the sitemap, Open Graph, and password-reset emails. Production code uses `https://bazaardost.com` even if this variable is left on localhost or an `amplifyapp.com` hostname. Set it to the custom domain anyway, then redeploy, because Next.js inlines `NEXT_PUBLIC_*` values at build time. Do not set it to `https://main.d160fo98boktnf.amplifyapp.com`.
 
 `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` are required unless the Amplify SSR compute role is allowed to write to the bucket. `AWS_S3_PUBLIC_BASE_URL` is optional and is only for a CloudFront origin.
 
 Optional application settings: `NEXT_PUBLIC_SUPPORT_EMAIL`, `NEXT_PUBLIC_SOCIAL_INSTAGRAM`, `NEXT_PUBLIC_SOCIAL_FACEBOOK`, `NEXT_PUBLIC_SOCIAL_YOUTUBE`, `ADMIN_EMAIL`, `ADMIN_PASSWORD`, `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD`, and `SMTP_FROM`.
+
+There is no separate API host, payment provider, or OAuth callback URL. Pages call `/api/*` on the same origin. The login cookie is host-only and is marked `Secure` in production. Password reset links are built from the production site URL.
 
 Create these resources yourself before deploying:
 
 - Amazon RDS for PostgreSQL or Aurora PostgreSQL, with an empty database and TLS. Use a security group that allows port 5432 from Amplify. A private-only instance will not connect.
 - An S3 bucket in `AWS_REGION`. Keep ACLs disabled. Allow public `s3:GetObject` with a bucket policy so product and category images can load in the browser. The app uploads with `s3:PutObject` and does not set an object ACL.
 - An IAM user, or an Amplify SSR compute role, with `s3:PutObject` and `s3:GetObject` on that bucket.
+- An Amplify service role so Hosting compute can write logs. App settings → General → Service role.
 
 Starter catalogue images already in `public/media` ship with the app. New admin uploads and newly generated catalogue images are stored in the bucket and saved as public HTTPS URLs. Login rate limits stay in process memory, so on Amplify they apply to each server instance separately. No payment API key is required.
+
+### Custom domain
+
+The primary URL is `https://bazaardost.com`. After this app is what serves the domain, `www.bazaardost.com` redirects there with HTTP 308. The `amplifyapp.com` hostname stays available so the shop can be checked before DNS changes. Do not change the Hostinger records until that check succeeds.
+
+Connecting the domain is done in the Amplify console and at the DNS host. Amplify’s default domain setup redirects the apex to `www`. Change that so the apex is the site and `www` redirects to the apex.
+
+1. In Amplify, open the app `d160fo98boktnf` → Hosting → Custom domains → Add domain.
+2. Enter `bazaardost.com`.
+3. If the domain is in Route 53 in the same account, let Amplify update the records. Otherwise choose manual configuration, or create a Route 53 hosted zone and set the registrar nameservers to the nameservers Amplify shows.
+4. Edit the subdomain mapping before you save it. Point the empty subdomain (the apex `bazaardost.com`) at the `main` branch. Set `www` to redirect to `https://bazaardost.com`. Remove the default redirect from the apex to `www`.
+5. Use the Amplify-managed certificate.
+6. Open Actions → View DNS records and copy those values. The certificate CNAME and the CloudFront target are created by Amplify. Do not invent them.
+7. At the DNS host, add the certificate-validation CNAME exactly as shown. Add the apex record as an ALIAS, ANAME, or flattened CNAME to the CloudFront hostname Amplify shows. If `www` is included, add its CNAME to that same target. Providers that cannot put an alias on the apex need Route 53 for `bazaardost.com`.
+8. On Cloudflare, leave the records DNS-only. An orange-cloud proxy breaks the Amplify certificate check.
+9. Wait until the Amplify domain status is Available. Certificate checks can take up to 48 hours and fail if the validation CNAME is added late.
+10. Redeploy `main` after `NEXT_PUBLIC_SITE_URL` is `https://bazaardost.com`.
+
+The domain is not live until public DNS returns the Amplify target and `https://bazaardost.com` serves the shop. The `amplifyapp.com` hostname is not the primary URL.
