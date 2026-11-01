@@ -18,7 +18,7 @@ test("local development keeps the configured localhost URL", () => {
 test("alias hosts redirect to the apex custom domain", () => {
   assert.equal(
     canonicalRedirectTarget(["main.d160fo98boktnf.amplifyapp.com"], "/shop", "?q=mug", "production"),
-    "https://bazaardost.com/shop?q=mug",
+    null,
   );
   assert.equal(
     canonicalRedirectTarget(["www.bazaardost.com"], "/login", "", "production"),

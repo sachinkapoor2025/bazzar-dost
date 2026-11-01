@@ -22,7 +22,7 @@ export function canonicalRedirectTarget(
   if (nodeEnv !== "production") return null;
   const names = hosts.map((host) => hostnameOf(host || "")).filter(Boolean);
   if (names.length === 0 || names.includes("bazaardost.com")) return null;
-  const alias = names.some((host) => host === "www.bazaardost.com" || host.endsWith(".amplifyapp.com"));
+  const alias = names.some((host) => host === "www.bazaardost.com");
   if (!alias) return null;
   const path = pathname.startsWith("/") ? pathname : `/${pathname}`;
   const query = search ? (search.startsWith("?") ? search : `?${search}`) : "";

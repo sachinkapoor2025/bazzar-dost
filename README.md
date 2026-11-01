@@ -69,7 +69,7 @@ Sign in with the admin account and open `/admin`. From there you can edit produc
 
 Deploy this app as Next.js SSR. The Amplify app platform must be **WEB_COMPUTE**. Static hosting (platform `WEB`) cannot serve the API routes, middleware, or server pages. A static app publishes to Amazon S3 and shows Amplify’s default “Your app will appear here once you complete your first deployment” page, because a Next.js server build does not put `index.html` at the root of `.next`.
 
-GitHub `main` does not yet contain `amplify.yml`. That branch still uses SQLite. The PostgreSQL schema, migration, and this build spec are on `dev`. Amplify will keep publishing the static placeholder until `dev` is merged into `main` and the app platform is WEB_COMPUTE.
+Deploy branch `main`. The repository build spec publishes the Next.js server output from `.next`. The Amplify app platform still has to be set to WEB_COMPUTE in the console. Static hosting keeps showing the default S3 placeholder.
 
 Do not set the build output to an `out` directory, and do not run `npm start` or `npm run db:setup` in the Amplify build.
 
@@ -112,7 +112,7 @@ Starter catalogue images already in `public/media` ship with the app. New admin 
 
 ### Custom domain
 
-The primary URL is `https://bazaardost.com`. `www.bazaardost.com` and the `amplifyapp.com` hostname redirect there with HTTP 308 after a production deploy. That redirect does not create DNS and does not make the domain resolve.
+The primary URL is `https://bazaardost.com`. After this app is what serves the domain, `www.bazaardost.com` redirects there with HTTP 308. The `amplifyapp.com` hostname stays available so the shop can be checked before DNS changes. Do not change the Hostinger records until that check succeeds.
 
 Connecting the domain is done in the Amplify console and at the DNS host. Amplify’s default domain setup redirects the apex to `www`. Change that so the apex is the site and `www` redirects to the apex.
 
