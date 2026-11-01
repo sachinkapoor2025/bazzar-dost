@@ -1,7 +1,23 @@
 import "server-only";
 import { api } from "@/lib/backend";
 import { parseRupee, priceBounds } from "@/lib/commerce";
+import {
+  localByIds,
+  localBySlugs,
+  localCategories,
+  localCategory,
+  localHome,
+  localProduct,
+  localQuery,
+  localRelated,
+  localTogether,
+  localWholesale,
+} from "@/lib/local-catalogue";
 import type { CategoryLink, ProductCardData, Spec, VariantData } from "@/lib/types";
+
+function remoteCatalogue(): boolean {
+  return Boolean(process.env.API_URL || process.env.NEXT_PUBLIC_API_URL);
+}
 
 export type ProductRecord = {
   id: string;
@@ -94,11 +110,12 @@ export type CatalogResult = {
 export async function searchCards(query: string, take = 6): Promise<ProductCardData[]> {
   const q = query.trim().slice(0, 80);
   if (q.length < 2) return [];
-  const result = await api<CatalogResult>("/catalog", { body: { q, take } });
+  const result = remoteCatalogue() ? await api<CatalogResult>("/catalog", { body: { q, take } }) : localQuery({ q, take });
   return result.items;
 }
 
 export async function queryCatalog(input: CatalogInput): Promise<CatalogResult> {
+  if (!remoteCatalogue()) return localQuery(input);
   return api<CatalogResult>("/catalog", { body: input });
 }
 
@@ -124,10 +141,12 @@ export function readCatalogQuery(raw: Record<string, string | string[] | undefin
 }
 
 export async function getCategories(scope: "top" | "all" = "top"): Promise<CategoryLink[]> {
+  if (!remoteCatalogue()) return localCategories(scope);
   return api<CategoryLink[]>(`/categories?scope=${scope}`);
 }
 
 export async function getCategory(slug: string) {
+  if (!remoteCatalogue()) return localCategory(slug);
   try {
     return await api<{
       name: string;
@@ -143,6 +162,7 @@ export async function getCategory(slug: string) {
 }
 
 export async function getProduct(slug: string): Promise<ProductRecord | null> {
+  if (!remoteCatalogue()) return localProduct(slug);
   try {
     return await api<ProductRecord>(`/products/${encodeURIComponent(slug)}`);
   } catch {
@@ -151,22 +171,27 @@ export async function getProduct(slug: string): Promise<ProductRecord | null> {
 }
 
 export async function boughtTogether(productId: string): Promise<ProductCardData[]> {
+  if (!remoteCatalogue()) return localTogether(productId);
   return api<ProductCardData[]>(`/bought-together/${encodeURIComponent(productId)}`);
 }
 
 export async function relatedProducts(categoryId: string, productId: string): Promise<ProductCardData[]> {
+  if (!remoteCatalogue()) return localRelated(categoryId, productId);
   return api<ProductCardData[]>(`/related/${encodeURIComponent(categoryId)}/${encodeURIComponent(productId)}`);
 }
 
 export async function getAnnouncement() {
+  if (!remoteCatalogue()) return localHome().announcement;
   return api<{ title: string; message: string; href: string } | null>("/announcement");
 }
 
 export async function cardsWhere(_where: unknown, take = 24, _orderBy?: unknown): Promise<ProductCardData[]> {
+  if (!remoteCatalogue()) return localWholesale(take);
   return api<ProductCardData[]>(`/wholesale?take=${take}`);
 }
 
 export async function getHomeData() {
+  if (!remoteCatalogue()) return localHome();
   return api<{
     categories: CategoryLink[];
     featured: ProductCardData[];
@@ -182,14 +207,17 @@ export async function getHomeData() {
 }
 
 export async function productsBySlugs(slugs: string[]): Promise<ProductCardData[]> {
+  if (!remoteCatalogue()) return localBySlugs(slugs);
   return api<ProductCardData[]>(`/products/by-slugs?slugs=${encodeURIComponent(slugs.join(","))}`);
 }
 
 export async function getReviews() {
+  if (!remoteCatalogue()) return [];
   return api<Array<{ id: string; name: string; city: string; rating: number; comment: string; createdAt: string }>>("/reviews");
 }
 
 export async function productsByIds(ids: string[]): Promise<ProductCardData[]> {
   if (ids.length === 0) return [];
+  if (!remoteCatalogue()) return localByIds(ids);
   return api<ProductCardData[]>(`/products/by-ids?ids=${encodeURIComponent(ids.join(","))}`);
 }
