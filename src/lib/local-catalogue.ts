@@ -10,9 +10,20 @@ import {
 } from "../../apps/api/src/lib/catalog-query";
 import type { Category, HydratedProduct } from "../../apps/api/src/lib/types";
 import { categories as starterCategories, products as starterProducts } from "../../apps/api/src/starter-catalog";
+import shopifyCatalogue from "@/data/shopify-catalogue.json";
 import { MAX_LINE_QTY, sellingPrice } from "@/lib/commerce";
 
 const builtAt = Date.now();
+
+function categoryView(category: Category, categories: Category[]): HydratedProduct["category"] {
+  const parent = category.parentId ? categories.find((item) => item.id === category.parentId) : undefined;
+  return {
+    id: category.id,
+    name: category.name,
+    slug: category.slug,
+    parent: parent ? { name: parent.name, slug: parent.slug } : null,
+  };
+}
 
 function buildCatalogue(): { categories: Category[]; products: HydratedProduct[] } {
   const categories: Category[] = starterCategories.map(([slug, name, description, sortOrder]) => ({
@@ -24,8 +35,23 @@ function buildCatalogue(): { categories: Category[]; products: HydratedProduct[]
     sortOrder,
     parentId: null,
   }));
-  const products = starterProducts.map((product) => {
-    const category = categories.find((item) => item.slug === product.category);
+  const bySlug = new Map(categories.map((category) => [category.slug, category]));
+  for (const extra of shopifyCatalogue.categories) {
+    if (bySlug.has(extra.slug)) continue;
+    const category: Category = {
+      id: `cat_${extra.slug}`,
+      name: extra.name,
+      slug: extra.slug,
+      description: extra.description,
+      image: extra.image || "/media/categories/home-kitchen.svg",
+      sortOrder: extra.sortOrder,
+      parentId: extra.parentSlug ? `cat_${extra.parentSlug}` : null,
+    };
+    categories.push(category);
+    bySlug.set(extra.slug, category);
+  }
+  const starter = starterProducts.map((product) => {
+    const category = bySlug.get(product.category);
     if (!category) throw new Error(`Starter product ${product.slug} has no category.`);
     const createdAt = new Date(builtAt - product.minutesAgo * 60 * 1000).toISOString();
     return {
@@ -58,10 +84,52 @@ function buildCatalogue(): { categories: Category[]; products: HydratedProduct[]
         image: "",
       })),
       version: 1,
-      category: { id: category.id, name: category.name, slug: category.slug, parent: null },
+      category: categoryView(category, categories),
     } satisfies HydratedProduct;
   });
-  return { categories, products };
+  const imported = shopifyCatalogue.products.map((product, index) => {
+    const category = bySlug.get(product.categorySlug);
+    if (!category) throw new Error(`Catalogue product ${product.slug} has no category.`);
+    const createdAt = new Date(builtAt - index * 60 * 1000).toISOString();
+    return {
+      id: `prod_${product.slug}`,
+      name: product.name,
+      slug: product.slug,
+      sku: product.sku,
+      description: product.description,
+      shortDescription: product.shortDescription,
+      price: product.price,
+      compareAtPrice: product.compareAtPrice,
+      stock: product.variants.length ? 0 : product.stock,
+      categoryId: category.id,
+      specifications: JSON.stringify(product.specifications.map(([label, value]) => ({ label, value }))),
+      isActive: true,
+      isFeatured: false,
+      wholesaleEligible: false,
+      minOrderQty: null,
+      wholesalePrice: null,
+      viewCount: 0,
+      createdAt,
+      updatedAt: createdAt,
+      images: (product.images.length ? product.images : [{ url: "", alt: product.name }]).map((image, imageIndex) => ({
+        id: `img_${product.slug}_${imageIndex}`,
+        url: image.url,
+        alt: image.alt || product.name,
+        sortOrder: imageIndex,
+      })),
+      variants: product.variants.map((variant) => ({
+        id: `var_${variant.sku}`,
+        name: variant.name,
+        sku: variant.sku,
+        price: variant.price,
+        stock: variant.stock,
+        image: "",
+      })),
+      version: 1,
+      category: categoryView(category, categories),
+    } satisfies HydratedProduct;
+  });
+  return { categories, products: [...starter, ...imported] };
 }
 
 const catalogue = buildCatalogue();
