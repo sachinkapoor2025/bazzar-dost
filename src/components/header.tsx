@@ -32,7 +32,7 @@ export function Header({ categories }: { categories: CategoryLink[] }) {
 
   return (
     <header className="sticky top-0 z-40 border-b border-cream-300 bg-cream-50/95 backdrop-blur">
-      <Container className="flex flex-wrap items-center gap-x-2 gap-y-1 py-2 lg:h-[4.5rem] lg:flex-nowrap lg:py-0">
+      <Container className="flex flex-wrap items-center gap-x-2 gap-y-1 py-2 lg:min-h-[5.5rem] lg:flex-nowrap lg:py-0">
         <Logo />
         <SearchBox id={searchId} className="hidden min-w-0 flex-1 md:block" />
         <div className="order-last flex w-full min-w-0 items-center gap-1 border-t border-cream-200 pt-1 md:order-none md:w-auto md:border-0 md:pt-0">
