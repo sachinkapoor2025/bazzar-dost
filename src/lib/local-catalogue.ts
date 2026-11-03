@@ -66,7 +66,11 @@ function buildCatalogue(): { categories: Category[]; products: HydratedProduct[]
   }));
   const bySlug = new Map(categories.map((category) => [category.slug, category]));
   for (const extra of shopifyCatalogue.categories) {
-    if (bySlug.has(extra.slug)) continue;
+    const existing = bySlug.get(extra.slug);
+    if (existing) {
+      if (extra.image) existing.image = extra.image;
+      continue;
+    }
     const category: Category = {
       id: `cat_${extra.slug}`,
       name: extra.name,
@@ -251,7 +255,7 @@ export function localSitemap() {
   const active = catalogue.products.filter((product) => product.isActive);
   return {
     products: active.map((product) => ({ slug: product.slug, updatedAt: product.updatedAt })),
-    categories: catalogue.categories.map((category) => ({ slug: category.slug })),
+    categories: categoryLinks(catalogue.categories, catalogue.products, "all").map((category) => ({ slug: category.slug })),
   };
 }
 

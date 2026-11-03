@@ -129,7 +129,13 @@ export function categoryLinks(categories: Category[], products: HydratedProduct[
   for (const category of categories) {
     own.set(category.id, products.filter((product) => product.isActive && product.categoryId === category.id).length);
   }
-  const listed = scope === "top" ? categories.filter((category) => !category.parentId) : categories;
+  const hasOwn = (id: string) => (own.get(id) || 0) > 0;
+  const listed = categories.filter((category) => {
+    if (!hasOwn(category.id)) return false;
+    if (scope === "all") return true;
+    if (!category.parentId) return true;
+    return !hasOwn(category.parentId);
+  });
   return listed
     .map((category) => {
       const parent = category.parentId ? categories.find((item) => item.id === category.parentId) : undefined;
@@ -145,7 +151,6 @@ export function categoryLinks(categories: Category[], products: HydratedProduct[
         label: parent ? `${parent.name} · ${category.name}` : category.name,
       };
     })
-    .filter((category) => category.productCount > 0)
     .sort((a, b) => (scope === "all" ? a.label.localeCompare(b.label) : 0));
 }
 
@@ -160,7 +165,7 @@ export function categoryDetail(slug: string, categories: Category[], products: H
     .map((child) => ({ id: child.id, name: child.name, slug: child.slug, _count: { products: count(child.id) } }));
   return {
     ...category,
-    parent: parent ? { name: parent.name, slug: parent.slug } : null,
+    parent: parent ? { name: parent.name, slug: parent.slug, productCount: count(parent.id) } : null,
     _count: { products: count(category.id) },
     children,
   };

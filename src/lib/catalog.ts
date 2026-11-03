@@ -152,7 +152,7 @@ export async function getCategory(slug: string) {
       name: string;
       slug: string;
       description: string;
-      parent: { name: string; slug: string } | null;
+      parent: { name: string; slug: string; productCount?: number } | null;
       _count: { products: number };
       children: Array<{ slug: string; name: string; _count: { products: number } }>;
     }>(`/categories/${encodeURIComponent(slug)}`);
