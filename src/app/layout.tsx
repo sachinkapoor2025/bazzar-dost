@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Fraunces, Outfit } from "next/font/google";
+import { ChatWidget } from "@/components/chat-widget";
 import { Footer } from "@/components/footer";
 import { Header, MobileDock } from "@/components/header";
 import { Providers } from "@/components/providers";
@@ -50,6 +51,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           <Header categories={categories} />
           <main id="content" className="min-h-[60vh] pb-20 md:pb-8">{children}</main>
           <Footer categories={categories} />
+          <ChatWidget />
           <MobileDock />
         </Providers>
       </body>

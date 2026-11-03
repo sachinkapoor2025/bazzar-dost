@@ -42,7 +42,7 @@ export default async function HomePage() {
           name: site.name,
           url: site.url,
           slogan: site.tagline,
-          logo: absoluteUrl("/icon.svg"),
+          logo: absoluteUrl("/logo.png"),
         }}
       />
       <section className="relative isolate overflow-hidden bg-forest-950 text-cream-50">

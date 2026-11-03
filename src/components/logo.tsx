@@ -1,17 +1,15 @@
 import Link from "next/link";
 
-export function Logo({ tone = "dark" }: { tone?: "dark" | "light" }) {
-  const word = tone === "light" ? "text-cream-50" : "text-forest-900";
+export function Logo({
+  size = "header",
+}: {
+  size?: "header" | "footer";
+  tone?: "dark" | "light";
+}) {
+  const height = size === "footer" ? "h-14 w-auto max-w-[9.5rem] sm:h-16" : "h-16 w-auto max-w-[46vw] sm:h-20 sm:max-w-none";
   return (
-    <Link href="/" className="inline-flex items-center gap-2 rounded-full" aria-label="BazaarDost home">
-      <svg viewBox="0 0 64 64" className="h-9 w-9" aria-hidden="true">
-        <rect width="64" height="64" rx="16" fill="#1B4332" />
-        <path d="M12 34h40l-4 16H16z" fill="#E8B84A" />
-        <path d="M16 34c3-10 8-10 11 0c3-10 8-10 11 0c3-10 8-10 11 0" fill="none" stroke="#FBF8F3" strokeWidth="3" />
-      </svg>
-      <span className={`font-display text-[1.35rem] leading-none ${word}`}>
-        Bazaar<span className="text-gold-500">Dost</span>
-      </span>
+    <Link href="/" className="inline-flex shrink-0 items-center" aria-label="BazaarDost home">
+      <img src="/logo.png" alt="BazaarDost — Online Shopping Made Easy" className={height} />
     </Link>
   );
 }

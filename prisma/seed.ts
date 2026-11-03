@@ -2,7 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 import bcrypt from "bcryptjs";
 import { PrismaClient } from "@prisma/client";
-import { categorySvg, markSvg, productSvg } from "../src/lib/art";
+import { categorySvg, productSvg } from "../src/lib/art";
 
 const prisma = new PrismaClient();
 
@@ -452,7 +452,6 @@ function writeArt() {
   for (const product of products) {
     fs.writeFileSync(path.join(productsDir, `${product.slug}.svg`), productSvg(product.name, product.motif));
   }
-  fs.writeFileSync(path.join(process.cwd(), "src", "app", "icon.svg"), markSvg());
 }
 
 async function seedCatalog() {

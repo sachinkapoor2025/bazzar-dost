@@ -5,7 +5,7 @@ import { getCategory } from "@/lib/catalog";
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const category = await getCategory((await params).slug);
-  if (!category || category._count.products + category.children.reduce((sum, child) => sum + child._count.products, 0) === 0) notFound();
+  if (!category || category._count.products === 0) notFound();
   return {
     title: category.name,
     description: category.description || `Shop ${category.name} at BazaarDost.`,
@@ -21,8 +21,7 @@ export default async function CategoryPage({
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const category = await getCategory((await params).slug);
-  const stocked = category ? category._count.products + category.children.reduce((sum, child) => sum + child._count.products, 0) : 0;
-  if (!category || stocked === 0) notFound();
+  if (!category || category._count.products === 0) notFound();
   return (
     <CatalogBrowser
       title={category.name}
@@ -34,7 +33,7 @@ export default async function CategoryPage({
       crumbs={[
         { name: "Home", href: "/" },
         { name: "Categories", href: "/categories" },
-        ...(category.parent ? [{ name: category.parent.name, href: `/categories/${category.parent.slug}` }] : []),
+        ...(category.parent && (category.parent.productCount ?? 0) > 0 ? [{ name: category.parent.name, href: `/categories/${category.parent.slug}` }] : []),
         { name: category.name },
       ]}
       links={category.children
