@@ -10,8 +10,37 @@ import {
 } from "../../apps/api/src/lib/catalog-query";
 import type { Category, HydratedProduct } from "../../apps/api/src/lib/types";
 import { categories as starterCategories, products as starterProducts } from "../../apps/api/src/starter-catalog";
-import shopifyCatalogue from "@/data/shopify-catalogue.json";
+import shopifyCatalogueJson from "@/data/shopify-catalogue.json";
 import { MAX_LINE_QTY, sellingPrice } from "@/lib/commerce";
+
+// The JSON file stores an empty variants array on every product, so TypeScript
+// infers that array as never[]. Name the catalogue shape explicitly.
+type ShopifyCatalogue = {
+  categories: Array<{
+    slug: string;
+    name: string;
+    description: string;
+    sortOrder: number;
+    parentSlug: string | null;
+    image: string;
+  }>;
+  products: Array<{
+    slug: string;
+    name: string;
+    sku: string;
+    description: string;
+    shortDescription: string;
+    price: number;
+    compareAtPrice: number | null;
+    stock: number;
+    categorySlug: string;
+    specifications: string[][];
+    images: Array<{ url: string; alt: string }>;
+    variants: Array<{ name: string; sku: string; price: number | null; stock: number }>;
+  }>;
+};
+
+const shopifyCatalogue = shopifyCatalogueJson as ShopifyCatalogue;
 
 const builtAt = Date.now();
 
@@ -102,7 +131,7 @@ function buildCatalogue(): { categories: Category[]; products: HydratedProduct[]
       compareAtPrice: product.compareAtPrice,
       stock: product.variants.length ? 0 : product.stock,
       categoryId: category.id,
-      specifications: JSON.stringify(product.specifications.map(([label, value]) => ({ label, value }))),
+      specifications: JSON.stringify(product.specifications.map((pair) => ({ label: pair[0] ?? "", value: pair[1] ?? "" }))),
       isActive: true,
       isFeatured: false,
       wholesaleEligible: false,
