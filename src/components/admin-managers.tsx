@@ -104,7 +104,7 @@ export function OrderStatusForm({ id, status, paymentStatus, trackingNote }: { i
       <label className={labelClass}>Payment status
         <select name="paymentStatus" defaultValue={paymentStatus} className={fieldClass}>{["unpaid", "paid", "refunded"].map((item) => <option key={item}>{item}</option>)}</select>
       </label>
-      <label className={labelClass}>Tracking note<input name="trackingNote" defaultValue={trackingNote} className={fieldClass} /></label>
+      <label className={labelClass}>Store note, shown on order tracking<input name="trackingNote" defaultValue={trackingNote} className={fieldClass} /></label>
       <button className={buttonClass("primary")}>Update order</button>
       {message ? <p className="text-sm">{message}</p> : null}
     </form>

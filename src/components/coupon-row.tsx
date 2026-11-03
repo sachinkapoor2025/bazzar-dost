@@ -5,7 +5,7 @@ import { formatINR } from "@/lib/format";
 export function CouponRow({
   coupon,
 }: {
-  coupon: { id: string; code: string; type: string; value: number; minSubtotal: number; active: boolean; note: string };
+  coupon: { id: string; code: string; type: string; value: number; minSubtotal: number; active: boolean; note: string; expiresAt?: string };
 }) {
   async function toggle() {
     await fetch(`/api/admin/coupons/${coupon.id}`, {
@@ -18,7 +18,7 @@ export function CouponRow({
         minSubtotal: coupon.minSubtotal,
         active: !coupon.active,
         note: coupon.note,
-        expiresAt: "",
+        expiresAt: coupon.expiresAt || "",
       }),
     });
     window.location.reload();
