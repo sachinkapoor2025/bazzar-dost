@@ -65,7 +65,7 @@ export function ProductCard({ product, eager = false }: { product: ProductCardDa
 
   return (
     <article className="group flex h-full flex-col overflow-hidden rounded-2xl border border-cream-300 bg-white shadow-card">
-      <Link href={`/products/${product.slug}`} className="relative block aspect-square overflow-hidden bg-cream-100">
+      <Link href={`/products/${product.slug}`} className="relative block aspect-square overflow-hidden bg-cream-100" onClick={() => trackProductClick(product.slug)}>
         <ProductImage src={product.image} alt={product.imageAlt} eager={eager} />
         {!product.inStock ? (
           <span className="absolute bottom-3 left-3 rounded-full bg-ink/85 px-2 py-1 text-xs font-semibold text-white">Out of stock</span>
@@ -74,7 +74,7 @@ export function ProductCard({ product, eager = false }: { product: ProductCardDa
       <div className="flex flex-1 flex-col gap-2 p-3">
         <p className="text-[0.7rem] font-semibold uppercase tracking-[0.14em] text-muted">{product.categoryName}</p>
         <h3 className="font-display text-xl leading-tight">
-          <Link href={`/products/${product.slug}`} className="hover:text-forest-700">
+          <Link href={`/products/${product.slug}`} className="hover:text-forest-700" onClick={() => trackProductClick(product.slug)}>
             {product.name}
           </Link>
         </h3>
@@ -90,7 +90,7 @@ export function ProductCard({ product, eager = false }: { product: ProductCardDa
             <Heart filled={saved} />
           </button>
           {product.hasVariants ? (
-            <Link href={`/products/${product.slug}`} className={buttonClass("primary", "flex-1")}>
+            <Link href={`/products/${product.slug}`} className={buttonClass("primary", "flex-1")} onClick={() => trackProductClick(product.slug)}>
               Choose options
             </Link>
           ) : (
@@ -103,7 +103,7 @@ export function ProductCard({ product, eager = false }: { product: ProductCardDa
           <button type="button" className="underline-offset-2 hover:underline" aria-pressed={compared} onClick={() => compare.toggle(product.id)}>
             {compared ? "In compare" : "Compare"}
           </button>
-          <button type="button" className="underline-offset-2 hover:underline" onClick={() => dialogRef.current?.showModal()}>
+          <button type="button" className="underline-offset-2 hover:underline" onClick={() => { trackProductClick(product.slug); dialogRef.current?.showModal(); }}>
             Quick view
           </button>
         </div>
@@ -122,7 +122,7 @@ export function ProductCard({ product, eager = false }: { product: ProductCardDa
             <p className="mt-3 text-sm leading-6 text-muted">{product.shortDescription}</p>
             <div className="mt-4 flex flex-wrap gap-2">
               {product.hasVariants || !product.inStock ? (
-                <Link href={`/products/${product.slug}`} className={buttonClass("primary")} onClick={() => dialogRef.current?.close()}>
+                <Link href={`/products/${product.slug}`} className={buttonClass("primary")} onClick={() => { trackProductClick(product.slug); dialogRef.current?.close(); }}>
                   View product
                 </Link>
               ) : (
@@ -147,6 +147,10 @@ export function ProductGrid({ products }: { products: ProductCardData[] }) {
       ))}
     </div>
   );
+}
+
+function trackProductClick(slug: string) {
+  fetch(`/api/products/${encodeURIComponent(slug)}/click`, { method: "POST", keepalive: true }).catch(() => undefined);
 }
 
 function Heart({ filled }: { filled: boolean }) {

@@ -1,13 +1,18 @@
 import "server-only";
 import { api } from "@/lib/backend";
+import { selectDailyDeals } from "@/lib/deals";
+import { loadEngagementScores } from "@/lib/engagement";
+import { loadSoldUnits } from "@/lib/sales";
 import { parseRupee, priceBounds } from "@/lib/commerce";
 import {
   localByIds,
   localBySlugs,
   localCategories,
   localCategory,
+  localBestSellers,
   localHome,
   localProduct,
+  localTrending,
   localQuery,
   localRelated,
   localTogether,
@@ -191,7 +196,7 @@ export async function cardsWhere(_where: unknown, take = 24, _orderBy?: unknown)
 }
 
 export async function getHomeData() {
-  return readCatalogue(
+  const data = await readCatalogue(
     () => api<{
       categories: CategoryLink[];
       featured: ProductCardData[];
@@ -206,6 +211,22 @@ export async function getHomeData() {
     }>("/home"),
     () => localHome(),
   );
+  const [scores, sold] = await Promise.all([loadEngagementScores(), loadSoldUnits()]);
+  const trending = remoteCatalogue() && data.trending.length > 0
+    ? { products: data.trending, ranked: true }
+    : localTrending(scores);
+  const bestSellers = remoteCatalogue() && data.bestSellers.length > 0
+    ? { products: data.bestSellers, ranked: true }
+    : localBestSellers(sold);
+  const daily = selectDailyDeals(data.deals, new Date());
+  return {
+    ...data,
+    trending: trending.products,
+    trendingRanked: trending.ranked,
+    bestSellers: bestSellers.products,
+    deals: daily.items,
+    dealEndsAt: daily.endsAt,
+  };
 }
 
 export async function productsBySlugs(slugs: string[]): Promise<ProductCardData[]> {
