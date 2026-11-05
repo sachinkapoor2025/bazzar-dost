@@ -4,10 +4,13 @@ import { Breadcrumbs } from "@/components/breadcrumbs";
 import { Gallery } from "@/components/gallery";
 import { JsonLd } from "@/components/json-ld";
 import { ProductGrid } from "@/components/product-card";
+import { ProductReviews } from "@/components/product-reviews";
 import { PurchasePanel } from "@/components/purchase-panel";
 import { RecentlyViewed, RecordView } from "@/components/recently-viewed";
 import { Container } from "@/components/ui";
+import { getCurrentUser } from "@/lib/auth";
 import { boughtTogether, getProduct, parseSpecs, relatedProducts, toCard } from "@/lib/catalog";
+import { getProductReviewState } from "@/lib/product-review-store";
 import { FREE_SHIPPING_ABOVE, SHIPPING_FLAT_RUPEES } from "@/lib/commerce";
 import { formatINR } from "@/lib/format";
 import { absoluteUrl, site } from "@/lib/site";
@@ -34,10 +37,15 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
   if (!product) notFound();
   const card = toCard(product);
   const specs = parseSpecs(product.specifications);
-  const [related, together] = await Promise.all([
+  const [related, together, user] = await Promise.all([
     relatedProducts(product.categoryId, product.id),
     boughtTogether(product.id),
+    getCurrentUser().catch(() => null),
   ]);
+  const reviews = await getProductReviewState(
+    { id: product.id, slug: product.slug, sku: product.sku, name: product.name },
+    user,
+  );
   const images = product.images.map((image) => ({ url: image.url, alt: image.alt || product.name }));
 
   return (
@@ -111,6 +119,10 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
           </section>
         ) : null}
       </div>
+      <section className="mt-10">
+        <h2 className="font-display text-3xl">Customer reviews</h2>
+        <ProductReviews slug={product.slug} initial={reviews} />
+      </section>
       {together.length > 0 ? (
         <section className="mt-10">
           <h2 className="mb-2 font-display text-3xl">Frequently bought together</h2>
@@ -135,6 +147,9 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
           description: product.description,
           sku: product.sku,
           image: images.map((image) => absoluteUrl(image.url)),
+          ...(reviews.count > 0 && reviews.average != null
+            ? { aggregateRating: { "@type": "AggregateRating", ratingValue: String(reviews.average), reviewCount: reviews.count } }
+            : {}),
           offers: {
             "@type": "Offer",
             priceCurrency: "INR",

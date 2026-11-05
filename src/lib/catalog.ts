@@ -1,7 +1,11 @@
 import "server-only";
 import { api } from "@/lib/backend";
 import { parseRupee, priceBounds } from "@/lib/commerce";
+import { selectDailyDeals } from "@/lib/deals";
+import { loadEngagementScores } from "@/lib/engagement";
+import { loadSoldUnits } from "@/lib/sales";
 import {
+  localBestSellers,
   localByIds,
   localBySlugs,
   localCategories,
@@ -11,6 +15,7 @@ import {
   localQuery,
   localRelated,
   localTogether,
+  localTrending,
   localWholesale,
 } from "@/lib/local-catalogue";
 import type { CategoryLink, ProductCardData, Spec, VariantData } from "@/lib/types";
@@ -191,19 +196,32 @@ export async function cardsWhere(_where: unknown, take = 24, _orderBy?: unknown)
 }
 
 export async function getHomeData() {
-  if (!remoteCatalogue()) return localHome();
-  return api<{
-    categories: CategoryLink[];
-    featured: ProductCardData[];
-    arrivals: ProductCardData[];
-    trending: ProductCardData[];
-    deals: ProductCardData[];
-    bestSellers: ProductCardData[];
-    budget: { under199: ProductCardData[]; from200to499: ProductCardData[]; from500to999: ProductCardData[] };
-    announcement: { title: string; message: string; href: string } | null;
-    coupons: Array<{ id: string; code: string; type: string; value: number; minSubtotal: number }>;
-    productCount: number;
-  }>("/home");
+  const data = !remoteCatalogue()
+    ? localHome()
+    : await api<{
+        categories: CategoryLink[];
+        featured: ProductCardData[];
+        arrivals: ProductCardData[];
+        trending: ProductCardData[];
+        deals: ProductCardData[];
+        bestSellers: ProductCardData[];
+        budget: { under199: ProductCardData[]; from200to499: ProductCardData[]; from500to999: ProductCardData[] };
+        announcement: { title: string; message: string; href: string } | null;
+        coupons: Array<{ id: string; code: string; type: string; value: number; minSubtotal: number }>;
+        productCount: number;
+      }>("/home");
+  const [scores, sold] = await Promise.all([loadEngagementScores(), loadSoldUnits()]);
+  const trending = remoteCatalogue() && data.trending.length > 0 ? { products: data.trending, ranked: true } : localTrending(scores);
+  const bestSellers = remoteCatalogue() && data.bestSellers.length > 0 ? { products: data.bestSellers, ranked: true } : localBestSellers(sold);
+  const daily = selectDailyDeals(data.deals, new Date());
+  return {
+    ...data,
+    trending: trending.products,
+    trendingRanked: trending.ranked,
+    bestSellers: bestSellers.products,
+    deals: daily.items,
+    dealEndsAt: daily.endsAt,
+  };
 }
 
 export async function productsBySlugs(slugs: string[]): Promise<ProductCardData[]> {

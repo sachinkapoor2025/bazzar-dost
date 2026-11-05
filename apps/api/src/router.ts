@@ -89,6 +89,19 @@ export async function route(event: APIGatewayProxyEventV2): Promise<APIGatewayPr
       await store.recordView(view.slug);
       return ok({ ok: true });
     }
+    const productReviews = match(method, path, "GET /products/:slug/reviews");
+    if (productReviews) {
+      const user = await requireUser(event);
+      return ok(await store.productReviewState(productReviews.slug, user));
+    }
+    const postProductReview = match(method, path, "POST /products/:slug/reviews");
+    if (postProductReview) {
+      const user = await requireUser(event);
+      if (!user) return json(401, { error: "Sign in to review a product you have bought." });
+      const body = bodyOf(event);
+      if (text(body.website)) return ok({ message: "Review saved." });
+      return ok(await store.addProductReview(user, postProductReview.slug, Number(body.rating), text(body.comment)));
+    }
     if (match(method, path, "POST /reviews")) {
       const body = bodyOf(event);
       const review = await store.addReview({

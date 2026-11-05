@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { DailyDeals } from "@/components/daily-deals";
 import { NewsletterForm } from "@/components/newsletter-form";
 import { RecentlyViewed } from "@/components/recently-viewed";
 import { JsonLd } from "@/components/json-ld";
@@ -9,6 +10,8 @@ import { ProductGrid, ProductImage } from "@/components/product-card";
 import { Container, SectionTitle, buttonClass } from "@/components/ui";
 import { getHomeData, getReviews } from "@/lib/catalog";
 import { absoluteUrl, site } from "@/lib/site";
+
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: `${site.name} — ${site.tagline}`,
@@ -116,7 +119,7 @@ export default async function HomePage() {
         <SectionTitle id="trending" title="Trending products" />
         {data.trending.length > 0 ? (
           <>
-            <p className="mb-4 text-sm text-muted">Ordered by products shoppers have opened on this site.</p>
+            <p className="mb-4 text-sm text-muted">{data.trendingRanked ? "Ordered by products shoppers have opened on this site." : "Popular products available to order right now."}</p>
             <ProductGrid products={data.trending} />
           </>
         ) : (
@@ -166,24 +169,18 @@ export default async function HomePage() {
 
       <Container className="pb-8">
         <SectionTitle id="deals" title="Deals of the day" action={<Link href="/deals" className="text-sm font-semibold text-forest-800">View all</Link>} />
-        <p className="mb-4 text-sm text-muted">Reduced prices are shown only when a compare-at price on the product is higher. There is no countdown timer.</p>
-        {data.deals.length === 0 && data.coupons.length === 0 ? (
-          <p className="text-sm text-muted">No reduced prices or coupons are active right now.</p>
-        ) : (
-          <>
-            {data.coupons.length > 0 ? (
-              <ul className="mb-4 grid gap-2 md:grid-cols-2">
-                {data.coupons.map((coupon) => (
-                  <li key={coupon.id} className="rounded-2xl border border-gold-400 bg-white px-4 py-3 text-sm">
-                    <span className="font-semibold">{coupon.code}</span>
-                    <span className="text-muted"> — {coupon.type === "PERCENT" ? `${coupon.value}% off` : <><Money amount={coupon.value} /> off</>}{coupon.minSubtotal ? <> from <Money amount={coupon.minSubtotal} /></> : ""}.</span>
-                  </li>
-                ))}
-              </ul>
-            ) : null}
-            {data.deals.length > 0 ? <ProductGrid products={data.deals} /> : null}
-          </>
-        )}
+        <DailyDeals endsAt={data.dealEndsAt} products={data.deals}>
+          {data.coupons.length > 0 ? (
+            <ul className="mb-4 grid gap-2 md:grid-cols-2">
+              {data.coupons.map((coupon) => (
+                <li key={coupon.id} className="rounded-2xl border border-gold-400 bg-white px-4 py-3 text-sm">
+                  <span className="font-semibold">{coupon.code}</span>
+                  <span className="text-muted"> — {coupon.type === "PERCENT" ? `${coupon.value}% off` : <><Money amount={coupon.value} /> off</>}{coupon.minSubtotal ? <> from <Money amount={coupon.minSubtotal} /></> : ""}.</span>
+                </li>
+              ))}
+            </ul>
+          ) : null}
+        </DailyDeals>
       </Container>
 
       <Container className="pb-8">

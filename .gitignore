@@ -18,6 +18,8 @@ prisma/*.db-journal
 public/uploads
 .aws-sam
 apps/api/dist
+data/engagement.json
+data/engagement.json.tmp
 
 *.log
 npm-debug.log*

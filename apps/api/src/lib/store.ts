@@ -7,6 +7,7 @@ import { couponDiscount, MAX_LINE_QTY, orderTotal, sellingPrice, shippingCharge 
 import { cartsTable, configTable, customersTable, eventsTable, nowIso, ordersTable, productsTable, ttlInDays } from "./db";
 import { deleteItem, getItem, isConflict, putItem, queryIndex, queryPk, scanTable, type Item } from "./tables";
 import type { Address, Category, Coupon, HydratedProduct, Inquiry, Order, OrderItem, Product, Promotion, PublicUser, Review } from "./types";
+import { reviewDecision, reviewSummary } from "../../../src/lib/product-reviews";
 
 export class StoreError extends Error {
   status: number;
@@ -503,6 +504,80 @@ export async function addReview(input: Omit<Review, "id" | "createdAt">): Promis
   const review: Review = { ...input, id: id("rev"), createdAt: nowIso() };
   await putItem(configTable(), { PK: "REVIEW", SK: `${review.createdAt}#${review.id}`, entityType: "review", ...review });
   return review;
+}
+
+type ProductReviewRow = {
+  id: string;
+  userId: string;
+  name: string;
+  productSlug: string;
+  orderId: string;
+  rating: number;
+  comment: string;
+  createdAt: string;
+};
+
+function lineMatches(item: OrderItem, product: { id: string; sku: string; name: string }): boolean {
+  return item.productId === product.id || item.sku === product.sku || item.name === product.name || item.name.startsWith(`${product.name} —`);
+}
+
+async function ordersForBuyer(user: PublicUser): Promise<Order[]> {
+  const [owned, emailed] = await Promise.all([
+    ordersForUser(user.id),
+    queryIndex(ordersTable(), "GSI2", `EMAIL#${user.email.toLowerCase()}`),
+  ]);
+  const extra = emailed.filter((item) => item.entityType === "order").map((item) => item as unknown as Order);
+  const seen = new Set<string>();
+  return [...owned, ...extra].filter((order) => {
+    if (seen.has(order.id)) return false;
+    seen.add(order.id);
+    return true;
+  });
+}
+
+async function productReviewRows(slug: string): Promise<ProductReviewRow[]> {
+  return (await configList<ProductReviewRow>(`PRODUCTREVIEW#${slug}`)).sort((a, b) => Date.parse(b.createdAt) - Date.parse(a.createdAt));
+}
+
+export async function productReviewState(slug: string, user: PublicUser | null) {
+  const product = await getProductBySlug(slug);
+  if (!product) throw new StoreError("This product is not available.", 404);
+  const rows = (await productReviewRows(slug)).slice(0, 24);
+  const summary = reviewSummary(rows);
+  const reviews = rows.map((row) => ({ id: row.id, name: row.name, rating: row.rating, comment: row.comment, createdAt: row.createdAt }));
+  if (!user) return { ...summary, reviews, canReview: false, reason: "signed-out" as const };
+  if (rows.some((row) => row.userId === user.id)) return { ...summary, reviews, canReview: false, reason: "already-reviewed" as const };
+  const order = (await ordersForBuyer(user)).find((entry) => entry.status !== "cancelled" && entry.items.some((item) => lineMatches(item, product)));
+  if (!order) return { ...summary, reviews, canReview: false, reason: "not-purchased" as const };
+  return { ...summary, reviews, canReview: true, reason: null };
+}
+
+export async function addProductReview(user: PublicUser, slug: string, rating: number, comment: string) {
+  const product = await getProductBySlug(slug);
+  if (!product) throw new StoreError("This product is not available.", 404);
+  const rows = await productReviewRows(slug);
+  const order = (await ordersForBuyer(user)).find((entry) => entry.status !== "cancelled" && entry.items.some((item) => lineMatches(item, product)));
+  const decision = reviewDecision({
+    userId: user.id,
+    purchasedOrderId: order?.id ?? null,
+    existing: rows.map((row) => ({ userId: row.userId, productSlug: row.productSlug, rating: row.rating })),
+    productSlug: slug,
+    rating,
+    comment,
+  });
+  if (!decision.ok) throw new StoreError(decision.error, decision.status);
+  const review: ProductReviewRow = {
+    id: id("prv"),
+    userId: user.id,
+    name: user.name,
+    productSlug: slug,
+    orderId: decision.orderId,
+    rating,
+    comment: comment.trim().slice(0, 600),
+    createdAt: nowIso(),
+  };
+  await putItem(configTable(), { PK: `PRODUCTREVIEW#${slug}`, SK: `${review.createdAt}#${review.id}`, entityType: "productReview", ...review });
+  return { review: { id: review.id, name: review.name, rating: review.rating, comment: review.comment, createdAt: review.createdAt } };
 }
 
 export async function listInquiries(): Promise<Inquiry[]> {

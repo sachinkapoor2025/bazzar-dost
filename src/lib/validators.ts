@@ -215,3 +215,9 @@ export const reviewSchema = z.object({
   comment: z.string().trim().min(10, "Write at least a short review.").max(600),
   website: z.string().optional().default(""),
 });
+
+export const productReviewSchema = z.object({
+  rating: z.coerce.number().int().min(1, "Choose a rating.").max(5),
+  comment: z.string().trim().min(10, "Write at least a short review.").max(600),
+  website: z.string().optional().default(""),
+});

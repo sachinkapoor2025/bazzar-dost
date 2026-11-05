@@ -12,7 +12,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "test": "node --import tsx --test tests/commerce.test.ts tests/site.test.ts apps/api/src/store.test.ts",
+    "test": "node --import tsx --test tests/commerce.test.ts tests/site.test.ts tests/trending.test.ts tests/best-sellers.test.ts tests/deals.test.ts tests/product-reviews.test.ts apps/api/src/store.test.ts",
     "db:up": "docker compose up -d",
     "db:down": "docker compose down",
     "db:setup": "tsx apps/api/src/setup-local-db.ts"

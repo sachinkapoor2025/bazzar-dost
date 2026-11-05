@@ -6,6 +6,25 @@ import { useState, type FormEvent } from "react";
 type ChatLink = { href: string; label: string };
 type ChatMessage = { role: "user" | "assistant"; text: string; links?: ChatLink[] };
 
+function ChatIcon() {
+  return (
+    <svg viewBox="0 0 24 24" className="h-7 w-7" aria-hidden="true">
+      <path fill="currentColor" d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z" />
+      <circle cx="8" cy="10" r="1.15" fill="#1B4332" />
+      <circle cx="12" cy="10" r="1.15" fill="#1B4332" />
+      <circle cx="16" cy="10" r="1.15" fill="#1B4332" />
+    </svg>
+  );
+}
+
+function CloseIcon() {
+  return (
+    <svg viewBox="0 0 24 24" className="h-6 w-6" aria-hidden="true">
+      <path fill="currentColor" d="M6.2 5.2 12 11l5.8-5.8 1 1L13 12l5.8 5.8-1 1L12 13l-5.8 5.8-1-1L11 12 5.2 6.2z" />
+    </svg>
+  );
+}
+
 const starter: ChatMessage = {
   role: "assistant",
   text: "Hello. Ask me about BazaarDost products, orders, shipping, or other services on this website.",
@@ -101,11 +120,12 @@ export function ChatWidget() {
       ) : null}
       <button
         type="button"
-        className="min-h-11 rounded-full bg-forest-800 px-5 text-sm font-semibold text-cream-50 shadow-card"
+        className="inline-flex h-14 w-14 items-center justify-center rounded-full bg-forest-800 text-cream-50 shadow-card"
         aria-expanded={open}
+        aria-label={open ? "Hide chat" : "Chat"}
         onClick={() => setOpen((value) => !value)}
       >
-        {open ? "Hide chat" : "Chat"}
+        {open ? <CloseIcon /> : <ChatIcon />}
       </button>
     </div>
   );
