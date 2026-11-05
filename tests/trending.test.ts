@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { emptyScore, popularAvailable, rankTrending, type EngagementScore, type TrendCandidate } from "../src/lib/trending";
+import { emptyScore, popularAvailable, rankMostSearched, rankTrending, type EngagementScore, type TrendCandidate } from "../src/lib/trending";
 
 function product(slug: string, overrides: Partial<TrendCandidate> = {}): TrendCandidate {
   return {
@@ -91,6 +91,28 @@ test("uses popular in-stock products when tracking data is empty", () => {
   assert.deepEqual(
     popularAvailable(products, 4).map((item) => item.slug),
     ranked.items.map((item) => item.slug),
+  );
+});
+
+test("ranks most searched products by clicks", () => {
+  const products = [
+    product("lamp", { stock: 4, categoryId: "home", name: "Lamp" }),
+    product("cable", { stock: 4, categoryId: "electronics", name: "Cable" }),
+    product("pen", { stock: 4, categoryId: "office", name: "Pen" }),
+  ];
+  const ranked = rankMostSearched(
+    products,
+    scores([
+      ["lamp", { views: 20, clicks: 1 }],
+      ["pen", { clicks: 6 }],
+      ["cable", { clicks: 3 }],
+    ]),
+    2,
+  );
+  assert.equal(ranked.ranked, true);
+  assert.deepEqual(
+    ranked.items.map((item) => item.slug),
+    ["pen", "cable"],
   );
 });
 

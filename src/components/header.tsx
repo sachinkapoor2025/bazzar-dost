@@ -1,17 +1,19 @@
 "use client";
 
 import Link from "next/link";
-import { useId, useState } from "react";
+import { usePathname } from "next/navigation";
+import { useEffect, useId, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { useCart } from "@/components/cart-provider";
 import { useCompare } from "@/components/compare-provider";
 import { Logo } from "@/components/logo";
 import { SearchBox } from "@/components/search-box";
 import { StoreControls } from "@/components/store-controls";
 import { useWishlist } from "@/components/wishlist-provider";
-import { Container } from "@/components/ui";
+import { buttonClass, Container } from "@/components/ui";
 import type { CategoryLink } from "@/lib/types";
 
-const links = [
+const shoppingLinks = [
   { href: "/", label: "Home" },
   { href: "/shop", label: "All products" },
   { href: "/new-arrivals", label: "New Arrivals" },
@@ -19,6 +21,14 @@ const links = [
   { href: "/deals", label: "Deals & Offers" },
   { href: "/catalogue", label: "Catalogue" },
   { href: "/wholesale", label: "Wholesale" },
+  { href: "/track", label: "Order Tracking" },
+];
+
+const budgetLinks = [
+  { href: "/shop?max=199", label: "₹199 and under" },
+  { href: "/shop?min=200&max=499", label: "₹200 to ₹499" },
+  { href: "/shop?min=500&max=999", label: "₹500 to ₹999" },
+  { href: "/shop?max=999", label: "Everything up to ₹999" },
 ];
 
 export function Header({ categories }: { categories: CategoryLink[] }) {
@@ -27,8 +37,39 @@ export function Header({ categories }: { categories: CategoryLink[] }) {
   const compare = useCompare();
   const searchId = useId();
   const mobileSearchId = useId();
+  const menuTitleId = useId();
+  const closeRef = useRef<HTMLButtonElement>(null);
+  const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    setOpen(false);
+  }, [pathname]);
+
+  useEffect(() => {
+    if (!open) return;
+    const previous = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    closeRef.current?.focus();
+    function onKey(event: KeyboardEvent) {
+      if (event.key === "Escape") setOpen(false);
+    }
+    window.addEventListener("keydown", onKey);
+    return () => {
+      document.body.style.overflow = previous;
+      window.removeEventListener("keydown", onKey);
+    };
+  }, [open]);
+
+  function closeMenu() {
+    setOpen(false);
+  }
 
   return (
     <header className="sticky top-0 z-40 border-b border-cream-300 bg-cream-50/95 backdrop-blur">
@@ -55,8 +96,19 @@ export function Header({ categories }: { categories: CategoryLink[] }) {
             Cart
             <Count value={cart.count} />
           </button>
-          <button type="button" className="inline-flex min-h-11 items-center rounded-full px-3 text-sm font-semibold md:hidden" aria-expanded={open} aria-controls="mobile-menu" onClick={() => setOpen((value) => !value)}>
-            Menu
+          <button
+            type="button"
+            className="inline-flex h-11 w-11 items-center justify-center rounded-full hover:bg-cream-200"
+            aria-label="Menu"
+            aria-expanded={open}
+            aria-controls="site-menu"
+            onClick={() => setOpen((value) => !value)}
+          >
+            <span className="flex w-5 flex-col gap-1.5" aria-hidden="true">
+              <span className="block h-0.5 w-full rounded-full bg-forest-900" />
+              <span className="block h-0.5 w-full rounded-full bg-forest-900" />
+              <span className="block h-0.5 w-full rounded-full bg-forest-900" />
+            </span>
           </button>
         </nav>
       </Container>
@@ -65,46 +117,82 @@ export function Header({ categories }: { categories: CategoryLink[] }) {
           <SearchBox id={mobileSearchId} />
         </Container>
       ) : null}
-      <nav aria-label="Main" className="hidden border-t border-cream-200 md:block">
-        <Container className="flex h-12 items-center gap-5 text-sm font-semibold">
-          {links.slice(0, 2).map((link) => (
-            <Link key={link.href} href={link.href} className="hover:text-forest-700">{link.label}</Link>
-          ))}
-          <div className="group relative">
-            <Link href="/categories" className="inline-flex min-h-11 items-center hover:text-forest-700" aria-haspopup="true">Categories</Link>
-            <div className="invisible absolute left-0 top-full z-20 max-h-96 w-72 overflow-y-auto rounded-2xl border border-cream-300 bg-white p-2 opacity-0 shadow-card transition group-hover:visible group-hover:opacity-100 group-focus-within:visible group-focus-within:opacity-100">
-              {categories.map((category) => (
-                <Link key={category.slug} href={`/categories/${category.slug}`} className="block rounded-xl px-3 py-2 hover:bg-cream-100">
-                  {category.name}
-                </Link>
-              ))}
-              <Link href="/categories" className="block rounded-xl px-3 py-2 font-semibold text-forest-800 hover:bg-cream-100">All categories</Link>
+      {open && mounted ? createPortal(
+        <div className="fixed inset-0 z-50 flex justify-start bg-forest-950/40" role="presentation" onClick={closeMenu}>
+          <aside
+            id="site-menu"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby={menuTitleId}
+            className="flex h-full w-[min(100vw-2.5rem,26rem)] flex-col bg-cream-50 text-ink shadow-card"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <div className="flex items-center justify-between gap-3 border-b border-cream-300 px-4 py-3">
+              <h2 id={menuTitleId} className="font-display text-3xl text-forest-900">Menu</h2>
+              <button ref={closeRef} type="button" className={buttonClass("ghost")} onClick={closeMenu}>Close</button>
             </div>
-          </div>
-          {links.slice(2).map((link) => (
-            <Link key={link.href} href={link.href} className="hover:text-forest-700">{link.label}</Link>
-          ))}
-        </Container>
-      </nav>
-      {open ? (
-        <nav id="mobile-menu" aria-label="Mobile" className="border-t border-cream-200 bg-cream-50 md:hidden">
-          <Container className="grid gap-1 py-3">
-            <Link href="/" className="rounded-xl px-3 py-3 hover:bg-cream-200" onClick={() => setOpen(false)}>Home</Link>
-            <Link href="/shop" className="rounded-xl px-3 py-3 hover:bg-cream-200" onClick={() => setOpen(false)}>All products</Link>
-            <Link href="/categories" className="rounded-xl px-3 py-3 hover:bg-cream-200" onClick={() => setOpen(false)}>Categories</Link>
-            {categories.map((category) => (
-              <Link key={category.slug} href={`/categories/${category.slug}`} className="rounded-xl px-3 py-2 pl-6 text-sm hover:bg-cream-200" onClick={() => setOpen(false)}>
-                {category.name}
-              </Link>
-            ))}
-            {links.slice(2).map((link) => (
-              <Link key={link.href} href={link.href} className="rounded-xl px-3 py-3 hover:bg-cream-200" onClick={() => setOpen(false)}>{link.label}</Link>
-            ))}
-            <Link href="/compare" className="rounded-xl px-3 py-3 hover:bg-cream-200" onClick={() => setOpen(false)}>Compare{compare.ids.length ? ` (${compare.ids.length})` : ""}</Link>
-            <Link href="/account" className="rounded-xl px-3 py-3 hover:bg-cream-200" onClick={() => setOpen(false)}>My Account</Link>
-            <Link href="/track" className="rounded-xl px-3 py-3 hover:bg-cream-200" onClick={() => setOpen(false)}>Order Tracking</Link>
-          </Container>
-        </nav>
+            <div className="flex-1 space-y-6 overflow-y-auto px-4 py-4">
+              <section>
+                <h3 className="font-display text-2xl text-forest-900">What is in the catalogue</h3>
+                <p className="mt-2 text-sm leading-6 text-muted">
+                  BazaarDost is organised around the products currently available. Each department has live items you can open, compare, and add to the cart. Prices stay as stored, and a lower price is shown only when that product has a higher compare-at price.
+                </p>
+                {categories.length === 0 ? (
+                  <p className="mt-3 text-sm text-muted">Departments appear here when the catalogue has products.</p>
+                ) : (
+                  <ul className="mt-3 grid gap-3">
+                    {categories.map((category) => (
+                      <li key={category.slug}>
+                        <Link href={`/categories/${category.slug}`} className="block rounded-2xl border border-cream-300 bg-white p-4 hover:border-forest-800" onClick={closeMenu}>
+                          <span className="block font-display text-2xl text-forest-900">{category.name}</span>
+                          <span className="mt-2 block text-sm leading-6 text-muted">{category.description || "Live items in this department."}</span>
+                          <span className="mt-3 block text-sm font-semibold text-forest-800">{category.productCount} products</span>
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </section>
+
+              <section>
+                <h3 className="text-xs font-semibold uppercase tracking-[0.16em] text-gold-700">Shop by budget</h3>
+                <ul className="mt-2 grid gap-1">
+                  {budgetLinks.map((link) => (
+                    <li key={link.href}>
+                      <Link href={link.href} className="block rounded-xl px-3 py-3 text-sm font-semibold text-forest-900 hover:bg-cream-200" onClick={closeMenu}>
+                        {link.label}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </section>
+
+              <section>
+                <h3 className="text-xs font-semibold uppercase tracking-[0.16em] text-gold-700">Shopping</h3>
+                <ul className="mt-2 grid gap-1">
+                  {shoppingLinks.map((link) => (
+                    <li key={link.href}>
+                      <Link href={link.href} className="block rounded-xl px-3 py-3 text-sm font-semibold text-forest-900 hover:bg-cream-200" onClick={closeMenu}>
+                        {link.label}
+                      </Link>
+                    </li>
+                  ))}
+                  <li className="sm:hidden">
+                    <Link href="/compare" className="block rounded-xl px-3 py-3 text-sm font-semibold text-forest-900 hover:bg-cream-200" onClick={closeMenu}>
+                      Compare{compare.ids.length ? ` (${compare.ids.length})` : ""}
+                    </Link>
+                  </li>
+                  <li className="sm:hidden">
+                    <Link href="/account" className="block rounded-xl px-3 py-3 text-sm font-semibold text-forest-900 hover:bg-cream-200" onClick={closeMenu}>
+                      My Account
+                    </Link>
+                  </li>
+                </ul>
+              </section>
+            </div>
+          </aside>
+        </div>,
+        document.body,
       ) : null}
       {compare.notice ? <p role="status" className="bg-gold-400 px-4 py-1 text-center text-sm text-forest-950">{compare.notice}</p> : null}
       <div className="h-0.5 bg-gold-400" />

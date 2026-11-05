@@ -11,6 +11,7 @@ import {
   localCategory,
   localBestSellers,
   localHome,
+  localMostSearched,
   localProduct,
   localTrending,
   localQuery,
@@ -215,6 +216,7 @@ export async function getHomeData() {
   const trending = remoteCatalogue() && data.trending.length > 0
     ? { products: data.trending, ranked: true }
     : localTrending(scores);
+  const searched = localMostSearched(scores);
   const bestSellers = remoteCatalogue() && data.bestSellers.length > 0
     ? { products: data.bestSellers, ranked: true }
     : localBestSellers(sold);
@@ -223,7 +225,10 @@ export async function getHomeData() {
     ...data,
     trending: trending.products,
     trendingRanked: trending.ranked,
+    searched: searched.products,
+    searchedRanked: searched.ranked,
     bestSellers: bestSellers.products,
+    bestSellersRanked: bestSellers.ranked,
     deals: daily.items,
     dealEndsAt: daily.endsAt,
   };

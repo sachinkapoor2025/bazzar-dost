@@ -122,3 +122,24 @@ export function rankBestSellers<T extends TrendCandidate>(
   }
   return { items, ranked: false };
 }
+
+/** Products opened from search results and listing cards, ranked by recorded clicks. */
+export function rankMostSearched<T extends TrendCandidate>(
+  products: T[],
+  scores: Map<string, EngagementScore>,
+  take = 8,
+): { items: T[]; ranked: boolean } {
+  const active = products.filter((product) => product.isActive);
+  const ranked = active
+    .map((product) => ({ product, clicks: scores.get(product.slug)?.clicks || 0 }))
+    .filter((row) => row.clicks > 0)
+    .sort((a, b) => b.clicks - a.clicks || byName(a.product, b.product));
+
+  if (ranked.length > 0) return { items: ranked.slice(0, take).map((row) => row.product), ranked: true };
+
+  const pool = popularAvailable(active, take * 3);
+  const start = Math.min(take * 2, Math.max(0, pool.length - take));
+  const slice = pool.slice(start, start + take);
+  if (slice.length > 0) return { items: slice, ranked: false };
+  return { items: pool.slice(0, take), ranked: false };
+}

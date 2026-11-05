@@ -12,7 +12,7 @@ import type { Category, HydratedProduct } from "../../apps/api/src/lib/types";
 import { categories as starterCategories, products as starterProducts } from "../../apps/api/src/starter-catalog";
 import shopifyCatalogueJson from "@/data/shopify-catalogue.json";
 import { MAX_LINE_QTY, sellingPrice } from "@/lib/commerce";
-import { rankBestSellers, rankTrending, type EngagementScore } from "@/lib/trending";
+import { rankBestSellers, rankMostSearched, rankTrending, type EngagementScore } from "@/lib/trending";
 
 // The JSON file stores an empty variants array on every product, so TypeScript
 // infers that array as never[]. Name the catalogue shape explicitly.
@@ -211,6 +211,11 @@ export function localTrending(scores: Map<string, EngagementScore>) {
 
 export function localBestSellers(sold: Map<string, number> | null) {
   const ranked = rankBestSellers(catalogue.products, sold, 8);
+  return { products: ranked.items.map(toCard), ranked: ranked.ranked };
+}
+
+export function localMostSearched(scores: Map<string, EngagementScore>) {
+  const ranked = rankMostSearched(catalogue.products, scores, 8);
   return { products: ranked.items.map(toCard), ranked: ranked.ranked };
 }
 
