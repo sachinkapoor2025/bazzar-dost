@@ -14,8 +14,8 @@ export async function POST(request: Request) {
     if (!rateLimit(`login:${email}`, 8, 15 * 60 * 1000)) {
       return NextResponse.json({ error: "Too many attempts. Wait a few minutes and try again." }, { status: 429 });
     }
-    const user = await api<{ id: string }>("/auth/login", { body: { email, password: body.password } });
-    const token = await signSession(user.id);
+    const user = await api<{ id: string; role: string }>("/auth/login", { body: { email, password: body.password } });
+    const token = await signSession(user.id, user.role);
     if (!token) return NextResponse.json({ error: "Sign-in is not configured." }, { status: 500 });
     await setSessionCookie(token);
     return NextResponse.json({ ok: true });

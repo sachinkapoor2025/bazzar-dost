@@ -171,6 +171,25 @@ export async function route(event: APIGatewayProxyEventV2): Promise<APIGatewayPr
       });
     }
     if (match(method, path, "POST /auth/register")) return ok(await store.registerUser(bodyOf(event) as never));
+    if (match(method, path, "POST /auth/signup/start")) {
+      const body = bodyOf(event);
+      return ok(await store.beginSignup({
+        email: text(body.email),
+        name: text(body.name),
+        phone: text(body.phone),
+        password: text(body.password),
+        otpHash: text(body.otpHash),
+        expiresAt: text(body.expiresAt),
+      }));
+    }
+    if (match(method, path, "POST /auth/signup/resend")) {
+      const body = bodyOf(event);
+      return ok(await store.refreshSignup({ email: text(body.email), otpHash: text(body.otpHash), expiresAt: text(body.expiresAt) }));
+    }
+    if (match(method, path, "POST /auth/signup/verify")) {
+      const body = bodyOf(event);
+      return ok(await store.completeSignup({ email: text(body.email), otpHash: text(body.otpHash) }));
+    }
     if (match(method, path, "POST /auth/login")) {
       const body = bodyOf(event);
       return ok(await store.loginUser(text(body.email), text(body.password)));

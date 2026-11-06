@@ -13,10 +13,10 @@ const cookieOptions = {
   maxAge: 60 * 60 * 24 * 14,
 };
 
-export async function signSession(userId: string): Promise<string | null> {
+export async function signSession(userId: string, role = "customer"): Promise<string | null> {
   const secret = getSessionSecret();
   if (!secret) return null;
-  return new SignJWT({})
+  return new SignJWT({ role })
     .setProtectedHeader({ alg: "HS256" })
     .setSubject(userId)
     .setIssuedAt()

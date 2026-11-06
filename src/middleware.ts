@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { jwtVerify } from "jose";
+import { isAdminRole } from "@/lib/staff";
 import { canonicalRedirectTarget } from "@/lib/site";
 import { getSessionSecret, SESSION_COOKIE } from "@/lib/secret";
 
@@ -13,7 +14,9 @@ export async function middleware(request: NextRequest) {
   if (target) return NextResponse.redirect(target, 308);
 
   const { pathname } = request.nextUrl;
-  if (!pathname.startsWith("/account") && !pathname.startsWith("/admin")) return NextResponse.next();
+  const adminPage = pathname.startsWith("/admin");
+  const adminApi = pathname.startsWith("/api/admin");
+  if (!pathname.startsWith("/account") && !adminPage && !adminApi) return NextResponse.next();
 
   const secret = getSessionSecret();
   const token = request.cookies.get(SESSION_COOKIE)?.value;
@@ -24,11 +27,22 @@ export async function middleware(request: NextRequest) {
     url.search = `?next=${encodeURIComponent(next)}`;
     return NextResponse.redirect(url);
   };
-  if (!secret || !token) return redirect();
+  if (!secret || !token) {
+    if (adminApi) return NextResponse.json({ error: "Sign in required." }, { status: 401 });
+    return redirect();
+  }
   try {
-    await jwtVerify(token, secret);
+    const { payload } = await jwtVerify(token, secret);
+    if ((adminPage || adminApi) && !isAdminRole(payload.role)) {
+      if (adminApi) return NextResponse.json({ error: "Admin access is required." }, { status: 403 });
+      const url = request.nextUrl.clone();
+      url.pathname = "/account";
+      url.search = "";
+      return NextResponse.redirect(url);
+    }
     return NextResponse.next();
   } catch {
+    if (adminApi) return NextResponse.json({ error: "Sign in required." }, { status: 401 });
     return redirect();
   }
 }

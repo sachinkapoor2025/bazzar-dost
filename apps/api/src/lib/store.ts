@@ -7,7 +7,8 @@ import { couponDiscount, MAX_LINE_QTY, orderTotal, sellingPrice, shippingCharge 
 import { cartsTable, configTable, customersTable, eventsTable, nowIso, ordersTable, productsTable, ttlInDays } from "./db";
 import { deleteItem, getItem, isConflict, putItem, queryIndex, queryPk, scanTable, type Item } from "./tables";
 import type { Address, Category, Coupon, HydratedProduct, Inquiry, Order, OrderItem, Product, Promotion, PublicUser, Review } from "./types";
-import { reviewDecision, reviewSummary } from "../../../src/lib/product-reviews";
+import { reviewDecision, reviewSummary } from "../../../../src/lib/product-reviews";
+import { roleForEmail } from "../../../../src/lib/staff";
 
 export class StoreError extends Error {
   status: number;
@@ -318,7 +319,7 @@ export async function registerUser(input: { email: string; name: string; phone: 
     email,
     name: input.name,
     phone: input.phone,
-    role: "customer",
+    role: roleForEmail(email),
     passwordHash: await bcrypt.hash(input.password, 12),
     createdAt: nowIso(),
     updatedAt: nowIso(),
@@ -332,6 +333,133 @@ export async function loginUser(email: string, password: string): Promise<Public
   if (!user || !(await bcrypt.compare(password, user.passwordHash))) {
     throw new StoreError("Email or password is not correct.", 401);
   }
+  if (roleForEmail(user.email) === "admin" && user.role !== "admin") {
+    user.role = "admin";
+    user.updatedAt = nowIso();
+    await writeUser(user);
+  }
+  return toPublic(user);
+}
+
+const SIGNUP_ATTEMPT_LIMIT = 5;
+const SIGNUP_RESEND_MS = 60 * 1000;
+
+type SignupState = { status: "sent" | "cooldown"; resendAt: string };
+
+function signupKey(email: string): string {
+  return `SIGNUP#${email}`;
+}
+
+function hashesEqual(left: string, right: string): boolean {
+  const a = Buffer.from(left);
+  const b = Buffer.from(right);
+  if (a.length !== b.length || a.length === 0) return false;
+  return crypto.timingSafeEqual(a, b);
+}
+
+async function readSignup(email: string): Promise<Item | null> {
+  const item = await getItem(customersTable(), signupKey(email), "META");
+  return item?.entityType === "signup" ? item : null;
+}
+
+export function beginSignup(input: {
+  email: string;
+  name: string;
+  phone: string;
+  password: string;
+  otpHash: string;
+  expiresAt: string;
+}): Promise<SignupState> {
+  return exclusive(() => beginSignupLocked(input));
+}
+
+async function beginSignupLocked(input: {
+  email: string;
+  name: string;
+  phone: string;
+  password: string;
+  otpHash: string;
+  expiresAt: string;
+}): Promise<SignupState> {
+  const email = input.email.toLowerCase();
+  if (await getUserByEmail(email)) throw new StoreError("An account with this email already exists.");
+  const existing = await readSignup(email);
+  const now = Date.now();
+  if (existing && Date.parse(String(existing.expiresAt)) > now && Date.parse(String(existing.resendAt)) > now) {
+    return { status: "cooldown", resendAt: String(existing.resendAt) };
+  }
+  const resendAt = new Date(now + SIGNUP_RESEND_MS).toISOString();
+  await putItem(customersTable(), {
+    PK: signupKey(email),
+    SK: "META",
+    entityType: "signup",
+    email,
+    name: input.name,
+    phone: input.phone,
+    passwordHash: await bcrypt.hash(input.password, 12),
+    otpHash: input.otpHash,
+    expiresAt: input.expiresAt,
+    resendAt,
+    attempts: 0,
+  });
+  return { status: "sent", resendAt };
+}
+
+export function refreshSignup(input: { email: string; otpHash: string; expiresAt: string }): Promise<SignupState> {
+  return exclusive(() => refreshSignupLocked(input));
+}
+
+async function refreshSignupLocked(input: { email: string; otpHash: string; expiresAt: string }): Promise<SignupState> {
+  const email = input.email.toLowerCase();
+  const existing = await readSignup(email);
+  if (!existing) throw new StoreError("Start registration again. That code is no longer valid.");
+  const now = Date.now();
+  if (Date.parse(String(existing.resendAt)) > now) {
+    return { status: "cooldown", resendAt: String(existing.resendAt) };
+  }
+  const resendAt = new Date(now + SIGNUP_RESEND_MS).toISOString();
+  await putItem(customersTable(), {
+    ...existing,
+    otpHash: input.otpHash,
+    expiresAt: input.expiresAt,
+    resendAt,
+    attempts: 0,
+  });
+  return { status: "sent", resendAt };
+}
+
+export function completeSignup(input: { email: string; otpHash: string }): Promise<PublicUser> {
+  return exclusive(() => completeSignupLocked(input));
+}
+
+async function completeSignupLocked(input: { email: string; otpHash: string }): Promise<PublicUser> {
+  const email = input.email.toLowerCase();
+  if (await getUserByEmail(email)) throw new StoreError("An account with this email already exists.");
+  const existing = await readSignup(email);
+  if (!existing) throw new StoreError("Start registration again. That code is no longer valid.");
+  if (Date.parse(String(existing.expiresAt)) <= Date.now()) {
+    throw new StoreError("That code has expired. Request a new one.");
+  }
+  const attempts = Number(existing.attempts || 0);
+  if (attempts >= SIGNUP_ATTEMPT_LIMIT) throw new StoreError("Too many incorrect codes. Request a new one.");
+  if (!hashesEqual(String(existing.otpHash || ""), input.otpHash)) {
+    const nextAttempts = attempts + 1;
+    await putItem(customersTable(), { ...existing, attempts: nextAttempts });
+    if (nextAttempts >= SIGNUP_ATTEMPT_LIMIT) throw new StoreError("Too many incorrect codes. Request a new one.");
+    throw new StoreError("That code is not correct.");
+  }
+  const user: UserRecord = {
+    id: id("usr"),
+    email,
+    name: String(existing.name || ""),
+    phone: String(existing.phone || ""),
+    role: roleForEmail(email),
+    passwordHash: String(existing.passwordHash || ""),
+    createdAt: nowIso(),
+    updatedAt: nowIso(),
+  };
+  await writeUser(user);
+  await deleteItem(customersTable(), signupKey(email), "META");
   return toPublic(user);
 }
 
