@@ -1,8 +1,9 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { jwtVerify } from "jose";
-import { canonicalRedirectTarget } from "@/lib/site";
 import { getSessionSecret, SESSION_COOKIE } from "@/lib/secret";
+import { canonicalRedirectTarget } from "@/lib/site";
+import { isAdminRole } from "@/lib/staff";
 
 export async function middleware(request: NextRequest) {
   const target = canonicalRedirectTarget(
@@ -13,23 +14,34 @@ export async function middleware(request: NextRequest) {
   if (target) return NextResponse.redirect(target, 308);
 
   const { pathname } = request.nextUrl;
-  if (!pathname.startsWith("/account") && !pathname.startsWith("/admin")) return NextResponse.next();
+  const adminPage = pathname.startsWith("/admin");
+  const adminApi = pathname.startsWith("/api/admin");
+  const accountPage = pathname.startsWith("/account");
+  if (!adminPage && !adminApi && !accountPage) return NextResponse.next();
 
   const secret = getSessionSecret();
   const token = request.cookies.get(SESSION_COOKIE)?.value;
   const next = `${pathname}${request.nextUrl.search}`;
-  const redirect = () => {
+  const denyApi = (status: number, error: string) => NextResponse.json({ error }, { status });
+  const redirectToLogin = () => {
     const url = request.nextUrl.clone();
     url.pathname = "/login";
     url.search = `?next=${encodeURIComponent(next)}`;
     return NextResponse.redirect(url);
   };
-  if (!secret || !token) return redirect();
+  if (!secret || !token) return adminApi ? denyApi(401, "Sign in required.") : redirectToLogin();
   try {
-    await jwtVerify(token, secret);
+    const { payload } = await jwtVerify(token, secret);
+    if ((adminPage || adminApi) && !isAdminRole(payload.role)) {
+      if (adminApi) return denyApi(403, "Admin access is required.");
+      const url = request.nextUrl.clone();
+      url.pathname = "/account";
+      url.search = "";
+      return NextResponse.redirect(url);
+    }
     return NextResponse.next();
   } catch {
-    return redirect();
+    return adminApi ? denyApi(401, "Sign in required.") : redirectToLogin();
   }
 }
 

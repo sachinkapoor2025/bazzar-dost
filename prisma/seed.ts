@@ -552,6 +552,15 @@ async function main() {
   } else {
     console.log("ADMIN_EMAIL and ADMIN_PASSWORD were not set, so no admin was created.");
   }
+
+  const staffEmails = ["gungun.kalra@mydgv.com", ...(process.env.ADMIN_EMAILS || "").split(",")].map((item) => item.trim().toLowerCase()).filter(Boolean);
+  for (const staffEmail of new Set(staffEmails)) {
+    const staff = await prisma.user.findUnique({ where: { email: staffEmail } });
+    if (staff && staff.role !== "admin") {
+      await prisma.user.update({ where: { id: staff.id }, data: { role: "admin" } });
+      console.log(`Granted admin role to ${staffEmail}`);
+    }
+  }
 }
 
 main()

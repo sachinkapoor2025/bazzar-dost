@@ -33,6 +33,20 @@ model PasswordResetToken {
   createdAt DateTime @default(now())
 }
 
+model SignupChallenge {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  name         String
+  phone        String   @default("")
+  passwordHash String
+  otpHash      String
+  expiresAt    DateTime
+  resendAt     DateTime
+  attempts     Int      @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
 model Address {
   id        String  @id @default(cuid())
   userId    String

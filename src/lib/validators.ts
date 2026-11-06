@@ -21,6 +21,15 @@ export const registerSchema = z.object({
     .regex(/\d/, "Include at least one number."),
 });
 
+export const verifyOtpSchema = z.object({
+  email: z.string().trim().email("Enter a valid email address.").max(120),
+  otp: z.string().trim().regex(/^\d{6}$/, "Enter the 6-digit code."),
+});
+
+export const resendOtpSchema = z.object({
+  email: z.string().trim().email("Enter a valid email address.").max(120),
+});
+
 export const loginSchema = z.object({
   email: z.string().trim().email("Enter a valid email address."),
   password: z.string().min(1, "Enter your password.").max(72),

@@ -22,10 +22,10 @@ export async function verifyPassword(password: string, hash: string): Promise<bo
   return bcrypt.compare(password, hash);
 }
 
-export async function signSession(userId: string): Promise<string | null> {
+export async function signSession(userId: string, role: string): Promise<string | null> {
   const secret = getSessionSecret();
   if (!secret) return null;
-  return new SignJWT({})
+  return new SignJWT({ role })
     .setProtectedHeader({ alg: "HS256" })
     .setSubject(userId)
     .setIssuedAt()
