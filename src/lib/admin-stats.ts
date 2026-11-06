@@ -88,7 +88,7 @@ export async function loadAdminOverview(input: { range?: string; from?: string; 
     bestSellers: sold.map((item) => ({ productId: item.productId, name: item.name, qty: item._sum.qty || 0 })),
     recentOrders,
     recentCustomers,
-    statusCounts: ["placed", "confirmed", "processing", "shipped", "delivered", "cancelled"].map((status) => ({
+    statusCounts: ["placed", "confirmed", "processing", "shipped", "out_for_delivery", "delivered", "cancelled"].map((status) => ({
       status,
       count: orders.filter((order) => order.status === status).length,
     })),

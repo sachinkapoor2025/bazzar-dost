@@ -1,7 +1,8 @@
 import { z } from "zod";
-import { INDIAN_STATES } from "@/lib/states";
 import { MAX_LINE_QTY } from "@/lib/commerce";
 import { isAllowedImageUrl } from "@/lib/images";
+import { ORDER_STATUS_VALUES } from "@/lib/order-progress";
+import { INDIAN_STATES } from "@/lib/states";
 
 const phone = z
   .string()
@@ -199,7 +200,7 @@ export const promotionSchema = z.object({
 });
 
 export const orderUpdateSchema = z.object({
-  status: z.enum(["placed", "confirmed", "processing", "shipped", "delivered", "cancelled"]),
+  status: z.enum(ORDER_STATUS_VALUES),
   paymentStatus: z.enum(["unpaid", "paid", "refunded"]),
   trackingNote: z.string().trim().max(300).optional().default(""),
 });

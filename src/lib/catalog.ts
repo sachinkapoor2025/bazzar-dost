@@ -3,7 +3,8 @@ import { api } from "@/lib/backend";
 import { selectDailyDeals } from "@/lib/deals";
 import { loadEngagementScores } from "@/lib/engagement";
 import { loadSoldUnits } from "@/lib/sales";
-import { parseRupee, priceBounds } from "@/lib/commerce";
+import { parseRating, parseRupee, priceBounds } from "@/lib/commerce";
+import { loadReviewAverages } from "@/lib/product-review-store";
 import {
   localByIds,
   localBySlugs,
@@ -25,7 +26,7 @@ function remoteCatalogue(): boolean {
   return Boolean(process.env.API_URL || process.env.NEXT_PUBLIC_API_URL);
 }
 
-async function readCatalogue<T>(remote: () => Promise<T>, local: () => T): Promise<T> {
+async function readCatalogue<T>(remote: () => Promise<T>, local: () => T | Promise<T>): Promise<T> {
   if (!remoteCatalogue()) return local();
   try {
     return await remote();
@@ -111,6 +112,8 @@ export type CatalogInput = {
   arrivalsOnly?: boolean;
   bestSellersOnly?: boolean;
   inStockOnly?: boolean;
+  outOfStockOnly?: boolean;
+  minRating?: number;
   take?: number;
 };
 
@@ -130,8 +133,14 @@ export async function searchCards(query: string, take = 6): Promise<ProductCardD
   return result.items;
 }
 
+async function queryLocalCatalog(input: CatalogInput): Promise<CatalogResult> {
+  const [sold, ratings] = await Promise.all([loadSoldUnits(), loadReviewAverages()]);
+  return localQuery(input, sold ?? new Map(), ratings);
+}
+
 export async function queryCatalog(input: CatalogInput): Promise<CatalogResult> {
-  return readCatalogue(() => api<CatalogResult>("/catalog", { body: input }), () => localQuery(input));
+  if (input.minRating) return queryLocalCatalog(input);
+  return readCatalogue(() => api<CatalogResult>("/catalog", { body: input }), () => queryLocalCatalog(input));
 }
 
 export function readCatalogQuery(raw: Record<string, string | string[] | undefined>, defaults?: Partial<CatalogInput>): CatalogInput {
@@ -152,6 +161,8 @@ export function readCatalogQuery(raw: Record<string, string | string[] | undefin
     arrivalsOnly: defaults?.arrivalsOnly,
     bestSellersOnly: defaults?.bestSellersOnly,
     inStockOnly: first("stock") === "in" || defaults?.inStockOnly,
+    outOfStockOnly: first("stock") === "out",
+    minRating: parseRating(first("rating")),
   };
 }
 

@@ -1,9 +1,10 @@
 import Link from "next/link";
 import { prisma } from "@/lib/db";
 import { formatDate, formatINR } from "@/lib/format";
+import { ORDER_STATUS_VALUES, orderStatusLabel } from "@/lib/order-progress";
 import type { Prisma } from "@prisma/client";
 
-const statuses = ["placed", "confirmed", "processing", "shipped", "delivered", "cancelled"];
+const statuses: string[] = [...ORDER_STATUS_VALUES];
 
 export default async function AdminOrdersPage({ searchParams }: { searchParams: Promise<{ q?: string; status?: string; from?: string; to?: string }> }) {
   const params = await searchParams;
@@ -34,7 +35,7 @@ export default async function AdminOrdersPage({ searchParams }: { searchParams: 
         <input name="q" defaultValue={params.q || ""} placeholder="Order number, name, or email" className="min-h-11 min-w-56 flex-1 rounded-full border border-cream-300 bg-white px-4 text-sm" />
         <select name="status" defaultValue={params.status || ""} className="min-h-11 rounded-full border border-cream-300 bg-white px-3 text-sm">
           <option value="">Any status</option>
-          {statuses.map((status) => <option key={status} value={status}>{status}</option>)}
+          {statuses.map((status) => <option key={status} value={status}>{orderStatusLabel(status)}</option>)}
         </select>
         <input type="date" name="from" defaultValue={params.from || ""} className="min-h-11 rounded-xl border border-cream-300 bg-white px-2 text-sm" />
         <input type="date" name="to" defaultValue={params.to || ""} className="min-h-11 rounded-xl border border-cream-300 bg-white px-2 text-sm" />
@@ -48,7 +49,7 @@ export default async function AdminOrdersPage({ searchParams }: { searchParams: 
               <tr key={order.id} className="border-b border-cream-200">
                 <td className="py-2"><Link className="font-semibold underline" href={`/admin/orders/${order.id}`}>{order.orderNumber}</Link><span className="block text-xs text-muted">{formatDate(order.createdAt)}</span></td>
                 <td>{order.name}<span className="block text-xs">{order.email}</span></td>
-                <td className="capitalize">{order.status}</td>
+                <td>{orderStatusLabel(order.status)}</td>
                 <td className="capitalize">{order.paymentMethod} · {order.paymentStatus}</td>
                 <td>{formatINR(order.total)}</td>
               </tr>

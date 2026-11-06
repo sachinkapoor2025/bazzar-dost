@@ -1,7 +1,6 @@
 import Link from "next/link";
+import { OrderProgress } from "@/components/order-progress";
 import { formatDate, formatINR } from "@/lib/format";
-
-const steps = ["placed", "confirmed", "processing", "shipped", "delivered"] as const;
 
 export type OrderView = {
   orderNumber: string;
@@ -61,21 +60,12 @@ export function toOrderView(order: Omit<OrderView, "createdAt"> & { createdAt: D
 }
 
 export function OrderDetail({ order, confirmation = false }: { order: OrderView; confirmation?: boolean }) {
-  const index = steps.indexOf(order.status as (typeof steps)[number]);
   return (
     <article>
       <h1 className="font-display text-4xl">{confirmation ? "Order placed" : "Order"} {order.orderNumber}</h1>
       {confirmation ? <p className="mt-2 text-sm leading-6">The order is recorded and stock has been reserved. Payment status is {order.paymentStatus}. Cash on delivery is collected later and is not marked paid by this page.</p> : null}
       <p className="mt-2 text-sm text-muted">Placed {formatDate(order.createdAt)} · <span className="capitalize">{order.paymentMethod === "cod" ? "Cash on delivery" : order.paymentMethod}</span> · <span className="capitalize">{order.paymentStatus}</span></p>
-      {order.status === "cancelled" ? (
-        <p className="mt-4 rounded-2xl bg-[#F8E8E8] px-4 py-3 text-sm">This order is cancelled. Reserved stock has been returned when the items still exist.</p>
-      ) : (
-        <ol className="mt-4 grid gap-2 sm:grid-cols-5">
-          {steps.map((step, stepIndex) => (
-            <li key={step} className={`rounded-xl px-3 py-2 text-sm capitalize ${stepIndex <= index ? "bg-forest-800 text-cream-50" : "bg-cream-200 text-muted"}`}>{step}</li>
-          ))}
-        </ol>
-      )}
+      <OrderProgress status={order.status} />
       {order.trackingNote ? <p className="mt-4 text-sm"><strong>Tracking note: </strong>{order.trackingNote}</p> : <p className="mt-4 text-sm text-muted">No courier note has been added yet.</p>}
       <ul className="mt-4 divide-y divide-cream-200 rounded-2xl border border-cream-300 bg-white">
         {order.items.map((item) => (

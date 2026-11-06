@@ -37,6 +37,12 @@ test("rejects a second review of the same product by the same customer", () => {
   if (!decision.ok) assert.equal(decision.status, 409);
 });
 
+test("rejects a review that repeats the same characters", () => {
+  const decision = reviewDecision({ ...base, comment: "aaaaaaaaaa" });
+  assert.equal(decision.ok, false);
+  if (!decision.ok) assert.equal(decision.status, 400);
+});
+
 test("allows one review after a real purchase", () => {
   const decision = reviewDecision({
     ...base,

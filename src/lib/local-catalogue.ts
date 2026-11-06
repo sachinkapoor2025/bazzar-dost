@@ -219,8 +219,8 @@ export function localMostSearched(scores: Map<string, EngagementScore>) {
   return { products: ranked.items.map(toCard), ranked: ranked.ranked };
 }
 
-export function localQuery(input: CatalogInput) {
-  return queryRows(catalogue.products, catalogue.categories, new Map(), input);
+export function localQuery(input: CatalogInput, sales: Map<string, number> = new Map(), ratings: Map<string, number> = new Map()) {
+  return queryRows(catalogue.products, catalogue.categories, sales, input, ratings);
 }
 
 export function localCategories(scope: "top" | "all" = "top") {

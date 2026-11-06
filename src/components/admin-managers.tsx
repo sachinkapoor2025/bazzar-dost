@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { buttonClass, fieldClass, labelClass } from "@/components/ui";
+import { ORDER_STATUS_VALUES, orderStatusLabel } from "@/lib/order-progress";
 import { slugify } from "@/lib/format";
 
 type Category = { id: string; name: string; slug: string; description: string; image: string; sortOrder: number };
@@ -99,7 +100,7 @@ export function OrderStatusForm({ id, status, paymentStatus, trackingNote }: { i
     <form onSubmit={onSubmit} className="mt-4 grid max-w-lg gap-3 rounded-2xl border border-cream-300 bg-white p-4">
       <p className="text-sm text-muted">Mark payment as paid only after the money has actually been collected. Cancelling returns stock once.</p>
       <label className={labelClass}>Status
-        <select name="status" defaultValue={status} className={fieldClass}>{["placed", "confirmed", "processing", "shipped", "delivered", "cancelled"].map((item) => <option key={item}>{item}</option>)}</select>
+        <select name="status" defaultValue={status} className={fieldClass}>{ORDER_STATUS_VALUES.map((item) => <option key={item} value={item}>{orderStatusLabel(item)}</option>)}</select>
       </label>
       <label className={labelClass}>Payment status
         <select name="paymentStatus" defaultValue={paymentStatus} className={fieldClass}>{["unpaid", "paid", "refunded"].map((item) => <option key={item}>{item}</option>)}</select>

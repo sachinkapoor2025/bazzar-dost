@@ -13,6 +13,8 @@ export type CatalogInput = {
   arrivalsOnly?: boolean;
   bestSellersOnly?: boolean;
   inStockOnly?: boolean;
+  outOfStockOnly?: boolean;
+  minRating?: number;
   take?: number;
 };
 
@@ -68,7 +70,21 @@ export function salesByProduct(orders: Order[]): Map<string, number> {
   return map;
 }
 
-export function queryCatalog(products: HydratedProduct[], categories: Category[], sales: Map<string, number>, input: CatalogInput) {
+function isAvailable(product: HydratedProduct): boolean {
+  return product.variants.length ? product.variants.some((variant) => variant.stock > 0) : product.stock > 0;
+}
+
+function unitsSold(sales: Map<string, number>, product: HydratedProduct): number {
+  return sales.get(product.id) || sales.get(product.slug) || sales.get(`prod_${product.slug}`) || 0;
+}
+
+export function queryCatalog(
+  products: HydratedProduct[],
+  categories: Category[],
+  sales: Map<string, number>,
+  input: CatalogInput,
+  ratings: Map<string, number> = new Map(),
+) {
   const range = normalizePriceRange(input.min, input.max);
   if (range.error) return { items: [], total: 0, page: 1, pageCount: 1, priceError: range.error, outOfRange: false };
 
@@ -97,12 +113,10 @@ export function queryCatalog(products: HydratedProduct[], categories: Category[]
       return !bounds.from && discountPercent(bounds.price, product.compareAtPrice) != null;
     });
   }
-  if (input.bestSellersOnly) rows = rows.filter((product) => (sales.get(product.id) || 0) > 0);
-  if (input.inStockOnly) {
-    rows = rows.filter((product) =>
-      product.variants.length ? product.variants.some((variant) => variant.stock > 0) : product.stock > 0,
-    );
-  }
+  if (input.bestSellersOnly) rows = rows.filter((product) => unitsSold(sales, product) > 0);
+  if (input.inStockOnly) rows = rows.filter((product) => isAvailable(product));
+  if (input.outOfStockOnly) rows = rows.filter((product) => !isAvailable(product));
+  if (input.minRating) rows = rows.filter((product) => (ratings.get(product.slug) || 0) >= input.minRating!);
 
   const direction = input.sort || (input.bestSellersOnly ? "popular" : "newest");
   rows.sort((a, b) => {
@@ -111,7 +125,7 @@ export function queryCatalog(products: HydratedProduct[], categories: Category[]
     if (direction === "price-asc") return a.price - b.price || bTime - aTime;
     if (direction === "price-desc") return b.price - a.price || bTime - aTime;
     if (direction === "name") return a.name.localeCompare(b.name);
-    if (direction === "popular") return (sales.get(b.id) || 0) - (sales.get(a.id) || 0) || bTime - aTime;
+    if (direction === "popular") return unitsSold(sales, b) - unitsSold(sales, a) || bTime - aTime;
     return bTime - aTime;
   });
 

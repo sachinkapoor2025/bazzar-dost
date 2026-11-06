@@ -63,6 +63,7 @@ export function ProductReviews({
           {reviews.map((review) => (
             <li key={review.id} className="rounded-2xl border border-cream-300 bg-white p-4">
               <p className="text-sm font-semibold text-forest-800">{review.rating} out of 5</p>
+              <p className="text-xs font-semibold text-forest-800">Verified purchase</p>
               <p className="mt-2 text-sm leading-6">{review.comment}</p>
               <p className="mt-3 text-sm font-semibold">{review.name}</p>
               <p className="text-xs text-muted">{formatDate(review.createdAt)}</p>

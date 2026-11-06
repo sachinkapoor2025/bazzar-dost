@@ -71,6 +71,11 @@ export function parseRupee(value: string | undefined): number | undefined {
   return Number(value);
 }
 
+export function parseRating(value: string | undefined): number | undefined {
+  if (!value || !/^[1-5]$/.test(value)) return undefined;
+  return Number(value);
+}
+
 export function safeNextPath(value: string | undefined, fallback = "/account"): string {
   if (!value) return fallback;
   if (!value.startsWith("/") || value.startsWith("//") || value.startsWith("/\\")) return fallback;

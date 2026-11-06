@@ -2,6 +2,7 @@ import Link from "next/link";
 import { AdminRangeForm } from "@/components/admin-range-form";
 import { loadAdminOverview } from "@/lib/admin-stats";
 import { formatINR } from "@/lib/format";
+import { orderStatusLabel } from "@/lib/order-progress";
 
 export default async function AdminHomePage({ searchParams }: { searchParams: Promise<{ range?: string; from?: string; to?: string }> }) {
   const params = await searchParams;
@@ -46,8 +47,8 @@ export default async function AdminHomePage({ searchParams }: { searchParams: Pr
         <h2 className="font-display text-2xl">Order status</h2>
         <ul className="mt-3 grid gap-2 sm:grid-cols-3">
           {data.statusCounts.map((item) => (
-            <li key={item.status} className="flex items-center justify-between rounded-xl bg-cream-100 px-3 py-2 text-sm capitalize">
-              <span>{item.status}</span><strong>{item.count}</strong>
+            <li key={item.status} className="flex items-center justify-between rounded-xl bg-cream-100 px-3 py-2 text-sm">
+              <span>{orderStatusLabel(item.status)}</span><strong>{item.count}</strong>
             </li>
           ))}
         </ul>
@@ -57,7 +58,7 @@ export default async function AdminHomePage({ searchParams }: { searchParams: Pr
           <h2 className="font-display text-2xl">Recent orders</h2>
           <ul className="mt-2 space-y-2 text-sm">
             {data.recentOrders.length === 0 ? <li>No orders yet.</li> : data.recentOrders.map((order) => (
-              <li key={order.id}><Link className="font-semibold underline" href={`/admin/orders/${order.id}`}>{order.orderNumber}</Link> · {order.name} · {order.status} · {formatINR(order.total)}</li>
+              <li key={order.id}><Link className="font-semibold underline" href={`/admin/orders/${order.id}`}>{order.orderNumber}</Link> · {order.name} · {orderStatusLabel(order.status)} · {formatINR(order.total)}</li>
             ))}
           </ul>
         </section>

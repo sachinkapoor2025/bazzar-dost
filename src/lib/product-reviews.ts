@@ -55,5 +55,7 @@ export function reviewDecision(input: {
   const comment = input.comment.trim();
   if (comment.length < 10) return { ok: false, status: 400, error: "Write at least a short review." };
   if (comment.length > 600) return { ok: false, status: 400, error: "Keep the review under 600 characters." };
+  const compact = comment.toLowerCase().replace(/\s+/g, "");
+  if (new Set(compact).size < 3) return { ok: false, status: 400, error: "Write a review in your own words." };
   return { ok: true, orderId: input.purchasedOrderId };
 }

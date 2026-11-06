@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "test": "node --import tsx --test tests/commerce.test.ts tests/site.test.ts tests/trending.test.ts tests/best-sellers.test.ts tests/deals.test.ts tests/product-reviews.test.ts tests/staff.test.ts tests/register.test.ts",
+    "test": "node --import tsx --test tests/commerce.test.ts tests/site.test.ts tests/trending.test.ts tests/best-sellers.test.ts tests/deals.test.ts tests/product-reviews.test.ts tests/staff.test.ts tests/register.test.ts tests/delivery.test.ts tests/catalog-filters.test.ts",
     "db:migrate": "prisma migrate deploy",
     "db:setup": "prisma migrate deploy && tsx prisma/seed.ts",
     "postinstall": "prisma generate"

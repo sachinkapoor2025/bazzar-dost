@@ -1,8 +1,10 @@
 "use client";
 
 import { useState } from "react";
+import { OrderProgress } from "@/components/order-progress";
 import { buttonClass, fieldClass, labelClass } from "@/components/ui";
 import { formatDate, formatINR } from "@/lib/format";
+import { orderStatusLabel } from "@/lib/order-progress";
 
 type Tracked = {
   orderNumber: string;
@@ -47,7 +49,8 @@ export function TrackForm() {
       {order ? (
         <article className="rounded-2xl border border-cream-300 bg-white p-4 text-sm">
           <h2 className="font-display text-2xl">{order.orderNumber}</h2>
-          <p className="mt-1 capitalize">{order.status} · Payment {order.paymentStatus}</p>
+          <p className="mt-1">{orderStatusLabel(order.status)} · Payment {order.paymentStatus}</p>
+          <OrderProgress status={order.status} />
           <p className="text-muted">Placed {formatDate(order.createdAt)} · {formatINR(order.total)}</p>
           <p className="mt-2">{order.trackingNote || "No courier note has been added yet."}</p>
           <ul className="mt-3 list-disc pl-5">

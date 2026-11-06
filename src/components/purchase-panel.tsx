@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { useCart } from "@/components/cart-provider";
 import { useWishlist } from "@/components/wishlist-provider";
+import { Heart } from "@/components/product-card";
 import { Price } from "@/components/price";
 import { buttonClass, fieldClass, labelClass } from "@/components/ui";
 import { MAX_LINE_QTY, sellingPrice, showCompareAt } from "@/lib/commerce";
@@ -77,7 +78,10 @@ export function PurchasePanel({ product }: { product: PurchaseProduct }) {
       <div className="mt-4 flex flex-wrap gap-2">
         <button type="button" className={buttonClass("primary")} disabled={stock < 1} onClick={() => cart.add({ ...line, qty })}>Add to cart</button>
         <button type="button" className={buttonClass("gold")} disabled={stock < 1} onClick={() => cart.buyNow({ ...line, qty })}>Buy now</button>
-        <button type="button" className={buttonClass("outline")} aria-pressed={saved} onClick={() => wishlist.toggle(product.id)}>{saved ? "Saved" : "Wishlist"}</button>
+        <button type="button" className={buttonClass("outline")} aria-pressed={saved} aria-label={saved ? `Remove ${product.name} from wishlist` : `Save ${product.name} to wishlist`} onClick={() => wishlist.toggle(product.id)}>
+          <Heart filled={saved} />
+          {saved ? "Saved" : "Wishlist"}
+        </button>
       </div>
     </div>
   );

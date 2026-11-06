@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { formatDate, formatINR } from "@/lib/format";
+import { orderStatusLabel } from "@/lib/order-progress";
 
 export const metadata: Metadata = { title: "Order history", robots: { index: false, follow: false } };
 
@@ -30,7 +31,7 @@ export default async function OrdersPage() {
               <tr key={order.id} className="border-b border-cream-200">
                 <td className="py-2"><Link className="font-semibold underline" href={`/account/orders/${order.orderNumber}`}>{order.orderNumber}</Link></td>
                 <td>{formatDate(order.createdAt)}</td>
-                <td className="capitalize">{order.status}</td>
+                <td>{orderStatusLabel(order.status)}</td>
                 <td className="capitalize">{order.paymentStatus}</td>
                 <td>{formatINR(order.total)}</td>
               </tr>

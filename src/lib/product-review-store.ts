@@ -122,3 +122,21 @@ export async function saveProductReview(
     return { status: 503, error: "Reviews cannot be saved right now." };
   }
 }
+
+export async function loadReviewAverages(): Promise<Map<string, number>> {
+  const averages = new Map<string, number>();
+  if (!databaseConfigured()) return averages;
+  try {
+    const rows = await prisma.productReview.groupBy({
+      by: ["productSlug"],
+      _avg: { rating: true },
+    });
+    for (const row of rows) {
+      if (row._avg.rating == null) continue;
+      averages.set(row.productSlug, row._avg.rating);
+    }
+  } catch (error) {
+    console.error(error);
+  }
+  return averages;
+}
