@@ -9,7 +9,7 @@ export default async function ReportsPage({ searchParams }: { searchParams: Prom
   return (
     <div>
       <h1 className="font-display text-4xl">Reports</h1>
-      <p className="mt-2 max-w-2xl text-sm leading-6 text-muted">Sales, orders, products, and payments for the selected dates. Exports download the current stored records.</p>
+      <p className="mt-2 text-sm leading-6 text-muted">Sales, orders, products, and payments for the selected dates. Exports download the current stored records.</p>
       <div className="mt-4"><AdminRangeForm range={data.range} from={params.from} to={params.to} action="/admin/reports" /></div>
       <div className="mt-4 flex flex-wrap gap-3 text-sm">
         <a className="underline" href="/api/admin/export?type=orders">Orders CSV</a>

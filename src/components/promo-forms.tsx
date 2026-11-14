@@ -35,7 +35,7 @@ export function PromotionManager({ items }: { items: Array<{ id: string; title: 
           <button className={buttonClass("outline")}>Update</button>
         </form>
       ))}
-      <form onSubmit={(event) => send(event)} className="grid max-w-xl gap-2">
+      <form onSubmit={(event) => send(event)} className="grid w-full gap-2">
         <h2 className="font-display text-2xl">New announcement</h2>
         <label className={labelClass}>Title<input name="title" required className={fieldClass} /></label>
         <label className={labelClass}>Message<input name="message" required className={fieldClass} /></label>
@@ -72,7 +72,7 @@ export function CouponManager() {
     if (response.ok) window.location.reload();
   }
   return (
-    <form onSubmit={onSubmit} className="grid max-w-xl gap-2">
+    <form onSubmit={onSubmit} className="grid w-full gap-2">
       <label className={labelClass}>Code<input name="code" required className={fieldClass} /></label>
       <label className={labelClass}>Type
         <select name="type" className={fieldClass}><option value="FIXED">Fixed rupees</option><option value="PERCENT">Percent</option></select>

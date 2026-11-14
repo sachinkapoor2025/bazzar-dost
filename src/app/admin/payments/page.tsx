@@ -17,7 +17,7 @@ export default async function PaymentsPage({ searchParams }: { searchParams: Pro
         <h1 className="font-display text-4xl">Payments</h1>
         <a className="text-sm font-semibold underline" href="/api/admin/export?type=payments">Export CSV</a>
       </div>
-      <p className="mt-2 max-w-2xl text-sm leading-6 text-muted">BazaarDost checkout collects cash on delivery. There is no card gateway, transaction id, or stored card number. Unpaid means the cash has not been marked collected. Refunded means the store recorded a refund after a payment was marked paid. The money movement itself happens outside this website.</p>
+      <p className="mt-2 text-sm leading-6 text-muted">BazaarDost checkout collects cash on delivery. There is no card gateway, transaction id, or stored card number. Unpaid means the cash has not been marked collected. Refunded means the store recorded a refund after a payment was marked paid. The money movement itself happens outside this website.</p>
       <form className="mt-4" action="/admin/payments">
         <select name="status" defaultValue={status} className="min-h-11 rounded-full border border-cream-300 bg-white px-3 text-sm">
           <option value="">All payment statuses</option>

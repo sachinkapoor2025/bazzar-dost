@@ -75,7 +75,7 @@ export function OrderDetail({ order, confirmation = false }: { order: OrderView;
           </li>
         ))}
       </ul>
-      <dl className="mt-4 max-w-sm space-y-1 text-sm">
+      <dl className="mt-4 w-full space-y-1 text-sm">
         <div className="flex justify-between"><dt>Subtotal</dt><dd>{formatINR(order.subtotal)}</dd></div>
         <div className="flex justify-between"><dt>Discount{order.couponCode ? ` (${order.couponCode})` : ""}</dt><dd>{formatINR(order.discount)}</dd></div>
         <div className="flex justify-between"><dt>Shipping</dt><dd>{formatINR(order.shipping)}</dd></div>

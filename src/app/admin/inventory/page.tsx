@@ -32,7 +32,7 @@ export default async function InventoryPage({ searchParams }: { searchParams: Pr
   return (
     <div>
       <h1 className="font-display text-4xl">Inventory</h1>
-      <p className="mt-2 max-w-2xl text-sm leading-6 text-muted">Stock saved here is the quantity the product page and cart use. A product with options tracks stock on each option.</p>
+      <p className="mt-2 text-sm leading-6 text-muted">Stock saved here is the quantity the product page and cart use. A product with options tracks stock on each option.</p>
       <form className="mt-4 flex flex-wrap gap-2" action="/admin/inventory">
         <input name="q" defaultValue={q} placeholder="Search" className="min-h-11 rounded-full border border-cream-300 bg-white px-4 text-sm" />
         <select name="stock" defaultValue={params.stock || ""} className="min-h-11 rounded-full border border-cream-300 bg-white px-3 text-sm">

@@ -32,7 +32,7 @@ export async function CatalogBrowser({
     <Container className="py-6">
       {crumbs ? <Breadcrumbs items={crumbs} /> : null}
       <h1 className="font-display text-4xl text-forest-900">{title}</h1>
-      {intro ? <p className="mt-2 max-w-2xl text-sm leading-6 text-muted">{intro}</p> : null}
+      {intro ? <p className="mt-2 text-sm leading-6 text-muted">{intro}</p> : null}
       {links && links.length > 0 ? (
         <ul className="mt-4 flex gap-2 overflow-x-auto pb-1">
           {links.map((link) => (

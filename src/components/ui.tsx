@@ -23,7 +23,7 @@ export const fieldClass =
 export const labelClass = "mb-1 block text-sm font-semibold text-ink";
 
 export function Container({ children, className }: { children: React.ReactNode; className?: string }) {
-  return <div className={cn("mx-auto w-full max-w-page px-4", className)}>{children}</div>;
+  return <div className={cn("mx-auto w-full px-4 sm:px-6", className)}>{children}</div>;
 }
 
 export function SectionTitle({

@@ -53,11 +53,11 @@ export function HomeReviews({ reviews }: { reviews: PublicReview[] }) {
 
   return (
     <section>
-      <p className="mb-4 max-w-2xl text-sm leading-6 text-muted">Reviews here are sent by customers through the form. The store does not write them.</p>
+      <p className="mb-4 text-sm leading-6 text-muted">Reviews here are sent by customers through the form. The store does not write them.</p>
       {items.length === 0 ? (
         <p className="rounded-2xl border border-dashed border-cream-300 bg-white px-4 py-5 text-sm text-muted">No customer reviews yet.</p>
       ) : (
-        <ul className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
+        <ul className="grid gap-3 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {items.map((review) => (
             <li key={review.id} className="rounded-2xl border border-cream-300 bg-white p-4">
               <p className="text-sm font-semibold text-forest-800">{review.rating} out of 5</p>
@@ -68,7 +68,7 @@ export function HomeReviews({ reviews }: { reviews: PublicReview[] }) {
           ))}
         </ul>
       )}
-      <form onSubmit={onSubmit} className="mt-4 max-w-xl rounded-2xl border border-cream-300 bg-white p-4">
+      <form onSubmit={onSubmit} className="mt-4 w-full rounded-2xl border border-cream-300 bg-white p-4">
         <h3 className="font-display text-2xl text-forest-900">Write a review</h3>
         <label htmlFor={nameId} className={`${labelClass} mt-3`}>Name</label>
         <input id={nameId} name="name" required maxLength={60} className={fieldClass} />

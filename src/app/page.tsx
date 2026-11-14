@@ -36,10 +36,10 @@ export default async function HomePage() {
           <div className="absolute inset-0 bg-gradient-to-r from-forest-950 via-forest-950/88 to-forest-950/55" />
         </div>
         <Container className="relative py-14 md:py-20">
-          <div className="max-w-xl">
+          <div className="w-full">
             <p className="text-sm font-semibold uppercase tracking-[0.16em] text-gold-400">{site.tagline}</p>
             <h1 className="mt-4 font-display text-4xl leading-[1.08] sm:text-5xl lg:text-6xl">Practical products for home and everyday use.</h1>
-            <p className="mt-5 max-w-lg text-base leading-7 text-cream-100">Browse kitchen tools, personal care, phone accessories, toys, bags, and outdoor items. Every price and stock count on this site comes from the current catalogue.</p>
+            <p className="mt-5 text-base leading-7 text-cream-100">Browse kitchen tools, personal care, phone accessories, toys, bags, and outdoor items. Every price and stock count on this site comes from the current catalogue.</p>
             <div className="mt-8">
               <Link href="/shop" className={`${buttonClass("gold")} px-6 text-base`}>Shop now</Link>
             </div>

@@ -11,7 +11,7 @@ export function Footer({ categories }: { categories: CategoryLink[] }) {
       <Container className="grid gap-8 py-10 md:grid-cols-4">
         <div>
           <Logo size="footer" />
-          <p className="mt-3 max-w-xs text-sm leading-6 text-cream-200">{site.tagline}</p>
+          <p className="mt-3 text-sm leading-6 text-cream-200">{site.tagline}</p>
         </div>
         <div>
           <h2 className="font-semibold text-gold-400">Shop</h2>

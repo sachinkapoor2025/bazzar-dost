@@ -25,7 +25,7 @@ export default function ImportProductsPage() {
   }
 
   return (
-    <form onSubmit={submit} className="max-w-2xl">
+    <form onSubmit={submit} className="w-full">
       <h1 className="font-display text-4xl">CSV stock and price update</h1>
       <p className="mt-2 text-sm leading-6 text-muted">Use columns sku, price, stock, and active. Only products that already exist are updated, so the catalogue is not filled with incomplete rows. New products are added from the product form, which also stores the description, category, and images.</p>
       <textarea value={csv} onChange={(event) => setCsv(event.target.value)} rows={12} className="mt-4 w-full rounded-xl border border-cream-300 p-3 text-sm" />

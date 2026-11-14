@@ -39,7 +39,7 @@ export function TrackForm() {
   }
 
   return (
-    <div className="grid max-w-xl gap-4">
+    <div className="grid w-full gap-4">
       <form onSubmit={onSubmit} className="grid gap-3">
         <label className={labelClass}>Order number<input name="orderNumber" required className={fieldClass} placeholder="BD-…" /></label>
         <label className={labelClass}>Email used at checkout<input name="email" type="email" required className={fieldClass} /></label>

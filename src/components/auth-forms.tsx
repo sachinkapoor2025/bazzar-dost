@@ -40,7 +40,7 @@ export function RegisterForm({ nextPath }: { nextPath: string }) {
   }
 
   return (
-    <form onSubmit={onRegister} className="mx-auto grid max-w-md gap-3" aria-labelledby="auth-title">
+    <form onSubmit={onRegister} className="grid w-full gap-3" aria-labelledby="auth-title">
       <h1 id="auth-title" className="font-display text-4xl">Create account</h1>
       <p className="text-sm leading-6 text-muted">Create your account with your name, email, and password.</p>
       <label className={labelClass} htmlFor="signup-name">Full name
@@ -80,7 +80,7 @@ export function ForgotForm() {
     setPending(false);
   }
   return (
-    <form onSubmit={onSubmit} className="mx-auto grid max-w-md gap-3">
+    <form onSubmit={onSubmit} className="grid w-full gap-3">
       <label className={labelClass}>Email<input name="email" type="email" required className={fieldClass} /></label>
       <button className={buttonClass("primary")} disabled={pending}>{pending ? "Sending…" : "Request reset"}</button>
       {message ? <p role="status" className="text-sm">{message}</p> : null}
@@ -106,7 +106,7 @@ export function ResetForm({ token }: { token: string }) {
     if (response.ok) window.location.href = "/login";
   }
   return (
-    <form onSubmit={onSubmit} className="mx-auto grid max-w-md gap-3">
+    <form onSubmit={onSubmit} className="grid w-full gap-3">
       <label className={labelClass}>New password<input name="password" type="password" required minLength={8} className={fieldClass} /></label>
       <button className={buttonClass("primary")} disabled={pending || !token}>{pending ? "Saving…" : "Save password"}</button>
       {message ? <p role="status" className="text-sm">{message}</p> : null}
@@ -145,7 +145,7 @@ function AuthForm({
     window.location.href = nextPath;
   }
   return (
-    <form onSubmit={onSubmit} className="mx-auto grid max-w-md gap-3" aria-labelledby="auth-title">
+    <form onSubmit={onSubmit} className="grid w-full gap-3" aria-labelledby="auth-title">
       <h1 id="auth-title" className="font-display text-4xl">{title}</h1>
       {fields.includes("name") ? <label className={labelClass}>Name<input name="name" required className={fieldClass} /></label> : null}
       {fields.includes("email") ? <label className={labelClass}>Email<input name="email" type="email" required className={fieldClass} /></label> : null}

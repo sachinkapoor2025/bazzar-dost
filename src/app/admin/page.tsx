@@ -11,7 +11,7 @@ export default async function AdminHomePage({ searchParams }: { searchParams: Pr
   return (
     <div>
       <h1 className="font-display text-4xl">Dashboard</h1>
-      <p className="mt-2 max-w-3xl text-sm leading-6 text-muted">Figures come from orders, products, and customer accounts stored for BazaarDost. Revenue excludes cancelled orders. Checkout is cash on delivery.</p>
+      <p className="mt-2 text-sm leading-6 text-muted">Figures come from orders, products, and customer accounts stored for BazaarDost. Revenue excludes cancelled orders. Checkout is cash on delivery.</p>
       <div className="mt-4">
         <AdminRangeForm range={data.range} from={params.from} to={params.to} />
       </div>

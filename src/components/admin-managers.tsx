@@ -68,7 +68,7 @@ export function CategoryManager({ categories }: { categories: Category[] }) {
           <CategoryImageField initial={category.image} />
         </form>
       ))}
-      <form onSubmit={(event) => save(event)} className="grid max-w-xl gap-2">
+      <form onSubmit={(event) => save(event)} className="grid w-full gap-2">
         <h2 className="font-display text-2xl">Add a category</h2>
         <label className={labelClass}>Name<input name="name" required className={fieldClass} /></label>
         <label className={labelClass}>Slug<input name="slug" required className={fieldClass} /></label>
@@ -97,7 +97,7 @@ export function OrderStatusForm({ id, status, paymentStatus, trackingNote }: { i
     if (response.ok) window.location.reload();
   }
   return (
-    <form onSubmit={onSubmit} className="mt-4 grid max-w-lg gap-3 rounded-2xl border border-cream-300 bg-white p-4">
+    <form onSubmit={onSubmit} className="mt-4 grid w-full gap-3 rounded-2xl border border-cream-300 bg-white p-4">
       <p className="text-sm text-muted">Mark payment as paid only after the money has actually been collected. Cancelling returns stock once.</p>
       <label className={labelClass}>Status
         <select name="status" defaultValue={status} className={fieldClass}>{ORDER_STATUS_VALUES.map((item) => <option key={item} value={item}>{orderStatusLabel(item)}</option>)}</select>

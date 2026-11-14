@@ -12,7 +12,7 @@ export default async function AdminReviewsPage() {
   return (
     <div>
       <h1 className="font-display text-4xl">Reviews</h1>
-      <p className="mt-2 max-w-2xl text-sm leading-6 text-muted">These are product reviews from customers who bought the item. A customer can review a product once. Remove a review to take it off the product page.</p>
+      <p className="mt-2 text-sm leading-6 text-muted">These are product reviews from customers who bought the item. A customer can review a product once. Remove a review to take it off the product page.</p>
       <AdminReviewList
         reviews={reviews.map((review) => ({
           id: review.id,

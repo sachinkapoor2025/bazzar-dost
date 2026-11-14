@@ -17,7 +17,7 @@ export default async function WholesalePage({ searchParams }: { searchParams: Pr
   return (
     <Container className="py-6">
       <h1 className="font-display text-4xl text-forest-900">Wholesale</h1>
-      <p className="mt-3 max-w-3xl text-sm leading-7 text-muted">
+      <p className="mt-3 text-sm leading-7 text-muted">
         BazaarDost accepts bulk enquiries for products marked as wholesale-eligible. A minimum quantity and wholesale price are shown only when they are saved on that product. Sending this form stores a message for the store team. It does not create an order, charge you, or reserve stock.
       </p>
       <a href="/api/catalogue" className={`${buttonClass("outline")} mt-4`}>Download product list</a>

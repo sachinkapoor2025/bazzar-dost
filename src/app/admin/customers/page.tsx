@@ -30,9 +30,9 @@ export default async function AdminCustomersPage({ searchParams }: { searchParam
         <h1 className="font-display text-4xl">Customers</h1>
         <a className="text-sm font-semibold underline" href="/api/admin/export?type=customers">Export CSV</a>
       </div>
-      <p className="mt-2 max-w-2xl text-sm leading-6 text-muted">Passwords are never shown. Spending is the total of that customer’s orders, excluding cancelled orders.</p>
+      <p className="mt-2 text-sm leading-6 text-muted">Passwords are never shown. Spending is the total of that customer’s orders, excluding cancelled orders.</p>
       <form className="mt-4" action="/admin/customers">
-        <input name="q" defaultValue={q} placeholder="Search name, email, or phone" className="min-h-11 w-full max-w-md rounded-full border border-cream-300 bg-white px-4 text-sm" />
+        <input name="q" defaultValue={q} placeholder="Search name, email, or phone" className="min-h-11 w-full rounded-full border border-cream-300 bg-white px-4 text-sm" />
       </form>
       <div className="mt-4 overflow-x-auto">
         <table className="w-full min-w-[40rem] text-left text-sm">

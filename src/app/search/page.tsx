@@ -16,8 +16,8 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
     return (
       <Container className="py-8">
         <h1 className="font-display text-4xl">Search</h1>
-        <p className="mt-2 max-w-2xl text-sm leading-6 text-muted">Search the catalogue by product name, SKU, or a word from the description. Results stay inside the departments that currently have products.</p>
-        <form action="/search" method="get" role="search" className="mt-4 flex max-w-xl">
+        <p className="mt-2 text-sm leading-6 text-muted">Search the catalogue by product name, SKU, or a word from the description. Results stay inside the departments that currently have products.</p>
+        <form action="/search" method="get" role="search" className="mt-4 flex w-full">
           <label htmlFor="search-page-q" className="sr-only">Search products</label>
           <input id="search-page-q" name="q" className="min-h-11 w-full rounded-l-full border border-r-0 border-cream-300 px-4" />
           <button className="min-h-11 rounded-r-full bg-forest-800 px-4 text-sm font-semibold text-cream-50">Search</button>
