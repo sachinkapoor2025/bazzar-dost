@@ -32,6 +32,7 @@ export function Footer({ categories }: { categories: CategoryLink[] }) {
             <li><Link href="/account">My account</Link></li>
             <li><Link href="/track">Track an order</Link></li>
             <li><Link href="/about">About</Link></li>
+            <li><Link href="/about#certificates">Registration certificates</Link></li>
             <li><Link href="/contact">Contact</Link></li>
             <li><Link href="/faq">FAQ</Link></li>
             <li><Link href="/shipping-policy">Shipping policy</Link></li>
