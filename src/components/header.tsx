@@ -46,6 +46,11 @@ export function Header({ categories }: { categories: CategoryLink[] }) {
 
   useEffect(() => {
     setMounted(true);
+    function openFromDock() {
+      setOpen(true);
+    }
+    window.addEventListener("bazaardost-open-menu", openFromDock);
+    return () => window.removeEventListener("bazaardost-open-menu", openFromDock);
   }, []);
 
   useEffect(() => {
@@ -99,7 +104,7 @@ export function Header({ categories }: { categories: CategoryLink[] }) {
           <button
             type="button"
             className="inline-flex h-11 w-11 items-center justify-center rounded-full hover:bg-cream-200"
-            aria-label="Menu"
+            aria-label="Open menu"
             aria-expanded={open}
             aria-controls="site-menu"
             onClick={() => setOpen((value) => !value)}
@@ -133,10 +138,7 @@ export function Header({ categories }: { categories: CategoryLink[] }) {
             </div>
             <div className="flex-1 space-y-6 overflow-y-auto px-4 py-4">
               <section>
-                <h3 className="font-display text-2xl text-forest-900">What is in the catalogue</h3>
-                <p className="mt-2 text-sm leading-6 text-muted">
-                  BazaarDost is organised around the products currently available. Each department has live items you can open, compare, and add to the cart. Prices stay as stored, and a lower price is shown only when that product has a higher compare-at price.
-                </p>
+                <h3 className="font-display text-2xl text-forest-900">Shop by category</h3>
                 {categories.length === 0 ? (
                   <p className="mt-3 text-sm text-muted">Departments appear here when the catalogue has products.</p>
                 ) : (
@@ -145,8 +147,8 @@ export function Header({ categories }: { categories: CategoryLink[] }) {
                       <li key={category.slug}>
                         <Link href={`/categories/${category.slug}`} className="block rounded-2xl border border-cream-300 bg-white p-4 hover:border-forest-800" onClick={closeMenu}>
                           <span className="block font-display text-2xl text-forest-900">{category.name}</span>
-                          <span className="mt-2 block text-sm leading-6 text-muted">{category.description || "Live items in this department."}</span>
-                          <span className="mt-3 block text-sm font-semibold text-forest-800">{category.productCount} products</span>
+                          {category.description ? <span className="mt-2 block text-sm leading-6 text-muted line-clamp-2">{category.description}</span> : null}
+                          <span className="mt-3 block text-sm font-semibold text-forest-800">{category.productCount} {category.productCount === 1 ? "product" : "products"}</span>
                         </Link>
                       </li>
                     ))}
@@ -212,7 +214,7 @@ export function MobileDock() {
   return (
     <nav aria-label="Quick" className="fixed inset-x-0 bottom-0 z-40 grid h-16 grid-cols-5 border-t border-cream-300 bg-cream-50 md:hidden">
       <Link href="/" className={item}>Home</Link>
-      <Link href="/categories" className={item}>Categories</Link>
+      <button type="button" className={item} onClick={() => window.dispatchEvent(new Event("bazaardost-open-menu"))}>Menu</button>
       <Link href="/account" className={item}>Account</Link>
       <Link href="/wishlist" className={item}>Wishlist{wishlist.ids.length ? ` ${wishlist.ids.length}` : ""}</Link>
       <button type="button" className={item} onClick={() => cart.setDrawerOpen(true)}>Cart{cart.count ? ` ${cart.count}` : ""}</button>

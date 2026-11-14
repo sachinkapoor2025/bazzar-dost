@@ -144,11 +144,13 @@ export function categoryLinks(categories: Category[], products: HydratedProduct[
     own.set(category.id, products.filter((product) => product.isActive && product.categoryId === category.id).length);
   }
   const hasOwn = (id: string) => (own.get(id) || 0) > 0;
+  const familyCount = (id: string) =>
+    (own.get(id) || 0) +
+    categories.filter((item) => item.parentId === id).reduce((sum, child) => sum + (own.get(child.id) || 0), 0);
   const listed = categories.filter((category) => {
-    if (!hasOwn(category.id)) return false;
-    if (scope === "all") return true;
-    if (!category.parentId) return true;
-    return !hasOwn(category.parentId);
+    if (scope === "all") return hasOwn(category.id);
+    if (category.parentId) return false;
+    return familyCount(category.id) > 0;
   });
   return listed
     .map((category) => {
