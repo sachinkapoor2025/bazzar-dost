@@ -9,9 +9,10 @@ import {
   type CatalogInput,
 } from "../../apps/api/src/lib/catalog-query";
 import type { Category, HydratedProduct } from "../../apps/api/src/lib/types";
-import { categories as starterCategories, products as starterProducts } from "../../apps/api/src/starter-catalog";
+import { categories as starterCategories } from "../../apps/api/src/starter-catalog";
 import shopifyCatalogueJson from "@/data/shopify-catalogue.json";
 import { MAX_LINE_QTY, sellingPrice } from "@/lib/commerce";
+import { displayImages, duplicateListingIds, isLoadableProductImage } from "@/lib/product-images";
 import { rankBestSellers, rankMostSearched, rankTrending, type EngagementScore } from "@/lib/trending";
 
 // The JSON file stores an empty variants array on every product, so TypeScript
@@ -55,6 +56,23 @@ function categoryView(category: Category, categories: Category[]): HydratedProdu
   };
 }
 
+function repairCategoryImages(categories: Category[], products: HydratedProduct[]) {
+  const childIds = new Map<string, string[]>();
+  for (const category of categories) {
+    if (!category.parentId) continue;
+    const list = childIds.get(category.parentId) ?? [];
+    list.push(category.id);
+    childIds.set(category.parentId, list);
+  }
+  for (const category of categories) {
+    if (isLoadableProductImage(category.image)) continue;
+    const ids = new Set([category.id, ...(childIds.get(category.id) ?? [])]);
+    const source = products.find((product) => product.isActive && ids.has(product.categoryId));
+    const image = source?.images.find((item) => isLoadableProductImage(item.url));
+    if (image) category.image = image.url;
+  }
+}
+
 function buildCatalogue(): { categories: Category[]; products: HydratedProduct[] } {
   const categories: Category[] = starterCategories.map(([slug, name, description, sortOrder]) => ({
     id: `cat_${slug}`,
@@ -84,47 +102,18 @@ function buildCatalogue(): { categories: Category[]; products: HydratedProduct[]
     categories.push(category);
     bySlug.set(extra.slug, category);
   }
-  const starter = starterProducts.map((product) => {
-    const category = bySlug.get(product.category);
-    if (!category) throw new Error(`Starter product ${product.slug} has no category.`);
-    const createdAt = new Date(builtAt - product.minutesAgo * 60 * 1000).toISOString();
-    return {
-      id: `prod_${product.slug}`,
-      name: product.name,
-      slug: product.slug,
-      sku: product.sku,
-      description: product.description,
-      shortDescription: product.short,
-      price: product.price,
-      compareAtPrice: product.compareAtPrice ?? null,
-      stock: product.variants ? 0 : product.stock,
-      categoryId: category.id,
-      specifications: JSON.stringify(product.specs.map(([label, value]) => ({ label, value }))),
-      isActive: true,
-      isFeatured: Boolean(product.featured),
-      wholesaleEligible: Boolean(product.wholesale),
-      minOrderQty: product.wholesale?.moq ?? null,
-      wholesalePrice: product.wholesale?.price ?? null,
-      viewCount: 0,
-      createdAt,
-      updatedAt: createdAt,
-      images: [{ id: `img_${product.slug}`, url: `/media/products/${product.slug}.svg`, alt: product.name, sortOrder: 0 }],
-      variants: (product.variants ?? []).map((variant) => ({
-        id: `var_${variant.sku}`,
-        name: variant.name,
-        sku: variant.sku,
-        price: variant.price,
-        stock: variant.stock,
-        image: "",
-      })),
-      version: 1,
-      category: categoryView(category, categories),
-    } satisfies HydratedProduct;
-  });
+  // Demo seed products only have generated green placeholder art and are not in the
+  // supplier catalogue. They stay in the seed file, and are left out of the storefront.
   const imported = shopifyCatalogue.products.map((product, index) => {
     const category = bySlug.get(product.categorySlug);
     if (!category) throw new Error(`Catalogue product ${product.slug} has no category.`);
     const createdAt = new Date(builtAt - index * 60 * 1000).toISOString();
+    const images = displayImages(product.images).map((image, imageIndex) => ({
+      id: `img_${product.slug}_${imageIndex}`,
+      url: image.url,
+      alt: image.alt || product.name,
+      sortOrder: imageIndex,
+    }));
     return {
       id: `prod_${product.slug}`,
       name: product.name,
@@ -137,7 +126,7 @@ function buildCatalogue(): { categories: Category[]; products: HydratedProduct[]
       stock: product.variants.length ? 0 : product.stock,
       categoryId: category.id,
       specifications: JSON.stringify(product.specifications.map((pair) => ({ label: pair[0] ?? "", value: pair[1] ?? "" }))),
-      isActive: true,
+      isActive: images.length > 0,
       isFeatured: false,
       wholesaleEligible: false,
       minOrderQty: null,
@@ -145,12 +134,7 @@ function buildCatalogue(): { categories: Category[]; products: HydratedProduct[]
       viewCount: 0,
       createdAt,
       updatedAt: createdAt,
-      images: (product.images.length ? product.images : [{ url: "", alt: product.name }]).map((image, imageIndex) => ({
-        id: `img_${product.slug}_${imageIndex}`,
-        url: image.url,
-        alt: image.alt || product.name,
-        sortOrder: imageIndex,
-      })),
+      images,
       variants: product.variants.map((variant) => ({
         id: `var_${variant.sku}`,
         name: variant.name,
@@ -163,7 +147,19 @@ function buildCatalogue(): { categories: Category[]; products: HydratedProduct[]
       category: categoryView(category, categories),
     } satisfies HydratedProduct;
   });
-  return { categories, products: [...starter, ...imported] };
+  const hidden = duplicateListingIds(
+    imported.filter((product) => product.isActive).map((product) => ({
+      id: product.id,
+      sku: product.sku,
+      name: product.name,
+      price: product.price,
+    })),
+  );
+  for (const product of imported) {
+    if (hidden.has(product.id)) product.isActive = false;
+  }
+  repairCategoryImages(categories, imported);
+  return { categories, products: imported };
 }
 
 const catalogue = buildCatalogue();
