@@ -5,6 +5,7 @@ import { Gallery } from "@/components/gallery";
 import { JsonLd } from "@/components/json-ld";
 import { ProductGrid } from "@/components/product-card";
 import { ProductReviews } from "@/components/product-reviews";
+import { PincodeChecker } from "@/components/pincode-checker";
 import { PurchasePanel } from "@/components/purchase-panel";
 import { RecentlyViewed, RecordView } from "@/components/recently-viewed";
 import { Container } from "@/components/ui";
@@ -92,8 +93,9 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
               <a className="font-semibold underline" href={`/wholesale?product=${encodeURIComponent(product.name)}`}>Send a wholesale enquiry</a>
             </p>
           ) : null}
+          <PincodeChecker />
           <div className="mt-4 space-y-2 text-sm leading-6 text-muted">
-            <p>Shipping is {formatINR(SHIPPING_FLAT_RUPEES)}, or free when the payable product total reaches {formatINR(FREE_SHIPPING_ABOVE)}. A delivery date is confirmed after the order is placed.</p>
+            <p>Shipping is {formatINR(SHIPPING_FLAT_RUPEES)}, or free when the payable product total reaches {formatINR(FREE_SHIPPING_ABOVE)}. A delivery date is confirmed after the order is placed, unless the PIN check above shows a configured estimate.</p>
             <p>Cancellation can be requested while an order is Placed or Confirmed. <a className="underline" href="/shipping-policy">Shipping policy</a> · <a className="underline" href="/returns">Return and refund policy</a></p>
           </div>
         </div>

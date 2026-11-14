@@ -30,7 +30,7 @@ const starter: ChatMessage = {
   text: "Hello. Ask me about BazaarDost products, orders, shipping, or other services on this website.",
 };
 
-export function ChatWidget() {
+export function ChatWidget({ raised = false }: { raised?: boolean }) {
   const [open, setOpen] = useState(false);
   const [input, setInput] = useState("");
   const [pending, setPending] = useState(false);
@@ -69,7 +69,7 @@ export function ChatWidget() {
   }
 
   return (
-    <div className="fixed bottom-20 right-3 z-50 md:bottom-6 md:right-6">
+    <div className={raised ? "fixed bottom-[9.25rem] right-3 z-50 md:bottom-[5.75rem] md:right-6" : "fixed bottom-20 right-3 z-50 md:bottom-6 md:right-6"}>
       {open ? (
         <section className="mb-3 flex h-[min(32rem,70vh)] w-[min(22rem,calc(100vw-1.5rem))] flex-col overflow-hidden rounded-3xl border border-cream-300 bg-cream-50 shadow-card" aria-label="BazaarDost chat">
           <header className="flex items-center justify-between bg-forest-800 px-4 py-3 text-cream-50">

@@ -48,7 +48,7 @@ function productQuery(text: string): string {
 
 function shippingAnswer(): ChatAnswer {
   return {
-    reply: `Shipping on BazaarDost is ${formatINR(SHIPPING_FLAT_RUPEES)} when the product total after discounts is below ${formatINR(FREE_SHIPPING_ABOVE)}. At ${formatINR(FREE_SHIPPING_ABOVE)} and above, shipping is free. Checkout does not add a separate tax line. The website does not promise a delivery date or a courier. After an order is placed, the store can add a tracking note. An address needs a street, city, state, and 6-digit PIN code. It is not checked against a postal database.`,
+    reply: `Shipping on BazaarDost is ${formatINR(SHIPPING_FLAT_RUPEES)} when the product total after discounts is below ${formatINR(FREE_SHIPPING_ABOVE)}. At ${formatINR(FREE_SHIPPING_ABOVE)} and above, shipping is free. Checkout does not add a separate tax line. A product page can check a 6-digit PIN against the store's delivery rules. Those rules are not a postal-database lookup, and a delivery date is shown only when the store has configured one. After an order is placed, the store can add a tracking note.`,
     links: [{ href: "/shipping-policy", label: "Shipping policy" }],
   };
 }
@@ -62,14 +62,14 @@ function paymentAnswer(): ChatAnswer {
 
 function returnsAnswer(): ChatAnswer {
   return {
-    reply: "You can ask to cancel a BazaarDost order while its status is Placed or Confirmed. Use the contact form and include the order number. Orders marked Processing, Shipped, or Delivered are not cancelled automatically. Cash on delivery orders have no online payment to refund. If the store has marked a payment as paid and later agrees a refund, the payment status can be set to refunded. The money movement itself happens outside this website. There is no automatic return window and no prepaid return label.",
+    reply: "You can ask to cancel a BazaarDost order while its status is Placed or Confirmed. Use the contact form and include the order number. Orders marked Processing, Shipped, Out for Delivery, or Delivered are not cancelled automatically. Cash on delivery orders have no online payment to refund. If the store has marked a payment as paid and later agrees a refund, the payment status can be set to refunded. The money movement itself happens outside this website. There is no automatic return window and no prepaid return label.",
     links: [{ href: "/returns", label: "Returns policy" }, { href: "/contact", label: "Contact the store" }],
   };
 }
 
 function trackingAnswer(): ChatAnswer {
   return {
-    reply: "BazaarDost account pages show only the signed-in customer's orders. Guest tracking needs both the order number and the checkout email. This chat cannot look up a live order. Until the store adds a tracking note, the order page says that no courier note has been added.",
+    reply: "BazaarDost account pages show only the signed-in customer's orders. Guest tracking needs both the order number and the checkout email. This chat cannot look up a live order. The status shown is Order Placed, Confirmed, Processing, Shipped, Out for Delivery, or Delivered. Until the store adds a tracking note, the order page says that no courier note has been added.",
     links: [{ href: "/track", label: "Track an order" }, { href: "/account/orders", label: "Your orders" }],
   };
 }

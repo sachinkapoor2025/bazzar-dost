@@ -21,7 +21,7 @@ export function ProfileForm({ name, phone }: { name: string; phone: string }) {
     setPending(false);
   }
   return (
-    <form onSubmit={onSubmit} className="grid max-w-lg gap-3">
+    <form onSubmit={onSubmit} className="grid w-full gap-3">
       <label className={labelClass}>Name<input name="name" defaultValue={name} required className={fieldClass} /></label>
       <label className={labelClass}>Mobile<input name="phone" defaultValue={phone} className={fieldClass} /></label>
       <button className={buttonClass("primary")} disabled={pending}>Save profile</button>
@@ -97,7 +97,7 @@ export function AddressManager({ initial }: { initial: Address[] }) {
           ))}
         </ul>
       )}
-      <form onSubmit={onSubmit} className="grid max-w-lg gap-3">
+      <form onSubmit={onSubmit} className="grid w-full gap-3">
         <h2 className="font-display text-2xl">Add an address</h2>
         <label className={labelClass}>Label<input name="label" defaultValue="Home" required className={fieldClass} /></label>
         <label className={labelClass}>Full name<input name="fullName" required className={fieldClass} /></label>

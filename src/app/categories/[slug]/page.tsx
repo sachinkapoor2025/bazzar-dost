@@ -3,9 +3,13 @@ import { notFound } from "next/navigation";
 import { CatalogBrowser } from "@/components/catalog-browser";
 import { getCategory } from "@/lib/catalog";
 
+function productsInFamily(category: { _count: { products: number }; children: Array<{ _count: { products: number } }> }) {
+  return category._count.products + category.children.reduce((sum, child) => sum + child._count.products, 0);
+}
+
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const category = await getCategory((await params).slug);
-  if (!category || category._count.products === 0) notFound();
+  if (!category || productsInFamily(category) === 0) notFound();
   return {
     title: category.name,
     description: category.description || `Shop ${category.name} at BazaarDost.`,
@@ -21,7 +25,7 @@ export default async function CategoryPage({
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const category = await getCategory((await params).slug);
-  if (!category || category._count.products === 0) notFound();
+  if (!category || productsInFamily(category) === 0) notFound();
   return (
     <CatalogBrowser
       title={category.name}

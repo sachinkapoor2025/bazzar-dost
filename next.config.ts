@@ -23,6 +23,11 @@ function imageHosts(): Array<{ protocol: "https"; hostname: string }> {
 
 const nextConfig: NextConfig = {
   poweredByHeader: false,
+  webpack: (config) => {
+    config.resolve.alias.canvas = false;
+    config.resolve.alias.encoding = false;
+    return config;
+  },
   devIndicators: false,
   images: {
     dangerouslyAllowSVG: true,

@@ -4,8 +4,10 @@ import { ChatWidget } from "@/components/chat-widget";
 import { Footer } from "@/components/footer";
 import { Header, MobileDock } from "@/components/header";
 import { Providers } from "@/components/providers";
+import { WhatsAppWidget } from "@/components/whatsapp-widget";
 import { getAnnouncement, getCategories } from "@/lib/catalog";
 import { site } from "@/lib/site";
+import { whatsAppReady } from "@/lib/whatsapp";
 import "./globals.css";
 
 const display = Fraunces({ subsets: ["latin"], variable: "--font-display" });
@@ -51,7 +53,8 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           <Header categories={categories} />
           <main id="content" className="min-h-[60vh] pb-20 md:pb-8">{children}</main>
           <Footer categories={categories} />
-          <ChatWidget />
+          <ChatWidget raised={whatsAppReady()} />
+          <WhatsAppWidget />
           <MobileDock />
         </Providers>
       </body>

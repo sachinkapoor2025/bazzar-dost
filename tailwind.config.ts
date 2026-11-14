@@ -35,9 +35,6 @@ const config: Config = {
       boxShadow: {
         card: "0 10px 30px rgba(27, 67, 50, 0.08)",
       },
-      maxWidth: {
-        page: "72rem",
-      },
     },
   },
   plugins: [],

@@ -145,7 +145,7 @@ function trackProductClick(slug: string) {
 
 export function ProductGrid({ products }: { products: ProductCardData[] }) {
   return (
-    <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-4">
+    <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6">
       {products.map((product, index) => (
         <ProductCard key={product.id} product={product} eager={index < 4} />
       ))}
@@ -153,7 +153,11 @@ export function ProductGrid({ products }: { products: ProductCardData[] }) {
   );
 }
 
-function Heart({ filled }: { filled: boolean }) {
+function trackProductClick(slug: string) {
+  fetch(`/api/products/${encodeURIComponent(slug)}/click`, { method: "POST", keepalive: true }).catch(() => undefined);
+}
+
+export function Heart({ filled }: { filled: boolean }) {
   return (
     <svg viewBox="0 0 24 24" className="h-5 w-5" aria-hidden="true">
       <path

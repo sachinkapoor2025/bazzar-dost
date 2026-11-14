@@ -24,7 +24,7 @@ export default async function AccountLayout({ children }: { children: React.Reac
           {links.map(([href, label]) => (
             <Link key={href} href={href} className="rounded-xl px-2 py-2 hover:bg-cream-100">{label}</Link>
           ))}
-          <Link href="/track" className="rounded-xl px-2 py-2 hover:bg-cream-100">Track an order</Link>
+          <Link href="/track" className="rounded-xl px-2 py-2 hover:bg-cream-100">Order Tracking</Link>
           {user.role === "admin" ? <Link href="/admin" className="rounded-xl px-2 py-2 font-semibold text-forest-800 hover:bg-cream-100">Admin</Link> : null}
         </nav>
         <SignOutButton />

@@ -105,7 +105,7 @@ export function ProductForm({ categories, initial }: { categories: CategoryOptio
   }
 
   return (
-    <form onSubmit={onSubmit} className="grid max-w-3xl gap-3">
+    <form onSubmit={onSubmit} className="grid w-full gap-3">
       <label className={labelClass}>Name<input value={name} onChange={(event) => { setName(event.target.value); if (!initial?.id) setSlug(slugify(event.target.value)); }} className={fieldClass} required /></label>
       <label className={labelClass}>Slug<input value={slug} onChange={(event) => setSlug(slugify(event.target.value))} className={fieldClass} required /></label>
       <label className={labelClass}>SKU<input name="sku" defaultValue={initial?.sku || ""} className={fieldClass} required /></label>
@@ -166,7 +166,7 @@ export function StatusForm({ action, fields }: { action: string; fields: React.R
     if (response.ok) window.location.reload();
   }
   return (
-    <form onSubmit={onSubmit} className="grid max-w-xl gap-3">
+    <form onSubmit={onSubmit} className="grid w-full gap-3">
       {fields}
       <button className={buttonClass("primary")} disabled={pending}>Save</button>
       {message ? <p className="text-sm">{message}</p> : null}

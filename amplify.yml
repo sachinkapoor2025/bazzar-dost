@@ -1,17 +1,34 @@
-# Next.js SSR storefront. The Amplify app platform must be WEB_COMPUTE.
-# The API, DynamoDB, S3, CloudFront, and Cognito are deployed separately with SAM.
-# baseDirectory must stay .next.
+# Next.js SSR. The Amplify app platform must be WEB_COMPUTE.
+# baseDirectory must stay .next. Do not change it to out or public.
 version: 1
 frontend:
   phases:
     preBuild:
       commands:
-        - nvm install 22
-        - nvm use 22
+        - nvm install 20
+        - nvm use 20
         - node -v
         - npm ci
     build:
       commands:
+        # Migrations need a reachable Postgres URL. Amplify env vars are often set
+        # only on main, and an unset URL was aborting this branch before next build.
+        # A present but invalid URL still fails the deployment.
+        - |
+          node <<'EOF'
+          const { spawnSync } = require("child_process");
+          const url = process.env.DATABASE_URL || "";
+          if (!url) {
+            console.log("DATABASE_URL is not set for this branch. Skipping prisma migrate deploy.");
+            process.exit(0);
+          }
+          if (!/^postgres(ql)?:\/\//.test(url)) {
+            console.error("DATABASE_URL must start with postgresql:// or postgres://.");
+            process.exit(1);
+          }
+          const result = spawnSync("npx", ["prisma", "migrate", "deploy"], { stdio: "inherit" });
+          process.exit(result.status === null ? 1 : result.status);
+          EOF
         - NEXT_PUBLIC_SITE_URL=https://bazaardost.com npm run build
   artifacts:
     baseDirectory: .next

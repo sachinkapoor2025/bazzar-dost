@@ -63,6 +63,7 @@ export function ProductReviews({
           {reviews.map((review) => (
             <li key={review.id} className="rounded-2xl border border-cream-300 bg-white p-4">
               <p className="text-sm font-semibold text-forest-800">{review.rating} out of 5</p>
+              <p className="text-xs font-semibold text-forest-800">Verified purchase</p>
               <p className="mt-2 text-sm leading-6">{review.comment}</p>
               <p className="mt-3 text-sm font-semibold">{review.name}</p>
               <p className="text-xs text-muted">{formatDate(review.createdAt)}</p>
@@ -71,7 +72,7 @@ export function ProductReviews({
         </ul>
       )}
       {reason === null ? (
-        <form onSubmit={onSubmit} className="mt-4 max-w-xl rounded-2xl border border-cream-300 bg-white p-4">
+        <form onSubmit={onSubmit} className="mt-4 w-full rounded-2xl border border-cream-300 bg-white p-4">
           <h3 className="font-display text-2xl text-forest-900">Write a review</h3>
           <p className="mt-1 text-sm text-muted">This is published with your account name.</p>
           <label htmlFor={ratingId} className={`${labelClass} mt-3`}>Rating</label>
@@ -90,7 +91,7 @@ export function ProductReviews({
           {error ? <p role="alert" className="mt-2 text-sm text-[#7F1D1D]">{error}</p> : null}
         </form>
       ) : (
-        <p className="mt-4 max-w-xl text-sm leading-6 text-muted">
+        <p className="mt-4 text-sm leading-6 text-muted">
           {reason === "signed-out" ? <><Link href={loginHref} className="font-semibold text-forest-800 underline">Sign in</Link> to review this product after you buy it.</> : null}
           {reason === "not-purchased" ? "Only customers who bought this product can review it. Cancelled orders are not counted." : null}
           {reason === "already-reviewed" ? message || "You have already reviewed this product." : null}

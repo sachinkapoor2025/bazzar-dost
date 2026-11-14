@@ -11,7 +11,12 @@ export async function POST(request: Request) {
     if (!process.env.API_URL && !process.env.NEXT_PUBLIC_API_URL) {
       return NextResponse.json({ lines: localQuote(body.items) });
     }
-    return NextResponse.json(await api("/cart/quote", { body }));
+    try {
+      return NextResponse.json(await api("/cart/quote", { body }));
+    } catch (error) {
+      console.error(error);
+      return NextResponse.json({ lines: localQuote(body.items) });
+    }
   } catch (error) {
     return errorResponse(error);
   }
