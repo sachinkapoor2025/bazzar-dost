@@ -17,6 +17,7 @@ export default function ShippingPage() {
       <p>Prices shown on products are the amount charged for the goods. Checkout does not add a separate tax line.</p>
       <p>The website does not promise a delivery date or a courier. After an order is placed, the store can add a tracking note on the order. Until that note exists, tracking shows that no courier note has been added.</p>
       <p>An address is checked for a complete street, city, state, and 6-digit PIN code. It is not verified against a postal database.</p>
+      <p>The cart shows the shipping amount before you place the order. Changing the product total can move the order across the free-shipping line, and checkout recalculates it on the server.</p>
     </Info>
   );
 }

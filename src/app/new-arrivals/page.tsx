@@ -12,7 +12,12 @@ export default function NewArrivalsPage({ searchParams }: { searchParams: Promis
   return (
     <CatalogBrowser
       title="New arrivals"
-      intro={`Products added to the catalogue in the last ${NEW_ARRIVAL_DAYS} days. Prices are the selling prices stored for each item.`}
+      intro={
+        <>
+          <p>Products added to the catalogue in the last {NEW_ARRIVAL_DAYS} days. The selling price is the one stored for each item, and stock follows the recorded quantity.</p>
+          <p>Older products stay in All products. This list only changes when new catalogue items are added inside that window.</p>
+        </>
+      }
       basePath="/new-arrivals"
       searchParams={searchParams}
       preset={{ arrivalsOnly: true, sort: "newest" }}

@@ -11,7 +11,12 @@ export default function BestSellersPage({ searchParams }: { searchParams: Promis
   return (
     <CatalogBrowser
       title="Best sellers"
-      intro="Products appear here after a customer places an order. The list uses units sold and leaves out cancelled orders. It stays empty until the first sale."
+      intro={
+        <>
+          <p>Products appear here after a customer places an order. The list uses units sold and leaves out cancelled orders. It stays empty until the first sale.</p>
+          <p>Opening a product does not move it onto this list. Ranking follows completed orders only, using the quantities stored on those orders.</p>
+        </>
+      }
       basePath="/best-sellers"
       searchParams={searchParams}
       preset={{ bestSellersOnly: true, sort: "popular" }}

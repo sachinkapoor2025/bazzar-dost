@@ -11,7 +11,12 @@ export default function ShopPage({ searchParams }: { searchParams: Promise<Recor
   return (
     <CatalogBrowser
       title="All products"
-      intro="Every product currently in the BazaarDost catalogue. Search by name, then narrow by department, price, or availability. A product is marked out of stock only when its recorded quantity is zero."
+      intro={
+        <>
+          <p>Every product currently in the BazaarDost catalogue is listed here, from kitchen tools and personal care to phone accessories, toys, bags, and outdoor items.</p>
+          <p>Search by name, then narrow by department, price, or availability. A product is marked out of stock only when its recorded quantity is zero. A lower price is shown only when that product has a higher compare-at price.</p>
+        </>
+      }
       basePath="/shop"
       searchParams={searchParams}
     />

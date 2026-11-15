@@ -17,6 +17,7 @@ export default function PrivacyPage() {
       <p>Product pages record a view count. The count is not tied to your name.</p>
       <p>Card numbers are not collected. Do not send card details in a contact message.</p>
       <p>The store does not sell customer lists from this website. Access to orders and addresses is limited to the signed-in customer and store admins.</p>
+      <p>Newsletter addresses and contact messages stay with the store team. They are not published on the site and are not shown beside product reviews.</p>
     </Info>
   );
 }

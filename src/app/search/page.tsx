@@ -16,7 +16,7 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
     return (
       <Container className="py-8">
         <h1 className="font-display text-4xl">Search</h1>
-        <p className="mt-2 text-sm leading-6 text-muted">Search the catalogue by product name, SKU, or a word from the description. Results stay inside the departments that currently have products.</p>
+        <p className="mt-2 max-w-3xl text-base leading-7 text-muted">Search the catalogue by product name, SKU, or a word from the description. Results stay inside the departments that currently have products. Use the tabs under the header to jump to a department or a price range.</p>
         <form action="/search" method="get" role="search" className="mt-4 flex w-full">
           <label htmlFor="search-page-q" className="sr-only">Search products</label>
           <input id="search-page-q" name="q" className="min-h-11 w-full rounded-l-full border border-r-0 border-cream-300 px-4" />
@@ -28,7 +28,12 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
   return (
     <CatalogBrowser
       title={`Search results for “${q.slice(0, 80)}”`}
-      intro="Matches come from product names and descriptions in the current catalogue. You can still filter by department, price, and stock."
+      intro={
+        <>
+          <p>Matches come from product names and descriptions in the current catalogue. You can still filter by department, price, and stock.</p>
+          <p>Search looks through the live catalogue only. A result keeps the price and stock stored for that product.</p>
+        </>
+      }
       basePath="/search"
       searchParams={searchParams}
     />

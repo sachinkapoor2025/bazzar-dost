@@ -1,8 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { useEffect, useId, useRef, useState } from "react";
+import { usePathname, useSearchParams } from "next/navigation";
+import { Suspense, useEffect, useId, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { useCart } from "@/components/cart-provider";
 import { useCompare } from "@/components/compare-provider";
@@ -103,7 +103,7 @@ export function Header({ categories }: { categories: CategoryLink[] }) {
           </button>
           <button
             type="button"
-            className="inline-flex h-11 w-11 items-center justify-center rounded-full hover:bg-cream-200"
+            className="inline-flex h-11 w-11 items-center justify-center rounded-full hover:bg-cream-200 lg:hidden"
             aria-label="Open menu"
             aria-expanded={open}
             aria-controls="site-menu"
@@ -122,6 +122,9 @@ export function Header({ categories }: { categories: CategoryLink[] }) {
           <SearchBox id={mobileSearchId} />
         </Container>
       ) : null}
+      <Suspense fallback={null}>
+        <DesktopTabs categories={categories} />
+      </Suspense>
       {open && mounted ? createPortal(
         <div className="fixed inset-0 z-50 flex justify-start bg-forest-950/40" role="presentation" onClick={closeMenu}>
           <aside
@@ -199,6 +202,66 @@ export function Header({ categories }: { categories: CategoryLink[] }) {
       {compare.notice ? <p role="status" className="bg-gold-400 px-4 py-1 text-center text-sm text-forest-950">{compare.notice}</p> : null}
       <div className="h-0.5 bg-gold-400" />
     </header>
+  );
+}
+
+function DesktopTabs({ categories }: { categories: CategoryLink[] }) {
+  const pathname = usePathname();
+  const search = useSearchParams();
+  const current = `${pathname}${search.toString() ? `?${search.toString()}` : ""}`;
+
+  return (
+    <nav aria-label="Sections" className="hidden border-t border-cream-200 lg:block">
+      <Container className="flex flex-wrap gap-1 py-2">
+        {shoppingLinks.map((link) => (
+          <TabLink key={link.href} href={link.href} active={isTabActive(current, link.href)}>
+            {link.label}
+          </TabLink>
+        ))}
+      </Container>
+      <Container className="flex flex-wrap gap-1 pb-2">
+        {budgetLinks.map((link) => (
+          <TabLink key={link.href} href={link.href} active={isTabActive(current, link.href)}>
+            {link.label}
+          </TabLink>
+        ))}
+        {categories.map((category) => (
+          <TabLink key={category.slug} href={`/categories/${category.slug}`} active={pathname === `/categories/${category.slug}` || pathname.startsWith(`/categories/${category.slug}/`)}>
+            {category.name}
+            <span className="ml-2 text-xs font-medium opacity-70">{category.productCount}</span>
+          </TabLink>
+        ))}
+      </Container>
+    </nav>
+  );
+}
+
+function isTabActive(current: string, href: string) {
+  const [path, query] = href.split("?");
+  const [currentPath, currentQuery = ""] = current.split("?");
+  if (href === "/") return currentPath === "/";
+  if (query) {
+    if (currentPath !== path) return false;
+    const currentParams = new URLSearchParams(currentQuery);
+    const expected = new URLSearchParams(query);
+    return (currentParams.get("min") || "") === (expected.get("min") || "") && (currentParams.get("max") || "") === (expected.get("max") || "");
+  }
+  if (currentPath !== path && !currentPath.startsWith(`${path}/`)) return false;
+  if (path === "/shop" && (currentQuery.includes("min=") || currentQuery.includes("max="))) return false;
+  return true;
+}
+
+function TabLink({ href, active, children }: { href: string; active: boolean; children: React.ReactNode }) {
+  return (
+    <Link
+      href={href}
+      aria-current={active ? "page" : undefined}
+      className={active
+        ? "inline-flex min-h-11 shrink-0 items-center rounded-full bg-forest-900 px-4 text-sm font-semibold text-cream-50"
+        : "inline-flex min-h-11 shrink-0 items-center rounded-full px-4 text-sm font-semibold text-forest-900 hover:bg-cream-200"}
+    >
+      {children}
+    </Link>
   );
 }
 

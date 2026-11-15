@@ -16,7 +16,7 @@ export async function CatalogBrowser({
   links,
 }: {
   title: string;
-  intro?: string;
+  intro?: React.ReactNode;
   basePath: string;
   searchParams: Promise<Record<string, string | string[] | undefined>>;
   preset?: Partial<CatalogInput>;
@@ -32,7 +32,11 @@ export async function CatalogBrowser({
     <Container className="py-6">
       {crumbs ? <Breadcrumbs items={crumbs} /> : null}
       <h1 className="font-display text-4xl text-forest-900">{title}</h1>
-      {intro ? <p className="mt-2 text-sm leading-6 text-muted">{intro}</p> : null}
+      {intro ? (
+        <div className="mt-3 max-w-3xl space-y-3 text-base leading-7 text-muted">
+          {typeof intro === "string" ? <p>{intro}</p> : intro}
+        </div>
+      ) : null}
       {links && links.length > 0 ? (
         <ul className="mt-4 flex gap-2 overflow-x-auto pb-1">
           {links.map((link) => (
