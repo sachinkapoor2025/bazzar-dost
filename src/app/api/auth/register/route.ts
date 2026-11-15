@@ -8,7 +8,9 @@ import { registerSchema } from "@/lib/validators";
 
 export async function POST(request: Request) {
   try {
-    if (!getSessionSecret()) return NextResponse.json({ error: "Accounts are not configured." }, { status: 500 });
+    if (!getSessionSecret()) {
+      return NextResponse.json({ error: "Accounts are not configured." }, { status: 500, headers: { "X-Account-Setup": "missing-secret" } });
+    }
     const body = registerSchema.parse(await request.json());
     const email = body.email.toLowerCase();
     if (!rateLimit(`register:${email}`, 8, 60 * 60 * 1000)) {

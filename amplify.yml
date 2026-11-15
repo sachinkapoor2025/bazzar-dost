@@ -10,10 +10,10 @@ frontend:
         - nvm install 22
         - nvm use 22
         - node -v
+        - node scripts/ensure-session-secret.cjs
         - npm ci
     build:
       commands:
-        - node scripts/ensure-session-secret.mjs
         - NEXT_PUBLIC_SITE_URL=https://bazaardost.com npm run build
   artifacts:
     baseDirectory: .next
