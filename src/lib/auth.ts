@@ -2,7 +2,6 @@ import "server-only";
 import { cookies } from "next/headers";
 import { SignJWT, jwtVerify } from "jose";
 import bcrypt from "bcryptjs";
-import { prisma } from "@/lib/db";
 import { getSessionSecret, SESSION_COOKIE } from "@/lib/secret";
 import type { PublicUser } from "@/lib/types";
 
@@ -22,12 +21,12 @@ export async function verifyPassword(password: string, hash: string): Promise<bo
   return bcrypt.compare(password, hash);
 }
 
-export async function signSession(userId: string, role: string): Promise<string | null> {
+export async function signSession(user: PublicUser): Promise<string | null> {
   const secret = getSessionSecret();
   if (!secret) return null;
-  return new SignJWT({ role })
+  return new SignJWT({ role: user.role, email: user.email, name: user.name, phone: user.phone })
     .setProtectedHeader({ alg: "HS256" })
-    .setSubject(userId)
+    .setSubject(user.id)
     .setIssuedAt()
     .setExpirationTime("14d")
     .sign(secret);
@@ -51,12 +50,14 @@ export async function getCurrentUser(): Promise<PublicUser | null> {
   if (!token) return null;
   try {
     const { payload } = await jwtVerify(token, secret);
-    if (!payload.sub) return null;
-    const user = await prisma.user.findUnique({
-      where: { id: payload.sub },
-      select: { id: true, email: true, name: true, phone: true, role: true },
-    });
-    return user;
+    if (!payload.sub || typeof payload.email !== "string" || typeof payload.name !== "string") return null;
+    return {
+      id: payload.sub,
+      email: payload.email,
+      name: payload.name,
+      phone: typeof payload.phone === "string" ? payload.phone : "",
+      role: typeof payload.role === "string" ? payload.role : "customer",
+    };
   } catch {
     return null;
   }

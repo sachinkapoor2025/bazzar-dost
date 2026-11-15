@@ -16,7 +16,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Too many attempts. Wait a few minutes and try again." }, { status: 429 });
     }
     const user = await verifyLiveSignup(email, body.otp);
-    const token = await signSession(user.id, user.role);
+    const token = await signSession(user);
     if (!token) return NextResponse.json({ error: "Accounts are not configured." }, { status: 500 });
     await setSessionCookie(token);
     return NextResponse.json({ ok: true, message: "Email verified. Your account is ready." });

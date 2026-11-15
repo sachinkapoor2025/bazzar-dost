@@ -13,6 +13,7 @@ frontend:
         - npm ci
     build:
       commands:
+        - node scripts/ensure-session-secret.mjs
         - NEXT_PUBLIC_SITE_URL=https://bazaardost.com npm run build
   artifacts:
     baseDirectory: .next
