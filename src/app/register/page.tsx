@@ -9,6 +9,7 @@ export default async function RegisterPage({ searchParams }: { searchParams: Pro
   const nextPath = safeNextPath((await searchParams).next);
   return (
     <Container className="py-8">
+      <p className="mb-4 max-w-3xl text-base leading-7 text-muted">Create an account with your name, email, and a password of at least 8 characters that includes a letter and a number. Mobile is optional. After the account is created you are signed in on this browser.</p>
       <RegisterForm nextPath={nextPath} />
     </Container>
   );

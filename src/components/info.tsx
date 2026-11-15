@@ -5,8 +5,8 @@ export function Info({ title, lede, children }: { title: string; lede?: string; 
     <Container className="py-8">
       <article className="w-full">
         <h1 className="font-display text-4xl text-forest-900">{title}</h1>
-        {lede ? <p className="mt-3 text-sm leading-7 text-muted">{lede}</p> : null}
-        <div className="mt-6 space-y-4 text-sm leading-7">{children}</div>
+        {lede ? <p className="mt-3 max-w-3xl text-base leading-7 text-muted">{lede}</p> : null}
+        <div className="mt-6 space-y-4 text-base leading-7">{children}</div>
       </article>
     </Container>
   );

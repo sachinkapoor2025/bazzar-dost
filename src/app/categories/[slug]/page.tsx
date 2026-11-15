@@ -29,7 +29,12 @@ export default async function CategoryPage({
   return (
     <CatalogBrowser
       title={category.name}
-      intro={category.description}
+      intro={
+        <>
+          {category.description ? <p>{category.description}</p> : null}
+          <p>Open an item to see its price, stock, and photos. Child departments listed above keep their own products, and the count includes those items.</p>
+        </>
+      }
       basePath={`/categories/${category.slug}`}
       searchParams={searchParams}
       preset={{ category: category.slug }}

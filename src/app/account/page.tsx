@@ -14,7 +14,7 @@ export default async function AccountPage() {
   return (
     <div>
       <h1 className="font-display text-4xl">My account</h1>
-      <p className="mt-2 text-sm text-muted">Orders placed while you are signed in appear here. Guest orders can be opened with the confirmation link or the tracking form.</p>
+      <p className="mt-2 max-w-3xl text-base leading-7 text-muted">Orders placed while you are signed in appear here. Guest orders can be opened with the confirmation link or the tracking form. Addresses and your name are saved on this account and are not shown to other customers.</p>
       <h2 className="mt-6 font-display text-2xl">Recent orders</h2>
       {orders.length === 0 ? <p className="mt-2 text-sm">No orders yet. <Link href="/shop" className="underline">Start shopping</Link></p> : (
         <ul className="mt-3 divide-y divide-cream-200 rounded-2xl border border-cream-300 bg-white">

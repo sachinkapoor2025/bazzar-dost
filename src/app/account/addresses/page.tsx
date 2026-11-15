@@ -13,6 +13,7 @@ export default async function AddressesPage() {
   return (
     <div>
       <h1 className="mb-4 font-display text-4xl">Saved addresses</h1>
+      <p className="mb-4 max-w-3xl text-base leading-7 text-muted">Addresses saved here can be reused at checkout. Each one needs a street, city, state, and 6-digit PIN code. The list is visible only on this account.</p>
       <AddressManager initial={addresses} />
     </div>
   );

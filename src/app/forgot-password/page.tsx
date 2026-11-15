@@ -8,7 +8,7 @@ export default function ForgotPage() {
   return (
     <Container className="py-8">
       <h1 className="mb-3 text-center font-display text-4xl">Forgot password</h1>
-      <p className="mb-4 text-sm leading-6 text-muted">If outbound email is configured, a reset link is sent when the address matches an account. The reply is the same either way, so this page does not reveal whether an account exists.</p>
+      <p className="mb-4 max-w-3xl text-base leading-7 text-muted">If outbound email is configured, a reset link is sent when the address matches an account. The reply is the same either way, so this page does not reveal whether an account exists. The new password still needs at least 8 characters, one letter, and one number.</p>
       <ForgotForm />
     </Container>
   );

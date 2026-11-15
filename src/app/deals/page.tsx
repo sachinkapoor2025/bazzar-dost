@@ -11,7 +11,12 @@ export default function DealsPage({ searchParams }: { searchParams: Promise<Reco
   return (
     <CatalogBrowser
       title="Deals and offers"
-      intro="These products have a compare-at price higher than the selling price in the catalogue. The discount is calculated from those two amounts. There is no extra markdown."
+      intro={
+        <>
+          <p>These products have a compare-at price higher than the selling price stored in the catalogue. The discount is calculated from those two amounts. There is no extra markdown.</p>
+          <p>A coupon, when one is active, is applied at checkout and is not mixed into the percentage on the product card. Out-of-stock deals stay visible and cannot be added to the cart.</p>
+        </>
+      }
       basePath="/deals"
       searchParams={searchParams}
       preset={{ dealsOnly: true }}

@@ -15,7 +15,7 @@ export default async function CategoriesPage() {
   return (
     <Container className="py-6">
       <h1 className="font-display text-4xl text-forest-900">Categories</h1>
-      <p className="mt-2 text-sm leading-6 text-muted">These departments currently have products in the catalogue. Open one to see its items, prices, and stock.</p>
+      <p className="mt-2 max-w-3xl text-base leading-7 text-muted">These departments currently have products in the catalogue. Open one to see its items, prices, and stock. A parent department includes products filed under its child departments.</p>
       <div className="mt-6 grid grid-cols-2 gap-3 md:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6">
         {categories.map((category) => (
           <Link key={category.slug} href={`/categories/${category.slug}`} className="overflow-hidden rounded-2xl border border-cream-300 bg-white">
