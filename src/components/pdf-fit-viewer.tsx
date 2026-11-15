@@ -29,7 +29,7 @@ export function PdfFitViewer({ src, title }: { src: string; title: string }) {
 
     async function draw(id: number) {
       if (!doc || cancelled || id !== renderId) return;
-      const width = shell.clientWidth;
+      const width = shell?.clientWidth ?? 0;
       if (width < 8) return;
       const headerHeight = document.querySelector("header")?.getBoundingClientRect().height ?? 0;
       const maxHeight = Math.max(320, window.innerHeight - headerHeight - 16);
@@ -64,7 +64,7 @@ export function PdfFitViewer({ src, title }: { src: string; title: string }) {
     }
 
     function schedule(force = false) {
-      const width = shell.clientWidth;
+      const width = shell?.clientWidth ?? 0;
       if (!force && width === lastWidth && urlsRef.current.length > 0) return;
       lastWidth = width;
       const id = ++renderId;

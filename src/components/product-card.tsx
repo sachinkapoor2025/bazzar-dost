@@ -153,10 +153,6 @@ export function ProductGrid({ products }: { products: ProductCardData[] }) {
   );
 }
 
-function trackProductClick(slug: string) {
-  fetch(`/api/products/${encodeURIComponent(slug)}/click`, { method: "POST", keepalive: true }).catch(() => undefined);
-}
-
 export function Heart({ filled }: { filled: boolean }) {
   return (
     <svg viewBox="0 0 24 24" className="h-5 w-5" aria-hidden="true">
