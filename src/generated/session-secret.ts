@@ -1,2 +1,2 @@
-/** Replaced during the Amplify build when SESSION_SECRET is not already set. */
+/** Replaced during the Amplify build. The committed value stays empty. */
 export const builtSessionSecret = "";
