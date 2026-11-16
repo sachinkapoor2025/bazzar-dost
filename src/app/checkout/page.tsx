@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { CheckoutForm } from "@/components/checkout-form";
 import { Container } from "@/components/ui";
-import { api } from "@/lib/backend";
+import { tryApi } from "@/lib/backend";
 import { getCurrentUser } from "@/lib/auth";
 
 export const metadata: Metadata = {
@@ -13,7 +13,7 @@ export default async function CheckoutPage({ searchParams }: { searchParams: Pro
   const params = await searchParams;
   const user = await getCurrentUser();
   const addresses = user
-    ? await api<Array<{ id: string; label: string; fullName: string; phone: string; line1: string; line2: string; city: string; state: string; pincode: string; isDefault: boolean }>>("/account/addresses")
+    ? await tryApi<Array<{ id: string; label: string; fullName: string; phone: string; line1: string; line2: string; city: string; state: string; pincode: string; isDefault: boolean }>>("/account/addresses", [])
     : [];
   return (
     <Container className="py-6">

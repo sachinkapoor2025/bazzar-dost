@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { api } from "@/lib/backend";
+import { tryApi } from "@/lib/backend";
 import { getCurrentUser } from "@/lib/auth";
 import { formatDate, formatINR } from "@/lib/format";
 import { orderStatusLabel } from "@/lib/order-progress";
@@ -11,7 +11,7 @@ export const metadata: Metadata = { title: "Order history", robots: { index: fal
 export default async function OrdersPage() {
   const user = await getCurrentUser();
   if (!user) redirect("/login?next=/account/orders");
-  const orders = await api<Array<{ id: string; orderNumber: string; createdAt: string; status: string; paymentStatus: string; total: number }>>("/account/orders");
+  const orders = await tryApi<Array<{ id: string; orderNumber: string; createdAt: string; status: string; paymentStatus: string; total: number }>>("/account/orders", []);
   return (
     <div>
       <h1 className="font-display text-4xl">Order history</h1>

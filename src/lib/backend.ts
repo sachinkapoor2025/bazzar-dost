@@ -14,6 +14,20 @@ export function apiBase(): string {
   return (process.env.API_URL || process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:4000").replace(/\/$/, "");
 }
 
+export function remoteApiConfigured(): boolean {
+  return Boolean(process.env.API_URL || process.env.NEXT_PUBLIC_API_URL);
+}
+
+export async function tryApi<T>(path: string, fallback: T, init?: { method?: string; body?: unknown }): Promise<T> {
+  if (!remoteApiConfigured()) return fallback;
+  try {
+    return await api<T>(path, init);
+  } catch (error) {
+    console.error(error);
+    return fallback;
+  }
+}
+
 export async function api<T>(path: string, init?: { method?: string; body?: unknown }): Promise<T> {
   const headers = new Headers();
   if (init?.body !== undefined) headers.set("content-type", "application/json");
