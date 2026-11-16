@@ -1,16 +1,16 @@
 import Link from "next/link";
 import { StockEditor } from "@/components/stock-editor";
-import { prisma } from "@/lib/db";
+import { readDatabase } from "@/lib/db";
 
 export default async function InventoryPage({ searchParams }: { searchParams: Promise<{ stock?: string; q?: string }> }) {
   const params = await searchParams;
   const q = params.q?.trim() || "";
-  const products = await prisma.product.findMany({
+  const products = await readDatabase([], (client) => client.product.findMany({
     where: q ? { OR: [{ name: { contains: q, mode: "insensitive" } }, { sku: { contains: q, mode: "insensitive" } }] } : undefined,
     include: { variants: true, category: true },
     orderBy: { name: "asc" },
     take: 200,
-  });
+  }));
   const rows = products.flatMap((product) => {
     if (product.variants.length === 0) {
       return [{ key: product.id, productId: product.id, name: product.name, sku: product.sku, category: product.category.name, stock: product.stock, variantId: undefined as string | undefined }];

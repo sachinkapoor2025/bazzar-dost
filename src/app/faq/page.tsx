@@ -18,7 +18,7 @@ const faqs = [
   ["What is a best seller?", "A product that has been ordered. Cancelled orders are not counted. If nobody has ordered yet, the best-seller list is empty."],
   ["Does a wholesale enquiry place an order?", "No. It stores a message. Quantity prices apply in the cart only if you check out at the retail price. Wholesale prices are confirmed by the store."],
   ["Can I see another customer’s order?", "No. Account pages show only the signed-in customer’s orders. Guest tracking needs both the order number and the checkout email."],
-  ["Where do I browse departments?", "Open the menu button in the header. It lists each department that currently has products, plus the budget ranges."],
+  ["Where do I browse departments?", "On a laptop, open Categories in the tab row under the header. On a phone, the menu lists each department that currently has products, plus the budget ranges."],
 ];
 
 export default function FaqPage() {

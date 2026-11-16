@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { ProductBulkTable } from "@/components/product-bulk-table";
-import { prisma } from "@/lib/db";
+import { readDatabase } from "@/lib/db";
 import type { Prisma } from "@prisma/client";
 
 const pageSize = 24;
@@ -38,17 +38,17 @@ export default async function AdminProductsPage({ searchParams }: { searchParams
         : params.sort === "stock" ? { stock: "asc" }
           : params.sort === "newest" ? { createdAt: "desc" }
             : { name: "asc" };
-  const [categories, total, products] = await Promise.all([
-    prisma.category.findMany({ orderBy: { name: "asc" }, select: { slug: true, name: true } }),
-    prisma.product.count({ where }),
-    prisma.product.findMany({
+  const [categories, total, products] = await readDatabase([[], 0, []] as const, (client) => Promise.all([
+    client.category.findMany({ orderBy: { name: "asc" }, select: { slug: true, name: true } }),
+    client.product.count({ where }),
+    client.product.findMany({
       where,
       include: { category: true, variants: true },
       orderBy,
       skip: (page - 1) * pageSize,
       take: pageSize,
     }),
-  ]);
+  ]));
   const pages = Math.max(1, Math.ceil(total / pageSize));
   const query = new URLSearchParams();
   for (const [key, value] of Object.entries(params)) if (value && key !== "page") query.set(key, value);

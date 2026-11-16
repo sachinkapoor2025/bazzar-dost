@@ -1,10 +1,10 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { prisma } from "@/lib/db";
+import { readDatabase } from "@/lib/db";
 import { formatDate, formatINR } from "@/lib/format";
 
 export default async function AdminCustomerPage({ params }: { params: Promise<{ id: string }> }) {
-  const customer = await prisma.user.findUnique({
+  const customer = await readDatabase(null, async (client) => client.user.findUnique({
     where: { id: (await params).id },
     select: {
       id: true,
@@ -16,7 +16,7 @@ export default async function AdminCustomerPage({ params }: { params: Promise<{ 
       addresses: true,
       orders: { orderBy: { createdAt: "desc" }, include: { items: true } },
     },
-  });
+  }));
   if (!customer || customer.role === "admin") notFound();
   const spent = customer.orders.filter((order) => order.status !== "cancelled").reduce((sum, order) => sum + order.total, 0);
   return (

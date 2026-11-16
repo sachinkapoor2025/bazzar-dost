@@ -1,10 +1,10 @@
 import { notFound } from "next/navigation";
 import { OrderStatusForm } from "@/components/admin-managers";
 import { OrderDetail, toOrderView } from "@/components/order-detail";
-import { prisma } from "@/lib/db";
+import { readDatabase } from "@/lib/db";
 
 export default async function AdminOrderPage({ params }: { params: Promise<{ id: string }> }) {
-  const order = await prisma.order.findUnique({ where: { id: (await params).id }, include: { items: true } });
+  const order = await readDatabase(null, async (client) => client.order.findUnique({ where: { id: (await params).id }, include: { items: true } }));
   if (!order) notFound();
   return (
     <div>

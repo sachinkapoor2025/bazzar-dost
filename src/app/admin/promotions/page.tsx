@@ -1,12 +1,12 @@
 import { FeaturedToggle } from "@/components/featured-toggle";
 import { PromotionManager } from "@/components/promo-forms";
-import { prisma } from "@/lib/db";
+import { readDatabase } from "@/lib/db";
 
 export default async function PromotionsPage() {
-  const [items, featured] = await Promise.all([
-    prisma.promotion.findMany({ orderBy: { createdAt: "desc" } }),
-    prisma.product.findMany({ where: { isActive: true }, orderBy: { name: "asc" }, select: { id: true, name: true, isFeatured: true }, take: 80 }),
-  ]);
+  const [items, featured] = await readDatabase([[], []] as const, (client) => Promise.all([
+    client.promotion.findMany({ orderBy: { createdAt: "desc" } }),
+    client.product.findMany({ where: { isActive: true }, orderBy: { name: "asc" }, select: { id: true, name: true, isFeatured: true }, take: 80 }),
+  ]));
   return (
     <div>
       <h1 className="mb-2 font-display text-4xl">Website content</h1>

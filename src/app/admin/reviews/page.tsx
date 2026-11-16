@@ -1,14 +1,14 @@
 import { AdminReviewList } from "@/components/admin-reviews";
-import { prisma } from "@/lib/db";
+import { readDatabase } from "@/lib/db";
 
 export const dynamic = "force-dynamic";
 
 export default async function AdminReviewsPage() {
-  const reviews = await prisma.productReview.findMany({
+  const reviews = await readDatabase([], (client) => client.productReview.findMany({
     orderBy: { createdAt: "desc" },
     take: 100,
     include: { user: { select: { name: true, email: true } } },
-  });
+  }));
   return (
     <div>
       <h1 className="font-display text-4xl">Reviews</h1>

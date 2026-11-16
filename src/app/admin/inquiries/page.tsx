@@ -1,9 +1,9 @@
 import { InquiryList } from "@/components/admin-managers";
-import { prisma } from "@/lib/db";
+import { readDatabase } from "@/lib/db";
 
 export default async function AdminInquiriesPage() {
-  const items = await prisma.inquiry.findMany({ where: { type: { not: "newsletter" } }, orderBy: { createdAt: "desc" }, take: 100 });
-  const subscribers = await prisma.inquiry.count({ where: { type: "newsletter" } });
+  const items = await readDatabase([], (client) => client.inquiry.findMany({ where: { type: { not: "newsletter" } }, orderBy: { createdAt: "desc" }, take: 100 }));
+  const subscribers = await readDatabase(0, (client) => client.inquiry.count({ where: { type: "newsletter" } }));
   return (
     <div>
       <h1 className="font-display text-4xl">Inquiries</h1>

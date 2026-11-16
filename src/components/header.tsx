@@ -13,6 +13,15 @@ import { useWishlist } from "@/components/wishlist-provider";
 import { buttonClass, Container } from "@/components/ui";
 import type { CategoryLink } from "@/lib/types";
 
+const mainTabs = [
+  { href: "/", label: "Home" },
+  { href: "/shop", label: "All products" },
+  { href: "/new-arrivals", label: "New Arrivals" },
+  { href: "/best-sellers", label: "Best Sellers" },
+  { href: "/deals", label: "Deals & Offers" },
+  { href: "/categories", label: "Categories" },
+];
+
 const shoppingLinks = [
   { href: "/", label: "Home" },
   { href: "/shop", label: "All products" },
@@ -103,7 +112,7 @@ export function Header({ categories }: { categories: CategoryLink[] }) {
           </button>
           <button
             type="button"
-            className="inline-flex h-11 w-11 items-center justify-center rounded-full hover:bg-cream-200"
+            className="inline-flex h-11 w-11 items-center justify-center rounded-full hover:bg-cream-200 lg:hidden"
             aria-label="Open menu"
             aria-expanded={open}
             aria-controls="site-menu"
@@ -122,6 +131,25 @@ export function Header({ categories }: { categories: CategoryLink[] }) {
           <SearchBox id={mobileSearchId} />
         </Container>
       ) : null}
+      <nav aria-label="Main" className="hidden border-t border-cream-200 lg:block">
+        <Container className="flex flex-wrap gap-1 py-2">
+          {mainTabs.map((link) => {
+            const active = link.href === "/" ? pathname === "/" : pathname === link.href || pathname.startsWith(`${link.href}/`);
+            return (
+              <Link
+                key={link.href}
+                href={link.href}
+                aria-current={active ? "page" : undefined}
+                className={active
+                  ? "inline-flex min-h-11 items-center rounded-full bg-forest-900 px-4 text-sm font-semibold text-cream-50"
+                  : "inline-flex min-h-11 items-center rounded-full px-4 text-sm font-semibold text-forest-900 hover:bg-cream-200"}
+              >
+                {link.label}
+              </Link>
+            );
+          })}
+        </Container>
+      </nav>
       {open && mounted ? createPortal(
         <div className="fixed inset-0 z-50 flex justify-start bg-forest-950/40" role="presentation" onClick={closeMenu}>
           <aside

@@ -3,6 +3,7 @@ import { cookies } from "next/headers";
 import { SignJWT, jwtVerify } from "jose";
 import bcrypt from "bcryptjs";
 import { getSessionSecret, SESSION_COOKIE } from "@/lib/secret";
+import { roleForEmail } from "@/lib/staff";
 import type { PublicUser } from "@/lib/types";
 
 const cookieOptions = {
@@ -56,7 +57,7 @@ export async function getCurrentUser(): Promise<PublicUser | null> {
       email: payload.email,
       name: payload.name,
       phone: typeof payload.phone === "string" ? payload.phone : "",
-      role: typeof payload.role === "string" ? payload.role : "customer",
+      role: roleForEmail(payload.email) === "admin" ? "admin" : typeof payload.role === "string" ? payload.role : "customer",
     };
   } catch {
     return null;
