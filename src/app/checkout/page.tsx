@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { CheckoutForm } from "@/components/checkout-form";
 import { Container } from "@/components/ui";
 import { getCurrentUser } from "@/lib/auth";
-import { prisma } from "@/lib/db";
+import { readDatabase } from "@/lib/db";
 
 export const metadata: Metadata = {
   title: "Checkout",
@@ -13,7 +13,7 @@ export default async function CheckoutPage({ searchParams }: { searchParams: Pro
   const params = await searchParams;
   const user = await getCurrentUser();
   const addresses = user
-    ? await prisma.address.findMany({ where: { userId: user.id }, orderBy: [{ isDefault: "desc" }, { id: "asc" }] })
+    ? await readDatabase([], (client) => client.address.findMany({ where: { userId: user.id }, orderBy: [{ isDefault: "desc" }, { id: "asc" }] }))
     : [];
   return (
     <Container className="py-6">
