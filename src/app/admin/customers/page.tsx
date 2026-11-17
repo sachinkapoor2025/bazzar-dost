@@ -1,10 +1,13 @@
 import Link from "next/link";
-import { readDatabase } from "@/lib/db";
+import { listLocalCustomers } from "@/lib/account-store";
+import { databaseConfigured, readDatabase } from "@/lib/db";
 import { formatDate, formatINR } from "@/lib/format";
+import { listLocalOrders } from "@/lib/local-orders";
 
 export default async function AdminCustomersPage({ searchParams }: { searchParams: Promise<{ q?: string }> }) {
   const q = (await searchParams).q?.trim() || "";
-  const customers = await readDatabase([], (client) => client.user.findMany({
+  const customers = databaseConfigured()
+    ? await readDatabase([], (client) => client.user.findMany({
     where: {
       role: "customer",
       ...(q ? { OR: [

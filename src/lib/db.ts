@@ -13,7 +13,12 @@ if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = prisma;
 
 export function databaseConfigured(): boolean {
   const url = process.env.DATABASE_URL || "";
-  return url.startsWith("postgresql://") || url.startsWith("postgres://");
+  if (!url.startsWith("postgresql://") && !url.startsWith("postgres://")) return false;
+  try {
+    return Boolean(new URL(url).hostname);
+  } catch {
+    return false;
+  }
 }
 
 export function isUniqueConstraint(error: unknown): boolean {

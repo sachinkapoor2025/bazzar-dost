@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
 import { requireAdmin } from "@/lib/auth";
-import { prisma } from "@/lib/db";
+import { databaseConfigured, prisma } from "@/lib/db";
 import { errorResponse } from "@/lib/http";
+import { saveLocalCoupon } from "@/lib/local-coupons";
 import { couponSchema } from "@/lib/validators";
 
 function couponData(body: { code: string; type: "PERCENT" | "FIXED"; value: number; minSubtotal: number; active: boolean; note?: string; expiresAt?: string }) {
@@ -22,6 +23,11 @@ export async function POST(request: Request) {
     const body = couponSchema.parse(await request.json());
     if (body.expiresAt && Number.isNaN(new Date(body.expiresAt).getTime())) {
       return NextResponse.json({ error: "Enter a valid expiry date or leave it empty." }, { status: 400 });
+    }
+    if (!databaseConfigured()) {
+      const coupon = saveLocalCoupon({ ...couponData(body), expiresAt: body.expiresAt ? new Date(body.expiresAt).toISOString() : null });
+      if (!coupon) return NextResponse.json({ error: "The coupon cannot be saved right now." }, { status: 503 });
+      return NextResponse.json({ id: coupon.id });
     }
     const coupon = await prisma.coupon.create({ data: couponData(body) });
     return NextResponse.json({ id: coupon.id });

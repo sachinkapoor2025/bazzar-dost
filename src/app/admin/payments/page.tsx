@@ -1,16 +1,19 @@
 import Link from "next/link";
-import { readDatabase } from "@/lib/db";
+import { databaseConfigured, readDatabase } from "@/lib/db";
+import { datedOrder, listLocalOrders } from "@/lib/local-orders";
 import { formatDate, formatINR } from "@/lib/format";
 
 export default async function PaymentsPage({ searchParams }: { searchParams: Promise<{ status?: string }> }) {
   const status = (await searchParams).status || "";
   const allowed = ["unpaid", "paid", "refunded"];
-  const orders = await readDatabase([], (client) => client.order.findMany({
-    where: allowed.includes(status) ? { paymentStatus: status } : undefined,
-    orderBy: { createdAt: "desc" },
-    take: 200,
-    select: { id: true, orderNumber: true, createdAt: true, paymentMethod: true, paymentStatus: true, total: true, email: true },
-  }));
+  const orders = databaseConfigured()
+    ? await readDatabase([], (client) => client.order.findMany({
+        where: allowed.includes(status) ? { paymentStatus: status } : undefined,
+        orderBy: { createdAt: "desc" },
+        take: 200,
+        select: { id: true, orderNumber: true, createdAt: true, paymentMethod: true, paymentStatus: true, total: true, email: true },
+      }))
+    : listLocalOrders().filter((order) => !allowed.includes(status) || order.paymentStatus === status).slice(0, 200).map(datedOrder);
   return (
     <div>
       <div className="flex flex-wrap items-center justify-between gap-3">

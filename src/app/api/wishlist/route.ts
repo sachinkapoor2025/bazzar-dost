@@ -3,11 +3,13 @@ import { z } from "zod";
 import { requireUser } from "@/lib/auth";
 import { prisma, databaseConfigured } from "@/lib/db";
 import { errorResponse } from "@/lib/http";
+import { findLocalProduct } from "@/lib/local-catalogue";
+import { localWishlistIds, toggleLocalWishlist } from "@/lib/local-wishlist";
 
 export async function GET() {
   try {
     const user = await requireUser();
-    if (!databaseConfigured()) return NextResponse.json({ productIds: [] });
+    if (!databaseConfigured()) return NextResponse.json({ productIds: localWishlistIds(user.id) });
     const items = await prisma.wishlistItem.findMany({ where: { userId: user.id }, select: { productId: true } });
     return NextResponse.json({ productIds: items.map((item) => item.productId) });
   } catch (error) {
@@ -19,7 +21,13 @@ export async function POST(request: Request) {
   try {
     const user = await requireUser();
     const body = z.object({ productId: z.string().min(1) }).parse(await request.json());
-    if (!databaseConfigured()) return NextResponse.json({ saved: true });
+    if (!databaseConfigured()) {
+      const product = findLocalProduct(body.productId);
+      if (!product || !product.isActive) return NextResponse.json({ error: "That product is not available." }, { status: 404 });
+      const result = toggleLocalWishlist(user.id, product.id);
+      if (!result.ok) return NextResponse.json({ error: "The wishlist cannot be saved right now." }, { status: 503 });
+      return NextResponse.json({ saved: result.saved });
+    }
     const product = await prisma.product.findFirst({ where: { id: body.productId, isActive: true }, select: { id: true } });
     if (!product) return NextResponse.json({ error: "That product is not available." }, { status: 404 });
     const existing = await prisma.wishlistItem.findUnique({ where: { userId_productId: { userId: user.id, productId: product.id } } });

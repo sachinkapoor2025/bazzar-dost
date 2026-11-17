@@ -1,4 +1,6 @@
 import "server-only";
+import fs from "node:fs";
+import path from "node:path";
 import {
   boughtTogether as togetherCards,
   categoryDetail,
@@ -163,6 +165,101 @@ function buildCatalogue(): { categories: Category[]; products: HydratedProduct[]
 }
 
 const catalogue = buildCatalogue();
+const STOCK_FILE = path.join(process.cwd(), "data", "stock.json");
+
+function readStockOverlay(): Record<string, number> {
+  try {
+    const parsed = JSON.parse(fs.readFileSync(STOCK_FILE, "utf8")) as unknown;
+    if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) return {};
+    const overlay: Record<string, number> = {};
+    for (const [key, value] of Object.entries(parsed)) {
+      if (typeof value === "number" && Number.isInteger(value) && value >= 0) overlay[key] = value;
+    }
+    return overlay;
+  } catch (error) {
+    const code = typeof error === "object" && error && "code" in error ? (error as { code?: string }).code : "";
+    if (code !== "ENOENT") console.error(error);
+    return {};
+  }
+}
+
+function writeStockOverlay(overlay: Record<string, number>) {
+  fs.mkdirSync(path.dirname(STOCK_FILE), { recursive: true });
+  const tmp = `${STOCK_FILE}.tmp`;
+  fs.writeFileSync(tmp, JSON.stringify(overlay));
+  fs.copyFileSync(tmp, STOCK_FILE);
+  fs.unlinkSync(tmp);
+}
+
+function applyStockOverlay() {
+  const overlay = readStockOverlay();
+  for (const product of catalogue.products) {
+    if (overlay[product.id] != null) product.stock = overlay[product.id];
+    for (const variant of product.variants) {
+      if (overlay[variant.id] != null) variant.stock = overlay[variant.id];
+    }
+  }
+}
+
+applyStockOverlay();
+
+export function findLocalProduct(id: string) {
+  return catalogue.products.find((product) => product.id === id) ?? null;
+}
+
+export function changeLocalStock(productId: string, variantId: string | null, delta: number): boolean {
+  const product = findLocalProduct(productId);
+  if (!product || !Number.isInteger(delta)) return false;
+  const overlay = readStockOverlay();
+  if (variantId) {
+    const variant = product.variants.find((item) => item.id === variantId);
+    if (!variant || variant.stock + delta < 0) return false;
+    variant.stock += delta;
+    overlay[variant.id] = variant.stock;
+  } else {
+    if (product.stock + delta < 0) return false;
+    product.stock += delta;
+    overlay[product.id] = product.stock;
+  }
+  writeStockOverlay(overlay);
+  return true;
+}
+
+export function setLocalStock(productId: string, variantId: string | null, stock: number): boolean {
+  const product = findLocalProduct(productId);
+  if (!product || !Number.isInteger(stock) || stock < 0) return false;
+  if (variantId) {
+    const variant = product.variants.find((item) => item.id === variantId);
+    if (!variant) return false;
+    return changeLocalStock(productId, variantId, stock - variant.stock);
+  }
+  return changeLocalStock(productId, null, stock - product.stock);
+}
+
+export function localInventory(query: string, take = 200) {
+  const needle = query.trim().toLowerCase();
+  return catalogue.products
+    .filter((product) => product.isActive && (!needle || product.name.toLowerCase().includes(needle) || product.sku.toLowerCase().includes(needle)))
+    .sort((a, b) => a.name.localeCompare(b.name))
+    .slice(0, take);
+}
+
+export function localActiveProductCount() {
+  return catalogue.products.filter((product) => product.isActive).length;
+}
+
+export function localLowStock(limit = 8) {
+  return catalogue.products
+    .filter((product) => product.isActive && (product.variants.length === 0 ? product.stock <= 5 : product.variants.some((variant) => variant.stock <= 5)))
+    .sort((a, b) => a.stock - b.stock)
+    .slice(0, limit);
+}
+
+export function localCategoryOptions() {
+  return catalogue.categories
+    .map((category) => ({ slug: category.slug, name: category.name }))
+    .sort((a, b) => a.name.localeCompare(b.name));
+}
 
 export function localHome() {
   const { categories, products } = catalogue;

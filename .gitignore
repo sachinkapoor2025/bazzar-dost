@@ -24,6 +24,18 @@ data/addresses.json
 data/addresses.json.tmp
 data/inquiries.json
 data/inquiries.json.tmp
+data/orders.json
+data/orders.json.tmp
+data/coupons.json
+data/coupons.json.tmp
+data/store-reviews.json
+data/store-reviews.json.tmp
+data/product-reviews.json
+data/product-reviews.json.tmp
+data/wishlist.json
+data/wishlist.json.tmp
+data/stock.json
+data/stock.json.tmp
 data/session-secret
 
 *.log
