@@ -218,7 +218,7 @@ export function CatalogLive({
           </div>
         ) : (
           <div className="mt-4">
-            <ProductGrid products={result.items} />
+            <ProductGrid products={result.items} priorityCount={2} />
           </div>
         )}
       </div>

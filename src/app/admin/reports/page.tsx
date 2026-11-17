@@ -31,7 +31,7 @@ export default async function ReportsPage({ searchParams }: { searchParams: Prom
         ))}
       </dl>
       <h2 className="mt-6 font-display text-2xl">Daily orders</h2>
-      <div className="mt-2 overflow-x-auto">
+      <div className="mt-2 max-w-full overflow-x-auto">
         <table className="w-full text-left text-sm">
           <thead><tr className="border-b border-cream-300"><th className="py-2">Date</th><th>Orders</th><th>Revenue</th></tr></thead>
           <tbody>

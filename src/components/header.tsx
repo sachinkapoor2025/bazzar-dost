@@ -93,8 +93,8 @@ export function Header({ categories }: { categories: CategoryLink[] }) {
         <div className="order-last flex w-full min-w-0 items-center gap-1 border-t border-cream-200 pt-1 md:order-none md:w-auto md:border-0 md:pt-0">
           <StoreControls />
         </div>
-        <nav aria-label="Account and cart" className="ml-auto flex items-center gap-1">
-          <button type="button" className="min-h-11 rounded-full px-3 text-sm font-semibold md:hidden" aria-expanded={searchOpen} onClick={() => setSearchOpen((value) => !value)}>
+        <nav aria-label="Account and cart" className="ml-auto flex shrink-0 items-center">
+          <button type="button" className="min-h-11 rounded-full px-2 text-sm font-semibold md:hidden" aria-expanded={searchOpen} onClick={() => setSearchOpen((value) => !value)}>
             Search
           </button>
           <Link href="/account" className="hidden min-h-11 items-center rounded-full px-3 text-sm font-semibold hover:bg-cream-200 sm:inline-flex">My Account</Link>
@@ -102,11 +102,11 @@ export function Header({ categories }: { categories: CategoryLink[] }) {
             Compare
             <Count value={compare.ids.length} />
           </Link>
-          <Link href="/wishlist" className="relative inline-flex min-h-11 items-center rounded-full px-3 text-sm font-semibold hover:bg-cream-200">
+          <Link href="/wishlist" className="relative hidden min-h-11 items-center rounded-full px-3 text-sm font-semibold hover:bg-cream-200 sm:inline-flex">
             Wishlist
             <Count value={wishlist.ids.length} />
           </Link>
-          <button type="button" className="relative inline-flex min-h-11 items-center rounded-full px-3 text-sm font-semibold hover:bg-cream-200" onClick={() => cart.setDrawerOpen(true)}>
+          <button type="button" className="relative inline-flex min-h-11 items-center rounded-full px-2 text-sm font-semibold hover:bg-cream-200 sm:px-3" onClick={() => cart.setDrawerOpen(true)}>
             Cart
             <Count value={cart.count} />
           </button>
@@ -217,6 +217,18 @@ export function Header({ categories }: { categories: CategoryLink[] }) {
                       My Account
                     </Link>
                   </li>
+                  <li className="md:hidden">
+                    <button
+                      type="button"
+                      className="block w-full rounded-xl px-3 py-3 text-left text-sm font-semibold text-forest-900 hover:bg-cream-200"
+                      onClick={() => {
+                        closeMenu();
+                        window.dispatchEvent(new Event("bazaardost-open-chat"));
+                      }}
+                    >
+                      Chat
+                    </button>
+                  </li>
                 </ul>
               </section>
             </div>
@@ -238,9 +250,9 @@ function Count({ value }: { value: number }) {
 export function MobileDock() {
   const cart = useCart();
   const wishlist = useWishlist();
-  const item = "flex flex-col items-center justify-center text-[0.68rem] font-semibold";
+  const item = "flex min-h-16 flex-col items-center justify-center px-1 text-center text-[0.68rem] font-semibold leading-tight";
   return (
-    <nav aria-label="Quick" className="fixed inset-x-0 bottom-0 z-40 grid h-16 grid-cols-5 border-t border-cream-300 bg-cream-50 md:hidden">
+    <nav aria-label="Quick" className="fixed inset-x-0 bottom-0 z-40 grid grid-cols-5 border-t border-cream-300 bg-cream-50 pb-[env(safe-area-inset-bottom)] md:hidden">
       <Link href="/" className={item}>Home</Link>
       <button type="button" className={item} onClick={() => window.dispatchEvent(new Event("bazaardost-open-menu"))}>Menu</button>
       <Link href="/account" className={item}>Account</Link>

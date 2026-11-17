@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 
 type ChatLink = { href: string; label: string };
 type ChatMessage = { role: "user" | "assistant"; text: string; links?: ChatLink[] };
@@ -35,6 +35,14 @@ export function ChatWidget({ raised = false }: { raised?: boolean }) {
   const [input, setInput] = useState("");
   const [pending, setPending] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>([starter]);
+
+  useEffect(() => {
+    function openFromMenu() {
+      setOpen(true);
+    }
+    window.addEventListener("bazaardost-open-chat", openFromMenu);
+    return () => window.removeEventListener("bazaardost-open-chat", openFromMenu);
+  }, []);
 
   async function send(event: FormEvent) {
     event.preventDefault();
@@ -110,7 +118,7 @@ export function ChatWidget({ raised = false }: { raised?: boolean }) {
               onChange={(event) => setInput(event.target.value)}
               maxLength={500}
               placeholder="Ask about a product or order"
-              className="min-h-11 min-w-0 flex-1 rounded-full border border-cream-300 bg-white px-4 text-sm"
+              className="min-h-11 min-w-0 flex-1 rounded-full border border-cream-300 bg-white px-4 text-base sm:text-sm"
             />
             <button type="submit" disabled={pending} className="min-h-11 rounded-full bg-forest-800 px-4 text-sm font-semibold text-cream-50 disabled:opacity-60">
               Send
@@ -120,7 +128,7 @@ export function ChatWidget({ raised = false }: { raised?: boolean }) {
       ) : null}
       <button
         type="button"
-        className="inline-flex h-14 w-14 items-center justify-center rounded-full bg-forest-800 text-cream-50 shadow-card"
+        className="hidden h-14 w-14 items-center justify-center rounded-full bg-forest-800 text-cream-50 shadow-card md:inline-flex"
         aria-expanded={open}
         aria-label={open ? "Hide chat" : "Chat"}
         onClick={() => setOpen((value) => !value)}

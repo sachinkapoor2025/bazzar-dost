@@ -48,7 +48,10 @@ export function AdminShell({ name, email, children }: { name: string; email: str
 
   return (
     <div className="min-h-[70vh] bg-cream-100 lg:grid lg:grid-cols-[17rem_minmax(0,1fr)]">
-      <aside className={`${open ? "block" : "hidden"} border-b border-forest-800 bg-forest-950 text-cream-50 lg:block`}>
+      {open ? (
+        <button type="button" className="fixed inset-0 z-40 bg-forest-950/40 lg:hidden" aria-label="Close menu" onClick={() => setOpen(false)} />
+      ) : null}
+      <aside className={`${open ? "fixed inset-y-0 left-0 z-50 w-[min(100vw-3rem,17rem)] overflow-y-auto" : "hidden"} border-forest-800 bg-forest-950 text-cream-50 lg:static lg:block lg:w-auto lg:overflow-visible`}>
         <div className="px-4 py-4">
           <p className="font-display text-2xl leading-none">BazaarDost</p>
           <p className="mt-1 text-xs text-cream-200">Admin portal</p>

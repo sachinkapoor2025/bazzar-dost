@@ -18,7 +18,7 @@ export function buttonClass(variant: keyof typeof variants = "primary", classNam
 }
 
 export const fieldClass =
-  "min-h-11 w-full rounded-xl border border-cream-300 bg-white px-3 text-sm text-ink outline-none placeholder:text-muted/70";
+  "min-h-11 w-full rounded-xl border border-cream-300 bg-white px-3 text-base text-ink outline-none placeholder:text-muted/70 sm:text-sm";
 
 export const labelClass = "mb-1 block text-sm font-semibold text-ink";
 

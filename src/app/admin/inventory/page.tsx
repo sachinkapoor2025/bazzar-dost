@@ -45,7 +45,7 @@ export default async function InventoryPage({ searchParams }: { searchParams: Pr
         </select>
         <button className="min-h-11 rounded-full bg-forest-800 px-4 text-sm font-semibold text-cream-50">Filter</button>
       </form>
-      <div className="mt-4 overflow-x-auto">
+      <div className="mt-4 max-w-full overflow-x-auto">
         <table className="w-full min-w-[40rem] text-left text-sm">
           <thead><tr className="border-b border-cream-300"><th className="py-2">Product</th><th>SKU</th><th>Stock</th></tr></thead>
           <tbody>

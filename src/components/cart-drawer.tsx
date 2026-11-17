@@ -6,6 +6,7 @@ import { useCart } from "@/components/cart-provider";
 import { Money } from "@/components/money";
 import { buttonClass } from "@/components/ui";
 import { unoptimizedImage } from "@/lib/format";
+import { sizedImage } from "@/lib/images";
 import { usePreferences } from "@/components/preferences-provider";
 import { formatINR } from "@/lib/format";
 
@@ -28,7 +29,7 @@ export function CartDrawer() {
             {cart.lines.map((line) => (
               <li key={line.key} className="grid grid-cols-[4rem_1fr] gap-3 rounded-2xl border border-cream-300 bg-white p-2">
                 <Link href={`/products/${line.slug}`} className="block aspect-square overflow-hidden rounded-xl bg-cream-100" onClick={() => cart.setDrawerOpen(false)}>
-                  {line.image ? <Image src={line.image} alt="" width={96} height={96} unoptimized={unoptimizedImage(line.image)} className="h-full w-full object-cover" /> : null}
+                  {line.image ? <Image src={sizedImage(line.image, 160)} alt="" width={96} height={96} unoptimized={unoptimizedImage(line.image)} className="h-full w-full object-cover" /> : null}
                 </Link>
                 <div>
                   <Link href={`/products/${line.slug}`} className="text-sm font-semibold leading-5" onClick={() => cart.setDrawerOpen(false)}>{line.name}</Link>

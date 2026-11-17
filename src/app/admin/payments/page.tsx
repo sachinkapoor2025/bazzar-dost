@@ -28,7 +28,7 @@ export default async function PaymentsPage({ searchParams }: { searchParams: Pro
         </select>
         <button className="ml-2 min-h-11 rounded-full bg-forest-800 px-4 text-sm font-semibold text-cream-50">Filter</button>
       </form>
-      <div className="mt-4 overflow-x-auto">
+      <div className="mt-4 max-w-full overflow-x-auto">
         <table className="w-full min-w-[40rem] text-left text-sm">
           <thead><tr className="border-b border-cream-300"><th className="py-2">Order</th><th>Method</th><th>Status</th><th>Currency</th><th>Amount</th></tr></thead>
           <tbody>

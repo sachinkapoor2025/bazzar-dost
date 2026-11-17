@@ -190,16 +190,16 @@ export function CheckoutForm({
         <h2 className="font-display text-2xl">Order total</h2>
         <ul className="mt-3 space-y-2 text-sm">
           {lines.map((line) => (
-            <li key={line.key}>
-              {line.name}{line.variantName ? ` — ${line.variantName}` : ""} × {line.qty}
-              <span className="float-right">{line.available ? formatINR(line.unitPrice * line.qty) : "Unavailable"}</span>
-              {line.message ? <span className="block text-[#7F1D1D]">{line.message}</span> : null}
+            <li key={line.key} className="flex flex-wrap items-start justify-between gap-x-3 gap-y-1">
+              <span className="min-w-0 break-words">{line.name}{line.variantName ? ` — ${line.variantName}` : ""} × {line.qty}</span>
+              <span className="shrink-0">{line.available ? formatINR(line.unitPrice * line.qty) : "Unavailable"}</span>
+              {line.message ? <span className="block basis-full text-[#7F1D1D]">{line.message}</span> : null}
             </li>
           ))}
         </ul>
         <div className="mt-3 flex gap-2">
           <label className="sr-only" htmlFor="coupon">Coupon</label>
-          <input id="coupon" value={couponCode} onChange={(event) => setCouponCode(event.target.value)} placeholder="Coupon code" className={fieldClass} />
+          <input id="coupon" value={couponCode} onChange={(event) => setCouponCode(event.target.value)} placeholder="Coupon code" className={`${fieldClass} min-w-0 flex-1`} />
           <button type="button" className={buttonClass("outline")} onClick={applyCoupon}>Apply</button>
         </div>
         {couponMessage ? <p className="mt-2 text-xs">{couponMessage}</p> : null}

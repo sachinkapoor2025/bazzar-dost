@@ -31,7 +31,7 @@ export function AccountFrame({ user, children }: { user: PublicUser; children: R
               <Link href="/wishlist" className="text-sm font-semibold text-forest-800 underline">Wishlist</Link>
             </div>
           </div>
-          <nav aria-label="Account" className="flex flex-wrap gap-x-6 gap-y-2 border-b border-cream-200">
+          <nav aria-label="Account" className="-mx-2 flex gap-x-5 overflow-x-auto border-b border-cream-200 px-2">
             {tabs.map((tab) => {
               const active = tab.match.some((path) => pathname === path || (path !== "/account" && pathname.startsWith(`${path}/`)));
               return (
@@ -39,7 +39,7 @@ export function AccountFrame({ user, children }: { user: PublicUser; children: R
                   key={tab.href}
                   href={tab.href}
                   aria-current={active ? "page" : undefined}
-                  className={active ? "border-b-2 border-forest-900 pb-2 text-sm font-semibold text-forest-900" : "border-b-2 border-transparent pb-2 text-sm font-semibold text-muted hover:text-forest-900"}
+                  className={active ? "shrink-0 whitespace-nowrap border-b-2 border-forest-900 pb-2 text-sm font-semibold text-forest-900" : "shrink-0 whitespace-nowrap border-b-2 border-transparent pb-2 text-sm font-semibold text-muted hover:text-forest-900"}
                 >
                   {tab.label}
                 </Link>
