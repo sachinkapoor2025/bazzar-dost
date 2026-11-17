@@ -16,6 +16,7 @@ export default function NewArrivalsPage({ searchParams }: { searchParams: Promis
         <>
           <p>Products added to the catalogue in the last {NEW_ARRIVAL_DAYS} days. The selling price is the one stored for each item, and stock follows the recorded quantity.</p>
           <p>Older products stay in All products. This list only changes when new catalogue items are added inside that window.</p>
+          <p>A product that drops off this list is still sold from its department page. Stock and price on the card are the values stored for that item, not an estimate.</p>
         </>
       }
       basePath="/new-arrivals"

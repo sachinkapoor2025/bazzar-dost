@@ -58,6 +58,7 @@ export default async function AdminProductsPage({ searchParams }: { searchParams
         <h1 className="font-display text-4xl">Products</h1>
         <Link href="/admin/products/new" className="rounded-full bg-forest-800 px-4 py-2 text-sm font-semibold text-cream-50">Add product</Link>
       </div>
+      <p className="mt-2 max-w-3xl text-sm leading-6 text-muted">Active products are the ones shoppers can open. Editing a product changes the name, price, stock, and description shown on the storefront. Hidden products stay out of search and department lists.</p>
       <form className="mt-4 grid gap-2 rounded-2xl bg-white p-3 md:grid-cols-5" action="/admin/products">
         <input name="q" defaultValue={q} placeholder="Search name or SKU" className="min-h-11 rounded-xl border border-cream-300 px-3 text-sm md:col-span-2" />
         <select name="category" defaultValue={params.category || ""} className="min-h-11 rounded-xl border border-cream-300 px-3 text-sm">

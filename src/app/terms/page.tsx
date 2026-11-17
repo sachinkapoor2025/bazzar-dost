@@ -15,7 +15,7 @@ export default function TermsPage() {
       <p>You are responsible for the accuracy of the delivery details and for keeping your password private. You may only view your own account information.</p>
       <p>Wholesale prices shown on a product are information for an enquiry. They are not applied as a cart discount unless the store changes the selling price or issues a coupon.</p>
       <p>The store may correct a catalogue error, disable a product, or cancel an order that cannot be fulfilled. Those changes are made in the admin and show up on the affected records.</p>
-      <p>Using the site means browsing the catalogue, saving a wishlist, and placing a cash-on-delivery order with the details you enter. Account pages show only the signed-in customer’s orders and addresses.</p>
+      <p>Using the site means browsing the catalogue, saving a wishlist, and placing a cash-on-delivery order with the details you enter. Account pages show only the signed-in customer’s orders and addresses. Shipping, returns, and privacy are described on their own pages and match the checkout rules.</p>
     </Info>
   );
 }

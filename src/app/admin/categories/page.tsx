@@ -10,7 +10,8 @@ export default async function AdminCategoriesPage({ searchParams }: { searchPara
   }));
   return (
     <div>
-      <h1 className="mb-4 font-display text-4xl">Categories</h1>
+      <h1 className="font-display text-4xl">Categories</h1>
+      <p className="mb-4 mt-2 max-w-3xl text-sm leading-6 text-muted">Departments group the catalogue. A parent department includes its own products and the products in its child departments. Empty departments are hidden from the shop menu.</p>
       <form action="/admin/categories" className="mb-4">
         <input name="q" defaultValue={q} placeholder="Search categories" className="min-h-11 w-full rounded-full border border-cream-300 bg-white px-4 text-sm" />
       </form>

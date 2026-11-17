@@ -32,7 +32,7 @@ export default async function CategoryPage({
       intro={
         <>
           {category.description ? <p>{category.description}</p> : null}
-          <p>Open an item to see its price, stock, and photos. Child departments listed above keep their own products, and the count includes those items.</p>
+          <p>Open an item to see its price, stock, and photos. Child departments listed above keep their own products, and the count includes those items. Filter by price or availability on this page. Checkout and shipping follow the same rules as the rest of the shop.</p>
         </>
       }
       basePath={`/categories/${category.slug}`}

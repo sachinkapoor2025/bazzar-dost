@@ -3,14 +3,16 @@ import Link from "next/link";
 import { JsonLd } from "@/components/json-ld";
 import { ProductGrid } from "@/components/product-card";
 import { Container, SectionTitle, buttonClass } from "@/components/ui";
+import { FREE_SHIPPING_ABOVE, SHIPPING_FLAT_RUPEES } from "@/lib/commerce";
 import { getHomeData } from "@/lib/catalog";
+import { formatINR } from "@/lib/format";
 import { absoluteUrl, site } from "@/lib/site";
 
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: `${site.name} — ${site.tagline}`,
-  description: "Shop BazaarDost for home, kitchen, beauty, electronics accessories, toys, travel, and more. Prices and stock come from the live catalogue.",
+  description: site.description,
   alternates: { canonical: "/" },
 };
 
@@ -22,11 +24,27 @@ export default async function HomePage() {
       <JsonLd
         data={{
           "@context": "https://schema.org",
-          "@type": "Organization",
-          name: site.name,
-          url: site.url,
-          slogan: site.tagline,
-          logo: absoluteUrl("/logo.png"),
+          "@graph": [
+            {
+              "@type": "Organization",
+              name: site.name,
+              url: site.url,
+              slogan: site.tagline,
+              logo: absoluteUrl("/logo.png"),
+              description: site.description,
+            },
+            {
+              "@type": "WebSite",
+              name: site.name,
+              url: site.url,
+              description: site.description,
+              potentialAction: {
+                "@type": "SearchAction",
+                target: `${site.url}/search?q={search_term_string}`,
+                "query-input": "required name=search_term_string",
+              },
+            },
+          ],
         }}
       />
       <section className="relative isolate min-h-[24rem] overflow-hidden bg-forest-950 text-cream-50 sm:min-h-[32rem] lg:min-h-[40rem]">
@@ -85,6 +103,40 @@ export default async function HomePage() {
         ) : (
           <p className="rounded-2xl border border-dashed border-cream-300 bg-white px-4 py-5 text-sm text-muted">Best sellers are listed after customers place orders. No completed sales are recorded yet.</p>
         )}
+      </Container>
+
+      <Container className="pb-12">
+        <section className="rounded-2xl border border-cream-300 bg-white p-5 sm:p-8">
+          <h2 className="font-display text-3xl text-forest-900">Shop everyday products at BazaarDost</h2>
+          <p className="mt-3 max-w-3xl text-base leading-7 text-muted">
+            BazaarDost lists practical products for home and daily use. Each product page shows the selling price, the quantity in stock, and the photos stored for that item. A crossed-out price appears only when the catalogue also stores a higher compare-at price.
+          </p>
+          <h3 className="mt-6 font-display text-2xl text-forest-900">Departments you can browse</h3>
+          <p className="mt-2 max-w-3xl text-base leading-7 text-muted">Open a department to see only the products filed there. A parent department also includes the products in its smaller sections.</p>
+          {data.categories.length > 0 ? (
+            <ul className="mt-4 flex flex-wrap gap-2">
+              {data.categories.map((category) => (
+                <li key={category.slug}>
+                  <Link href={`/categories/${category.slug}`} className="inline-flex min-h-11 items-center rounded-full border border-cream-300 bg-cream-50 px-4 text-sm font-semibold text-forest-900">
+                    {category.name}
+                    <span className="ml-2 text-muted">{category.productCount}</span>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          ) : null}
+          <h3 className="mt-6 font-display text-2xl text-forest-900">Delivery and payment</h3>
+          <p className="mt-2 max-w-3xl text-base leading-7 text-muted">
+            Checkout is cash on delivery. The order is saved as unpaid until the store records that the payment was collected. Shipping is {formatINR(SHIPPING_FLAT_RUPEES)}, and it is free when the payable product total reaches {formatINR(FREE_SHIPPING_ABOVE)}. The site does not promise a delivery date.
+          </p>
+          <p className="mt-4 flex flex-wrap gap-x-4 gap-y-2 text-sm font-semibold text-forest-800">
+            <Link href="/shop" className="underline">All products</Link>
+            <Link href="/deals" className="underline">Deals and offers</Link>
+            <Link href="/new-arrivals" className="underline">New arrivals</Link>
+            <Link href="/faq" className="underline">Questions</Link>
+            <Link href="/about" className="underline">About the shop</Link>
+          </p>
+        </section>
       </Container>
 
     </>

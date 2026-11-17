@@ -22,7 +22,7 @@ export default async function PaymentsPage() {
   return (
     <div>
       <h2 className="font-display text-3xl text-forest-900">Payment methods</h2>
-      <p className="mt-2 max-w-3xl text-base leading-7 text-muted">Checkout is cash on delivery. Card numbers are not collected or stored. An order stays unpaid until the store records that the cash was collected.</p>
+      <p className="mt-2 max-w-3xl text-base leading-7 text-muted">Checkout is cash on delivery. Card numbers are not collected or stored. An order stays unpaid until the store records that the cash was collected. The list below shows the payment status of recent orders on this account, not a saved card.</p>
       {orders.length === 0 ? <p className="mt-4 text-sm">No payments are recorded on this account yet. <Link href="/shop" className="underline">Start shopping</Link></p> : (
         <ul className="mt-4 divide-y divide-cream-200 rounded-2xl border border-cream-300">
           {orders.map((order) => (

@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { SignOutButton } from "@/components/sign-out-button";
+import { buttonClass } from "@/components/ui";
 import type { PublicUser } from "@/lib/types";
 
 const tabs = [
@@ -27,7 +28,7 @@ export function AccountFrame({ user, children }: { user: PublicUser; children: R
               <p className="mt-1 text-sm text-muted">Signed in as {user.email}</p>
             </div>
             <div className="flex flex-wrap items-center gap-3">
-              {user.role === "admin" ? <Link href="/admin" className="text-sm font-semibold text-forest-800 underline">Admin portal</Link> : null}
+              {user.role === "admin" ? <Link href="/admin" className={buttonClass("primary")}>Admin</Link> : null}
               <Link href="/wishlist" className="text-sm font-semibold text-forest-800 underline">Wishlist</Link>
             </div>
           </div>

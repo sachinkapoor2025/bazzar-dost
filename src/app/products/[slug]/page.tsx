@@ -104,6 +104,11 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
         <section>
           <h2 className="font-display text-2xl">Description</h2>
           <p className="mt-2 whitespace-pre-wrap text-sm leading-7">{product.description}</p>
+          <p className="mt-3 text-sm leading-7 text-muted">
+            {product.name} is sold by {site.name}
+            {card.inStock ? ` and ${card.stock} ${card.stock === 1 ? "unit is" : "units are"} available to order` : " and is currently out of stock"}.
+            {" "}The price on this page is the amount used at checkout. Shipping is {formatINR(SHIPPING_FLAT_RUPEES)} until the payable product total reaches {formatINR(FREE_SHIPPING_ABOVE)}, when shipping is free. Payment is cash on delivery.
+          </p>
         </section>
         {specs.length > 0 ? (
           <section>
