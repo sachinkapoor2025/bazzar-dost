@@ -3,7 +3,7 @@ import type { NextRequest } from "next/server";
 import { jwtVerify } from "jose";
 import { getSessionSecret, SESSION_COOKIE } from "@/lib/secret";
 import { canonicalRedirectTarget } from "@/lib/site";
-import { isAdminRole } from "@/lib/staff";
+import { isAdminRole, roleForEmail } from "@/lib/staff";
 
 export async function middleware(request: NextRequest) {
   const target = canonicalRedirectTarget(
@@ -32,7 +32,8 @@ export async function middleware(request: NextRequest) {
   if (!secret || !token) return adminApi ? denyApi(401, "Sign in required.") : redirectToLogin();
   try {
     const { payload } = await jwtVerify(token, secret);
-    if ((adminPage || adminApi) && !isAdminRole(payload.role)) {
+    const email = typeof payload.email === "string" ? payload.email : "";
+    if ((adminPage || adminApi) && !isAdminRole(payload.role) && roleForEmail(email) !== "admin") {
       if (adminApi) return denyApi(403, "Admin access is required.");
       const url = request.nextUrl.clone();
       url.pathname = "/account";

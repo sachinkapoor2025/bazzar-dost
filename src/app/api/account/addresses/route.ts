@@ -1,20 +1,16 @@
 import { NextResponse } from "next/server";
+import { createAddress } from "@/lib/address-store";
 import { requireUser } from "@/lib/auth";
-import { prisma } from "@/lib/db";
 import { errorResponse } from "@/lib/http";
 import { addressSchema } from "@/lib/validators";
-
-async function list(userId: string) {
-  return prisma.address.findMany({ where: { userId }, orderBy: [{ isDefault: "desc" }, { id: "asc" }] });
-}
 
 export async function POST(request: Request) {
   try {
     const user = await requireUser();
     const body = addressSchema.parse(await request.json());
-    if (body.isDefault) await prisma.address.updateMany({ where: { userId: user.id }, data: { isDefault: false } });
-    await prisma.address.create({ data: { ...body, userId: user.id } });
-    return NextResponse.json({ addresses: await list(user.id) });
+    const addresses = await createAddress(user.id, body);
+    if (!addresses) return NextResponse.json({ error: "The address cannot be saved right now." }, { status: 503 });
+    return NextResponse.json({ addresses });
   } catch (error) {
     return errorResponse(error);
   }

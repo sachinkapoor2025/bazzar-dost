@@ -1,12 +1,13 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { couponDiscount } from "@/lib/commerce";
-import { prisma } from "@/lib/db";
+import { prisma, databaseConfigured } from "@/lib/db";
 import { errorResponse } from "@/lib/http";
 
 export async function POST(request: Request) {
   try {
     const body = z.object({ code: z.string().trim().min(1).max(40), subtotal: z.number().int().nonnegative() }).parse(await request.json());
+    if (!databaseConfigured()) return NextResponse.json({ error: "Coupons cannot be checked until the store database is connected." }, { status: 503 });
     const coupon = await prisma.coupon.findFirst({
       where: { code: body.code.toUpperCase(), active: true, OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }] },
     });

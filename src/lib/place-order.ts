@@ -1,6 +1,6 @@
 import "server-only";
 import crypto from "node:crypto";
-import { prisma } from "@/lib/db";
+import { prisma, databaseConfigured } from "@/lib/db";
 import { couponDiscount, orderTotal, shippingCharge, MAX_LINE_QTY } from "@/lib/commerce";
 
 export class OrderError extends Error {
@@ -47,6 +47,9 @@ function asOrderError(error: unknown): OrderError | null {
 }
 
 export async function placeOrder(input: PlaceInput) {
+  if (!databaseConfigured()) {
+    throw new OrderError("Orders cannot be placed until the store database is connected.", 503);
+  }
   const existing = await prisma.order.findUnique({
     where: { idempotencyKey: input.idempotencyKey },
     include: { items: true },

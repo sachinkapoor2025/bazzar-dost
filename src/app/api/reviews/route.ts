@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/db";
+import { prisma, databaseConfigured } from "@/lib/db";
 import { cleanText } from "@/lib/format";
 import { errorResponse } from "@/lib/http";
 import { rateLimit } from "@/lib/rate-limit";
@@ -11,6 +11,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Too many reviews. Try again later." }, { status: 429 });
     }
     const body = reviewSchema.parse(await request.json());
+    if (!databaseConfigured()) return NextResponse.json({ error: "Reviews cannot be saved right now." }, { status: 503 });
     if (body.website) return NextResponse.json({ message: "Review saved." });
     const review = await prisma.review.create({
       data: {

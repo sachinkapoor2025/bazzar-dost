@@ -193,3 +193,30 @@ export async function loginAccount(emailInput: string, password: string): Promis
   await saveAccounts(rows, account);
   return { ok: true, user: toPublic(account) };
 }
+
+export async function updateAccountProfile(userId: string, input: { name: string; phone: string }): Promise<AccountResult> {
+  if (remoteApi()) {
+    try {
+      const user = await api<PublicUser>("/account/profile", { method: "PATCH", body: input });
+      return { ok: true, user: { ...user, id: user.id || userId } };
+    } catch (error) {
+      if (error instanceof ApiError) return { ok: false, status: error.status, error: error.message };
+      throw error;
+    }
+  }
+  if (databaseConfigured()) {
+    const user = await prisma.user.update({
+      where: { id: userId },
+      data: { name: input.name, phone: input.phone },
+      select: { id: true, email: true, name: true, phone: true, role: true },
+    });
+    return { ok: true, user };
+  }
+  const rows = await knownAccounts();
+  const account = rows.find((item) => item.id === userId);
+  if (!account) return { ok: false, status: 404, error: "Account not found." };
+  account.name = input.name;
+  account.phone = input.phone;
+  if (!(await saveAccounts(rows, account))) return { ok: false, status: 503, error: "The profile cannot be saved right now." };
+  return { ok: true, user: toPublic(account) };
+}

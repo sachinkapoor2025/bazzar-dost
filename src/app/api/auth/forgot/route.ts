@@ -1,6 +1,6 @@
 import crypto from "node:crypto";
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/db";
+import { prisma, databaseConfigured } from "@/lib/db";
 import { errorResponse } from "@/lib/http";
 import { mailConfigured, sendMail } from "@/lib/mail";
 import { rateLimit } from "@/lib/rate-limit";
@@ -14,6 +14,7 @@ export async function POST(request: Request) {
     const body = forgotSchema.parse(await request.json());
     const email = body.email.toLowerCase();
     if (!rateLimit(`forgot:${email}`, 5, 60 * 60 * 1000)) return NextResponse.json({ message });
+    if (!databaseConfigured()) return NextResponse.json({ message });
     const user = await prisma.user.findUnique({ where: { email } });
     if (user && mailConfigured()) {
       const token = crypto.randomBytes(32).toString("hex");
