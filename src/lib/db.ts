@@ -19,3 +19,13 @@ export function databaseConfigured(): boolean {
 export function isUniqueConstraint(error: unknown): boolean {
   return typeof error === "object" && error !== null && "code" in error && (error as { code?: string }).code === "P2002";
 }
+
+export async function readDatabase<T>(fallback: T, read: (client: PrismaClient) => Promise<T>): Promise<T> {
+  if (!databaseConfigured()) return fallback;
+  try {
+    return await read(prisma);
+  } catch (error) {
+    console.error(error);
+    return fallback;
+  }
+}

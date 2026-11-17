@@ -1,16 +1,16 @@
 import { CouponManager } from "@/components/promo-forms";
 import { CouponRow } from "@/components/coupon-row";
-import { prisma } from "@/lib/db";
+import { readDatabase } from "@/lib/db";
 
 export default async function CouponsPage() {
-  const [coupons, usage] = await Promise.all([
-    prisma.coupon.findMany({ orderBy: { code: "asc" } }),
-    prisma.order.groupBy({
+  const [coupons, usage] = await readDatabase([[], []] as const, (client) => Promise.all([
+    client.coupon.findMany({ orderBy: { code: "asc" } }),
+    client.order.groupBy({
       by: ["couponCode"],
       where: { couponCode: { not: "" }, status: { not: "cancelled" } },
       _count: { _all: true },
     }),
-  ]);
+  ]));
   const used = new Map(usage.map((row) => [row.couponCode.toUpperCase(), row._count._all]));
   return (
     <div>

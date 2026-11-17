@@ -1,12 +1,15 @@
 import { notFound } from "next/navigation";
 import { ProductForm, type ProductFormValue } from "@/components/product-form";
-import { api } from "@/lib/backend";
-import { parseSpecs, type ProductRecord } from "@/lib/catalog";
+import { parseSpecs } from "@/lib/catalog";
+import { readDatabase } from "@/lib/db";
 
 export default async function EditProductPage({ params }: { params: Promise<{ id: string }> }) {
-  const product = await api<ProductRecord>(`/admin/products/${encodeURIComponent((await params).id)}`).catch(() => null);
+  const product = await readDatabase(null, async (client) => client.product.findUnique({
+    where: { id: (await params).id },
+    include: { images: { orderBy: { sortOrder: "asc" } }, variants: true },
+  }));
   if (!product) notFound();
-  const categories = await api<Array<{ id: string; name: string }>>("/admin/categories");
+  const categories = await readDatabase([], (client) => client.category.findMany({ orderBy: { sortOrder: "asc" } }));
   const initial: ProductFormValue = {
     id: product.id,
     name: product.name,

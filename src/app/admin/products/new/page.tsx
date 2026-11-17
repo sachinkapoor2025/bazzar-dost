@@ -1,8 +1,8 @@
 import { ProductForm } from "@/components/product-form";
-import { api } from "@/lib/backend";
+import { readDatabase } from "@/lib/db";
 
 export default async function NewProductPage() {
-  const categories = await api<Array<{ id: string; name: string }>>("/admin/categories");
+  const categories = await readDatabase([], (client) => client.category.findMany({ orderBy: { sortOrder: "asc" } }));
   return (
     <div>
       <h1 className="mb-4 font-display text-4xl">Add product</h1>

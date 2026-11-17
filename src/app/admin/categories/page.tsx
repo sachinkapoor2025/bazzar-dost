@@ -1,13 +1,13 @@
 import { CategoryManager } from "@/components/admin-managers";
-import { prisma } from "@/lib/db";
+import { readDatabase } from "@/lib/db";
 
 export default async function AdminCategoriesPage({ searchParams }: { searchParams: Promise<{ q?: string }> }) {
   const q = (await searchParams).q?.trim() || "";
-  const categories = await prisma.category.findMany({
+  const categories = await readDatabase([], (client) => client.category.findMany({
     where: q ? { OR: [{ name: { contains: q, mode: "insensitive" } }, { slug: { contains: q, mode: "insensitive" } }] } : undefined,
     orderBy: { sortOrder: "asc" },
     include: { _count: { select: { products: true } } },
-  });
+  }));
   return (
     <div>
       <h1 className="mb-4 font-display text-4xl">Categories</h1>

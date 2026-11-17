@@ -1,5 +1,5 @@
 import "server-only";
-import { prisma } from "@/lib/db";
+import { readDatabase } from "@/lib/db";
 import { dayKey, parseAdminRange } from "@/lib/admin-range";
 
 const LOW_STOCK = 5;
@@ -7,32 +7,46 @@ const LOW_STOCK = 5;
 export async function loadAdminOverview(input: { range?: string; from?: string; to?: string }) {
   const { range, start, end } = parseAdminRange(input);
   const created = { gte: start, lte: end };
-  const [orders, productCount, customerCount, lowStock, recentOrders, recentCustomers] = await Promise.all([
-    prisma.order.findMany({
-      where: { createdAt: created },
-      select: { id: true, orderNumber: true, name: true, email: true, status: true, paymentStatus: true, total: true, createdAt: true },
-      orderBy: { createdAt: "desc" },
-    }),
-    prisma.product.count(),
-    prisma.user.count({ where: { role: "customer" } }),
-    prisma.product.findMany({
-      where: { isActive: true, OR: [{ variants: { none: {} }, stock: { lte: LOW_STOCK } }, { variants: { some: { stock: { lte: LOW_STOCK } } } }] },
-      select: { id: true, name: true, sku: true, stock: true, variants: { select: { stock: true } } },
-      take: 8,
-      orderBy: { stock: "asc" },
-    }),
-    prisma.order.findMany({
-      orderBy: { createdAt: "desc" },
-      take: 8,
-      select: { id: true, orderNumber: true, name: true, status: true, total: true, createdAt: true },
-    }),
-    prisma.user.findMany({
-      where: { role: "customer" },
-      orderBy: { createdAt: "desc" },
-      take: 6,
-      select: { id: true, name: true, email: true, createdAt: true, _count: { select: { orders: true } } },
-    }),
-  ]);
+  const loaded = await readDatabase(
+    { orders: [], productCount: 0, customerCount: 0, lowStock: [], recentOrders: [], recentCustomers: [], sold: [] as Array<{ productId: string | null; name: string; _sum: { qty: number | null } }> },
+    async (client) => {
+      const [orders, productCount, customerCount, lowStock, recentOrders, recentCustomers] = await Promise.all([
+        client.order.findMany({
+          where: { createdAt: created },
+          select: { id: true, orderNumber: true, name: true, email: true, status: true, paymentStatus: true, total: true, createdAt: true },
+          orderBy: { createdAt: "desc" },
+        }),
+        client.product.count(),
+        client.user.count({ where: { role: "customer" } }),
+        client.product.findMany({
+          where: { isActive: true, OR: [{ variants: { none: {} }, stock: { lte: LOW_STOCK } }, { variants: { some: { stock: { lte: LOW_STOCK } } } }] },
+          select: { id: true, name: true, sku: true, stock: true, variants: { select: { stock: true } } },
+          take: 8,
+          orderBy: { stock: "asc" },
+        }),
+        client.order.findMany({
+          orderBy: { createdAt: "desc" },
+          take: 8,
+          select: { id: true, orderNumber: true, name: true, status: true, total: true, createdAt: true },
+        }),
+        client.user.findMany({
+          where: { role: "customer" },
+          orderBy: { createdAt: "desc" },
+          take: 6,
+          select: { id: true, name: true, email: true, createdAt: true, _count: { select: { orders: true } } },
+        }),
+      ]);
+      const sold = await client.orderItem.groupBy({
+        by: ["productId", "name"],
+        where: { order: { createdAt: created, status: { not: "cancelled" } } },
+        _sum: { qty: true },
+        orderBy: { _sum: { qty: "desc" } },
+        take: 8,
+      });
+      return { orders, productCount, customerCount, lowStock, recentOrders, recentCustomers, sold };
+    },
+  );
+  const { orders, productCount, customerCount, lowStock, recentOrders, recentCustomers, sold } = loaded;
 
   const activeOrders = orders.filter((order) => order.status !== "cancelled");
   const revenue = activeOrders.reduce((sum, order) => sum + order.total, 0);
@@ -55,14 +69,6 @@ export async function loadAdminOverview(input: { range?: string; from?: string; 
     days.push({ day: key, orders: current.orders, revenue: current.revenue });
     cursor.setDate(cursor.getDate() + 1);
   }
-
-  const sold = await prisma.orderItem.groupBy({
-    by: ["productId", "name"],
-    where: { order: { createdAt: created, status: { not: "cancelled" } } },
-    _sum: { qty: true },
-    orderBy: { _sum: { qty: "desc" } },
-    take: 8,
-  });
 
   return {
     range,

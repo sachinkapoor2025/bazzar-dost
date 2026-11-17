@@ -1,10 +1,10 @@
 import Link from "next/link";
-import { prisma } from "@/lib/db";
+import { readDatabase } from "@/lib/db";
 import { formatDate, formatINR } from "@/lib/format";
 
 export default async function AdminCustomersPage({ searchParams }: { searchParams: Promise<{ q?: string }> }) {
   const q = (await searchParams).q?.trim() || "";
-  const customers = await prisma.user.findMany({
+  const customers = await readDatabase([], (client) => client.user.findMany({
     where: {
       role: "customer",
       ...(q ? { OR: [
@@ -23,7 +23,7 @@ export default async function AdminCustomersPage({ searchParams }: { searchParam
       orders: { where: { status: { not: "cancelled" } }, select: { total: true } },
       _count: { select: { orders: true } },
     },
-  });
+  }));
   return (
     <div>
       <div className="flex flex-wrap items-center justify-between gap-3">

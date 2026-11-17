@@ -1,16 +1,16 @@
 import Link from "next/link";
-import { prisma } from "@/lib/db";
+import { readDatabase } from "@/lib/db";
 import { formatDate, formatINR } from "@/lib/format";
 
 export default async function PaymentsPage({ searchParams }: { searchParams: Promise<{ status?: string }> }) {
   const status = (await searchParams).status || "";
   const allowed = ["unpaid", "paid", "refunded"];
-  const orders = await prisma.order.findMany({
+  const orders = await readDatabase([], (client) => client.order.findMany({
     where: allowed.includes(status) ? { paymentStatus: status } : undefined,
     orderBy: { createdAt: "desc" },
     take: 200,
     select: { id: true, orderNumber: true, createdAt: true, paymentMethod: true, paymentStatus: true, total: true, email: true },
-  });
+  }));
   return (
     <div>
       <div className="flex flex-wrap items-center justify-between gap-3">
