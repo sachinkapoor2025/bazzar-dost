@@ -4,6 +4,7 @@ import { selectDailyDeals } from "@/lib/deals";
 import { loadEngagementScores } from "@/lib/engagement";
 import { loadSoldUnits } from "@/lib/sales";
 import { parseRating, parseRupee, priceBounds } from "@/lib/commerce";
+import { listStoreReviews } from "@/lib/local-reviews";
 import { loadReviewAverages } from "@/lib/product-review-store";
 import {
   localByIds,
@@ -252,7 +253,7 @@ export async function productsBySlugs(slugs: string[]): Promise<ProductCardData[
 export async function getReviews() {
   return readCatalogue(
     () => api<Array<{ id: string; name: string; city: string; rating: number; comment: string; createdAt: string }>>("/reviews"),
-    () => [],
+    () => listStoreReviews(),
   );
 }
 

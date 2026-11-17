@@ -10,7 +10,12 @@ import { prisma, databaseConfigured, isUniqueConstraint } from "@/lib/db";
 import { roleForEmail } from "@/lib/staff";
 import type { PublicUser } from "@/lib/types";
 
-type StoredAccount = PublicUser & { passwordHash: string };
+type StoredAccount = PublicUser & {
+  passwordHash: string;
+  createdAt?: string;
+  resetTokenHash?: string;
+  resetExpiresAt?: string;
+};
 type AccountResult = { ok: true; user: PublicUser } | { ok: false; status: number; error: string };
 
 const DUPLICATE = "An account with this email already exists.";
@@ -156,6 +161,7 @@ export async function registerAccount(input: {
     phone: input.phone,
     role: roleForEmail(email),
     passwordHash: await bcrypt.hash(input.password, 12),
+    createdAt: new Date().toISOString(),
   };
   if (!(await saveAccounts([...rows, account], account))) {
     return { ok: false, status: 503, error: "Accounts cannot be saved right now." };
@@ -192,4 +198,64 @@ export async function loginAccount(emailInput: string, password: string): Promis
   if (roleForEmail(account.email) === "admin" && account.role !== "admin") account.role = "admin";
   await saveAccounts(rows, account);
   return { ok: true, user: toPublic(account) };
+}
+
+export async function updateAccountProfile(userId: string, input: { name: string; phone: string }): Promise<AccountResult> {
+  if (remoteApi()) {
+    try {
+      const user = await api<PublicUser>("/account/profile", { method: "PATCH", body: input });
+      return { ok: true, user: { ...user, id: user.id || userId } };
+    } catch (error) {
+      if (error instanceof ApiError) return { ok: false, status: error.status, error: error.message };
+      throw error;
+    }
+  }
+  if (databaseConfigured()) {
+    const user = await prisma.user.update({
+      where: { id: userId },
+      data: { name: input.name, phone: input.phone },
+      select: { id: true, email: true, name: true, phone: true, role: true },
+    });
+    return { ok: true, user };
+  }
+  const rows = await knownAccounts();
+  const account = rows.find((item) => item.id === userId);
+  if (!account) return { ok: false, status: 404, error: "Account not found." };
+  account.name = input.name;
+  account.phone = input.phone;
+  if (!(await saveAccounts(rows, account))) return { ok: false, status: 503, error: "The profile cannot be saved right now." };
+  return { ok: true, user: toPublic(account) };
+}
+
+export function listLocalCustomers() {
+  return readAccounts()
+    .filter((account) => account.role !== "admin")
+    .map((account) => ({
+      id: account.id,
+      name: account.name,
+      email: account.email,
+      phone: account.phone,
+      role: account.role,
+      createdAt: account.createdAt ? new Date(account.createdAt) : null,
+    }))
+    .sort((a, b) => (b.createdAt?.getTime() || 0) - (a.createdAt?.getTime() || 0));
+}
+
+export async function issueLocalReset(email: string, tokenHash: string, expiresAt: Date): Promise<boolean> {
+  const rows = await knownAccounts();
+  const account = rows.find((item) => item.email.toLowerCase() === email);
+  if (!account) return false;
+  account.resetTokenHash = tokenHash;
+  account.resetExpiresAt = expiresAt.toISOString();
+  return saveAccounts(rows, account);
+}
+
+export async function resetLocalPassword(tokenHash: string, passwordHash: string): Promise<boolean> {
+  const rows = await knownAccounts();
+  const account = rows.find((item) => item.resetTokenHash === tokenHash);
+  if (!account || !account.resetExpiresAt || Date.parse(account.resetExpiresAt) < Date.now()) return false;
+  account.passwordHash = passwordHash;
+  delete account.resetTokenHash;
+  delete account.resetExpiresAt;
+  return saveAccounts(rows, account);
 }

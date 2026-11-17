@@ -1,8 +1,9 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { requireAdmin } from "@/lib/auth";
-import { prisma } from "@/lib/db";
+import { databaseConfigured, prisma } from "@/lib/db";
 import { errorResponse } from "@/lib/http";
+import { setLocalStock } from "@/lib/local-catalogue";
 
 const schema = z.object({
   productId: z.string().min(1),
@@ -14,6 +15,11 @@ export async function POST(request: Request) {
   try {
     await requireAdmin();
     const body = schema.parse(await request.json());
+    if (!databaseConfigured()) {
+      const updated = setLocalStock(body.productId, body.variantId || null, body.stock);
+      if (!updated) return NextResponse.json({ error: body.variantId ? "That option was not found." : "Product not found." }, { status: 404 });
+      return NextResponse.json({ message: "Stock updated." });
+    }
     if (body.variantId) {
       const updated = await prisma.variant.updateMany({
         where: { id: body.variantId, productId: body.productId },

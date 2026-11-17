@@ -39,6 +39,7 @@ function isActive(pathname: string, href: string, exact?: boolean) {
 export function AdminShell({ name, email, children }: { name: string; email: string; children: React.ReactNode }) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
+  const [expanded, setExpanded] = useState<Record<string, boolean>>({});
 
   async function logout() {
     await fetch("/api/auth/logout", { method: "POST" });
@@ -63,17 +64,26 @@ export function AdminShell({ name, email, children }: { name: string; email: str
               );
             }
             const groupActive = item.children.some((child) => isActive(pathname, child.href));
+            const showChildren = expanded[item.label] ?? groupActive;
             return (
               <div key={item.label} className="mt-2">
-                <p className={`px-3 py-1 text-xs font-semibold uppercase tracking-[0.14em] ${groupActive ? "text-gold-400" : "text-cream-200"}`}>{item.label}</p>
-                {item.children.map((child) => {
+                <button
+                  type="button"
+                  aria-expanded={showChildren}
+                  className={`flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-xs font-semibold uppercase tracking-[0.14em] ${groupActive ? "text-gold-400" : "text-cream-200"} hover:bg-forest-800`}
+                  onClick={() => setExpanded((current) => ({ ...current, [item.label]: !showChildren }))}
+                >
+                  {item.label}
+                  <span aria-hidden="true">{showChildren ? "–" : "+"}</span>
+                </button>
+                {showChildren ? item.children.map((child) => {
                   const active = isActive(pathname, child.href);
                   return (
                     <Link key={child.href} href={child.href} onClick={() => setOpen(false)} className={`block rounded-lg px-3 py-2 text-sm ${active ? "bg-gold-400 font-semibold text-forest-950" : "text-cream-50 hover:bg-forest-800"}`}>
                       {child.label}
                     </Link>
                   );
-                })}
+                }) : null}
               </div>
             );
           })}

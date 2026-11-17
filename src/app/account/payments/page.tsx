@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/lib/auth";
-import { readDatabase } from "@/lib/db";
+import { databaseConfigured, readDatabase } from "@/lib/db";
+import { datedOrder, listLocalOrders } from "@/lib/local-orders";
 import { formatDate, formatINR } from "@/lib/format";
 
 export const metadata: Metadata = { title: "Payment methods", robots: { index: false, follow: false } };
@@ -10,12 +11,14 @@ export const metadata: Metadata = { title: "Payment methods", robots: { index: f
 export default async function PaymentsPage() {
   const user = await getCurrentUser();
   if (!user) redirect("/login?next=/account/payments");
-  const orders = await readDatabase([], (client) => client.order.findMany({
-    where: { userId: user.id },
-    orderBy: { createdAt: "desc" },
-    take: 8,
-    select: { id: true, orderNumber: true, createdAt: true, paymentMethod: true, paymentStatus: true, total: true },
-  }));
+  const orders = databaseConfigured()
+    ? await readDatabase([], (client) => client.order.findMany({
+        where: { userId: user.id },
+        orderBy: { createdAt: "desc" },
+        take: 8,
+        select: { id: true, orderNumber: true, createdAt: true, paymentMethod: true, paymentStatus: true, total: true },
+      }))
+    : listLocalOrders().filter((order) => order.userId === user.id).slice(0, 8).map(datedOrder);
   return (
     <div>
       <h2 className="font-display text-3xl text-forest-900">Payment methods</h2>

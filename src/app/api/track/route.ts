@@ -1,15 +1,31 @@
 import { NextResponse } from "next/server";
-import { ApiError, api } from "@/lib/backend";
+import { databaseConfigured, prisma } from "@/lib/db";
 import { errorResponse } from "@/lib/http";
+import { listLocalOrders } from "@/lib/local-orders";
 import { trackSchema } from "@/lib/validators";
 
 export async function POST(request: Request) {
   try {
     const body = trackSchema.parse(await request.json());
-    const order = await api("/track", { body: { orderNumber: body.orderNumber.trim().toUpperCase(), email: body.email.toLowerCase() } });
-    return NextResponse.json({ order });
+    const order = databaseConfigured()
+      ? await prisma.order.findFirst({
+          where: { orderNumber: body.orderNumber.trim().toUpperCase(), email: body.email.toLowerCase() },
+          include: { items: true },
+        })
+      : listLocalOrders().find((item) => item.orderNumber === body.orderNumber.trim().toUpperCase() && item.email === body.email.toLowerCase()) ?? null;
+    if (!order) return NextResponse.json({ error: "No order matches those details." }, { status: 404 });
+    return NextResponse.json({
+      order: {
+        orderNumber: order.orderNumber,
+        status: order.status,
+        paymentStatus: order.paymentStatus,
+        createdAt: new Date(order.createdAt).toISOString(),
+        total: order.total,
+        trackingNote: order.trackingNote,
+        items: order.items.map((item) => ({ name: item.name, qty: item.qty })),
+      },
+    });
   } catch (error) {
-    if (error instanceof ApiError) return NextResponse.json({ error: error.message }, { status: error.status });
     return errorResponse(error);
   }
 }

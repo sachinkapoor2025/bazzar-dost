@@ -1,16 +1,11 @@
 import "server-only";
 import fs from "node:fs";
 import path from "node:path";
-import { prisma } from "@/lib/db";
+import { databaseConfigured, prisma } from "@/lib/db";
 import { emptyScore, type EngagementScore } from "@/lib/trending";
 
 const FILE = path.join(process.cwd(), "data", "engagement.json");
 const SLUG = /^[a-z0-9]+(?:-[a-z0-9]+)*$/i;
-
-function databaseConfigured(): boolean {
-  const url = process.env.DATABASE_URL || "";
-  return url.startsWith("postgresql://") || url.startsWith("postgres://");
-}
 
 type FileStore = Record<string, { views: number; clicks: number }>;
 

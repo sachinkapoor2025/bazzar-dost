@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import { CheckoutForm } from "@/components/checkout-form";
 import { Container } from "@/components/ui";
+import { listAddresses } from "@/lib/address-store";
 import { getCurrentUser } from "@/lib/auth";
-import { readDatabase } from "@/lib/db";
 
 export const metadata: Metadata = {
   title: "Checkout",
@@ -13,7 +13,7 @@ export default async function CheckoutPage({ searchParams }: { searchParams: Pro
   const params = await searchParams;
   const user = await getCurrentUser();
   const addresses = user
-    ? await readDatabase([], (client) => client.address.findMany({ where: { userId: user.id }, orderBy: [{ isDefault: "desc" }, { id: "asc" }] }))
+    ? await listAddresses(user.id)
     : [];
   return (
     <Container className="py-6">

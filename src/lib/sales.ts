@@ -1,14 +1,23 @@
 import "server-only";
-import { prisma } from "@/lib/db";
-
-function databaseConfigured(): boolean {
-  const url = process.env.DATABASE_URL || "";
-  return url.startsWith("postgresql://") || url.startsWith("postgres://");
-}
+import { databaseConfigured, prisma } from "@/lib/db";
+import { listLocalOrders } from "@/lib/local-orders";
+import { findLocalProduct } from "@/lib/local-catalogue";
 
 /** Units sold on orders that were not cancelled, keyed by product slug and id. Null when sales cannot be read. */
 export async function loadSoldUnits(): Promise<Map<string, number> | null> {
-  if (!databaseConfigured()) return null;
+  if (!databaseConfigured()) {
+    const units = new Map<string, number>();
+    for (const order of listLocalOrders()) {
+      if (order.status === "cancelled") continue;
+      for (const item of order.items) {
+        if (!item.productId || item.qty <= 0) continue;
+        units.set(item.productId, (units.get(item.productId) || 0) + item.qty);
+        const product = findLocalProduct(item.productId);
+        if (product) units.set(product.slug, (units.get(product.slug) || 0) + item.qty);
+      }
+    }
+    return units;
+  }
   try {
     const sold = await prisma.orderItem.groupBy({
       by: ["productId"],

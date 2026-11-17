@@ -1,14 +1,24 @@
 import { AdminReviewList } from "@/components/admin-reviews";
-import { readDatabase } from "@/lib/db";
+import { databaseConfigured, readDatabase } from "@/lib/db";
+import { listProductReviews } from "@/lib/local-reviews";
 
 export const dynamic = "force-dynamic";
 
 export default async function AdminReviewsPage() {
-  const reviews = await readDatabase([], (client) => client.productReview.findMany({
-    orderBy: { createdAt: "desc" },
-    take: 100,
-    include: { user: { select: { name: true, email: true } } },
-  }));
+  const reviews = databaseConfigured()
+    ? await readDatabase([], (client) => client.productReview.findMany({
+        orderBy: { createdAt: "desc" },
+        take: 100,
+        include: { user: { select: { name: true, email: true } } },
+      }))
+    : listProductReviews().slice(0, 100).map((review) => ({
+        id: review.id,
+        productSlug: review.productSlug,
+        rating: review.rating,
+        comment: review.comment,
+        createdAt: new Date(review.createdAt),
+        user: { name: review.userName, email: review.userEmail },
+      }));
   return (
     <div>
       <h1 className="font-display text-4xl">Reviews</h1>

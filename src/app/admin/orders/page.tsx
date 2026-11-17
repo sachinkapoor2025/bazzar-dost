@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { readDatabase } from "@/lib/db";
+import { databaseConfigured, readDatabase } from "@/lib/db";
+import { datedOrder, listLocalOrders } from "@/lib/local-orders";
 import { formatDate, formatINR } from "@/lib/format";
 import { ORDER_STATUS_VALUES, orderStatusLabel } from "@/lib/order-progress";
 import type { Prisma } from "@prisma/client";
@@ -23,7 +24,19 @@ export default async function AdminOrdersPage({ searchParams }: { searchParams: 
       lte: params.to ? new Date(`${params.to}T23:59:59.999`) : undefined,
     };
   }
-  const orders = await readDatabase([], (client) => client.order.findMany({ where, orderBy: { createdAt: "desc" }, take: 200 }));
+  const orders = databaseConfigured()
+    ? await readDatabase([], (client) => client.order.findMany({ where, orderBy: { createdAt: "desc" }, take: 200 }))
+    : listLocalOrders().filter((order) => {
+        if (params.status && statuses.includes(params.status) && order.status !== params.status) return false;
+        if (params.q) {
+          const needle = params.q.toLowerCase();
+          if (![order.orderNumber, order.email, order.name].some((value) => value.toLowerCase().includes(needle))) return false;
+        }
+        const created = Date.parse(order.createdAt);
+        if (params.from && created < new Date(`${params.from}T00:00:00`).getTime()) return false;
+        if (params.to && created > new Date(`${params.to}T23:59:59.999`).getTime()) return false;
+        return true;
+      }).slice(0, 200).map(datedOrder);
   return (
     <div>
       <div className="flex flex-wrap items-center justify-between gap-3">

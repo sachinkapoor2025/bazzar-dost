@@ -1,14 +1,15 @@
 import { NextResponse } from "next/server";
-import { api } from "@/lib/backend";
+import { deleteAddress } from "@/lib/address-store";
 import { requireUser } from "@/lib/auth";
 import { errorResponse } from "@/lib/http";
 
 export async function DELETE(_request: Request, context: { params: Promise<{ id: string }> }) {
   try {
-    await requireUser();
+    const user = await requireUser();
     const { id } = await context.params;
-    const addresses = await api(`/account/addresses/${encodeURIComponent(id)}`, { method: "DELETE" });
-    return NextResponse.json({ addresses });
+    const result = await deleteAddress(user.id, id);
+    if (!result.found) return NextResponse.json({ error: "Address not found." }, { status: 404 });
+    return NextResponse.json({ addresses: result.addresses });
   } catch (error) {
     return errorResponse(error);
   }
