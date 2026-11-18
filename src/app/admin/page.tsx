@@ -26,9 +26,9 @@ export default async function AdminHomePage({ searchParams }: { searchParams: Pr
           ["Cancelled", data.totals.cancelled],
           ["Low stock", data.totals.lowStock],
         ].map(([label, value]) => (
-          <div key={String(label)} className="rounded-2xl bg-white p-4">
-            <dt className="text-sm text-muted">{label}</dt>
-            <dd className="font-display text-3xl">{value}</dd>
+          <div key={String(label)} className="rounded-xl border border-cream-300 bg-white p-5">
+            <dt className="text-xs uppercase tracking-wide text-muted">{label}</dt>
+            <dd className="mt-1 text-2xl font-bold text-forest-900">{value}</dd>
           </div>
         ))}
       </dl>
