@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { ContactForm } from "@/components/enquiry-forms";
 import { Info } from "@/components/info";
 import { site } from "@/lib/site";
@@ -12,9 +13,11 @@ export const metadata: Metadata = {
 export default function ContactPage() {
   return (
     <Info title="Contact us" lede="Ask about a product, an order, or delivery. Messages are saved for the store team. An email notification is sent only when outbound email is configured.">
+      <h2 className="font-display text-2xl text-forest-900">Send a message</h2>
       {site.supportEmail ? <p>You can also write to {site.supportEmail}.</p> : <p>No public email address is configured yet. Use the form.</p>}
       <p>Include the product name or order number when you have one. The store reads the saved message in the admin. A copy is emailed only when outbound mail is configured, so the form itself is the record.</p>
-      <p>Wholesale quantity questions belong on the wholesale form, which also stores a message and does not create an order. For a delivery already placed, use Track an order with the checkout email.</p>
+      <h2 className="font-display text-2xl text-forest-900">Orders and wholesale</h2>
+      <p>Wholesale quantity questions belong on the <Link href="/wholesale" className="font-semibold underline">wholesale form</Link>, which also stores a message and does not create an order. For a delivery already placed, use <Link href="/track" className="font-semibold underline">Track an order</Link> with the checkout email. Shipping rules are on the <Link href="/shipping-policy" className="font-semibold underline">shipping policy</Link>.</p>
       <ContactForm />
     </Info>
   );

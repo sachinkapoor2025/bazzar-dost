@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { HomeReviews } from "@/components/home-reviews";
 import { JsonLd } from "@/components/json-ld";
 import { ProductGrid } from "@/components/product-card";
 import { Container, SectionTitle, buttonClass } from "@/components/ui";
 import { FREE_SHIPPING_ABOVE, SHIPPING_FLAT_RUPEES } from "@/lib/commerce";
-import { getHomeData } from "@/lib/catalog";
+import { getHomeData, getReviews } from "@/lib/catalog";
 import { formatINR } from "@/lib/format";
 import { absoluteUrl, site } from "@/lib/site";
 
@@ -17,7 +18,7 @@ export const metadata: Metadata = {
 };
 
 export default async function HomePage() {
-  const data = await getHomeData();
+  const [data, reviews] = await Promise.all([getHomeData(), getReviews()]);
 
   return (
     <>
@@ -129,13 +130,26 @@ export default async function HomePage() {
           <p className="mt-2 max-w-3xl text-base leading-7 text-muted">
             Checkout is cash on delivery. The order is saved as unpaid until the store records that the payment was collected. Shipping is {formatINR(SHIPPING_FLAT_RUPEES)}, and it is free when the payable product total reaches {formatINR(FREE_SHIPPING_ABOVE)}. The site does not promise a delivery date.
           </p>
+          <h3 className="mt-6 font-display text-2xl text-forest-900">More from the shop</h3>
           <p className="mt-4 flex flex-wrap gap-x-4 gap-y-2 text-sm font-semibold text-forest-800">
             <Link href="/shop" className="underline">All products</Link>
             <Link href="/deals" className="underline">Deals and offers</Link>
             <Link href="/new-arrivals" className="underline">New arrivals</Link>
+            <Link href="/best-sellers" className="underline">Best sellers</Link>
+            <Link href="/shipping-policy" className="underline">Shipping</Link>
+            <Link href="/returns" className="underline">Returns</Link>
+            <Link href="/track" className="underline">Track an order</Link>
+            <Link href="/contact" className="underline">Contact</Link>
             <Link href="/faq" className="underline">Questions</Link>
             <Link href="/about" className="underline">About the shop</Link>
           </p>
+        </section>
+      </Container>
+
+      <Container className="pb-12">
+        <section aria-labelledby="customer-reviews">
+          <h2 id="customer-reviews" className="font-display text-3xl text-forest-900">Customer reviews</h2>
+          <HomeReviews reviews={reviews} />
         </section>
       </Container>
 

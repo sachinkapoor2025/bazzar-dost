@@ -28,8 +28,8 @@ export function AccountFrame({ user, children }: { user: PublicUser; children: R
               <p className="mt-1 text-sm text-muted">Signed in as {user.email}</p>
             </div>
             <div className="flex flex-wrap items-center gap-3">
-              {user.role === "admin" ? <Link href="/admin" className={buttonClass("primary")}>Admin</Link> : null}
               <Link href="/wishlist" className="text-sm font-semibold text-forest-800 underline">Wishlist</Link>
+              {user.role === "admin" ? <Link href="/admin" className={buttonClass("primary")}>Admin Dashboard</Link> : null}
             </div>
           </div>
           <nav aria-label="Account" className="-mx-2 flex gap-x-5 overflow-x-auto border-b border-cream-200 px-2">

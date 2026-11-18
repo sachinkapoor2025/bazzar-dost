@@ -53,7 +53,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           <Header categories={categories} />
           <main id="content" className="min-h-[60vh] pb-20 md:pb-8">{children}</main>
           <Footer categories={categories} />
-          <ChatWidget raised={whatsAppReady()} />
+          <ChatWidget beside={whatsAppReady()} />
           <WhatsAppWidget />
           <MobileDock />
         </Providers>
