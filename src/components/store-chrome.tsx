@@ -4,8 +4,6 @@ import { usePathname } from "next/navigation";
 import { ChatWidget } from "@/components/chat-widget";
 import { Footer } from "@/components/footer";
 import { Header, MobileDock } from "@/components/header";
-import { WhatsAppWidget } from "@/components/whatsapp-widget";
-import { whatsAppReady } from "@/lib/whatsapp";
 import type { CategoryLink } from "@/lib/types";
 
 export function StoreChrome({
@@ -31,8 +29,7 @@ export function StoreChrome({
       <Header categories={categories} />
       <main id="content" className="min-h-[60vh] pb-20 md:pb-8">{children}</main>
       <Footer categories={categories} />
-      <ChatWidget beside={whatsAppReady()} />
-      <WhatsAppWidget />
+      <ChatWidget />
       <MobileDock />
     </>
   );

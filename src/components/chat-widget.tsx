@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState, type FormEvent } from "react";
+import { WhatsAppWidget } from "@/components/whatsapp-widget";
 
 type ChatLink = { href: string; label: string };
 type ChatMessage = { role: "user" | "assistant"; text: string; links?: ChatLink[] };
@@ -30,7 +31,7 @@ const starter: ChatMessage = {
   text: "Hello. Ask me about BazaarDost products, orders, shipping, or other services on this website.",
 };
 
-export function ChatWidget({ beside = false }: { beside?: boolean }) {
+export function ChatWidget() {
   const [open, setOpen] = useState(false);
   const [input, setInput] = useState("");
   const [pending, setPending] = useState(false);
@@ -77,7 +78,7 @@ export function ChatWidget({ beside = false }: { beside?: boolean }) {
   }
 
   return (
-    <div className={beside ? "fixed bottom-20 right-[4.75rem] z-50 md:bottom-6 md:right-[5.75rem]" : "fixed bottom-20 right-3 z-50 md:bottom-6 md:right-6"}>
+    <div className="fixed bottom-20 right-3 z-50 flex flex-col items-end gap-3 md:bottom-6 md:right-6">
       {open ? (
         <section className="mb-3 flex h-[min(32rem,70vh)] w-[min(22rem,calc(100vw-1.5rem))] flex-col overflow-hidden rounded-3xl border border-cream-300 bg-cream-50 shadow-card" aria-label="BazaarDost chat">
           <header className="flex items-center justify-between bg-forest-800 px-4 py-3 text-cream-50">
@@ -126,9 +127,10 @@ export function ChatWidget({ beside = false }: { beside?: boolean }) {
           </form>
         </section>
       ) : null}
+      <WhatsAppWidget />
       <button
         type="button"
-        className="hidden h-14 w-14 items-center justify-center rounded-full bg-forest-800 text-cream-50 shadow-card md:inline-flex"
+        className="inline-flex h-14 w-14 items-center justify-center rounded-full bg-forest-800 text-cream-50 shadow-card"
         aria-expanded={open}
         aria-label={open ? "Hide chat" : "Chat"}
         onClick={() => setOpen((value) => !value)}

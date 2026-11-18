@@ -19,7 +19,7 @@ export function WhatsAppWidget() {
       target="_blank"
       rel="noopener noreferrer"
       aria-label="Chat with BazaarDost on WhatsApp"
-      className="fixed bottom-20 right-3 z-50 inline-flex h-14 w-14 items-center justify-center rounded-full bg-[#25D366] text-white shadow-card md:bottom-6 md:right-6"
+      className="inline-flex h-14 w-14 items-center justify-center rounded-full bg-[#25D366] text-white shadow-card"
     >
       <WhatsAppIcon />
     </a>
