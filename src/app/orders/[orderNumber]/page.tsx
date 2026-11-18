@@ -18,11 +18,13 @@ export default async function ConfirmationPage({
   const { orderNumber } = await params;
   const token = (await searchParams).token || "";
   const user = await getCurrentUser();
-  const stored = databaseConfigured()
+  const order = databaseConfigured()
     ? await prisma.order.findUnique({ where: { orderNumber }, include: { items: true } })
-    : listLocalOrders().find((item) => item.orderNumber === orderNumber) ?? null;
-  if (!stored) notFound();
-  const order = stored.createdAt instanceof Date ? stored : datedOrder(stored);
+    : (() => {
+        const stored = listLocalOrders().find((item) => item.orderNumber === orderNumber);
+        return stored ? datedOrder(stored) : null;
+      })();
+  if (!order) notFound();
   const owns = Boolean(user && order.userId === user.id);
   if (!owns && token !== order.accessToken) notFound();
   return (
