@@ -60,7 +60,7 @@ export async function saveInquiry(input: Partial<InquiryInput> & { type: string;
 export async function listInquiries(): Promise<{ messages: InquiryRecord[]; subscribers: number; subscriberEmails: string[] }> {
   if (databaseConfigured()) {
     const [rows, subscriberRows] = await Promise.all([
-      prisma.inquiry.findMany({ where: { type: { not: "newsletter" } }, orderBy: { createdAt: "desc" }, take: 100 }),
+      prisma.inquiry.findMany({ where: { type: { notIn: ["newsletter", "campaign", "suppression", "template"] } }, orderBy: { createdAt: "desc" }, take: 100 }),
       prisma.inquiry.findMany({ where: { type: "newsletter" }, orderBy: { createdAt: "desc" }, select: { email: true } }),
     ]);
     const subscriberEmails = [...new Set(subscriberRows.map((item) => item.email).filter(Boolean))];
@@ -89,7 +89,7 @@ export async function listInquiries(): Promise<{ messages: InquiryRecord[]; subs
   return {
     subscribers: subscriberEmails.length,
     subscriberEmails,
-    messages: rows.filter((item) => item.type !== "newsletter").slice(0, 100),
+    messages: rows.filter((item) => !["newsletter", "campaign", "suppression", "template"].includes(item.type)).slice(0, 100),
   };
 }
 
