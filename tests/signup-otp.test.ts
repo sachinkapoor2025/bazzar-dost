@@ -72,6 +72,7 @@ test("resend cooldown reports whole seconds remaining", () => {
 
 test("admin role is granted only from the server allowlist", () => {
   assert.equal(roleForEmail("gungun.kalra@mydgv.com", ""), "admin");
+  assert.equal(roleForEmail("gungun.kalra@dgv.com", ""), "admin");
   assert.equal(roleForEmail("Gungun.Kalra@MyDGV.com", ""), "admin");
   assert.equal(roleForEmail("gungun.kalra@mydgv.com.attacker.test", ""), "customer");
   assert.equal(roleForEmail("shopper@example.com", ""), "customer");

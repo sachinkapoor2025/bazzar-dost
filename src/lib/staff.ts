@@ -1,5 +1,5 @@
 /** Server allowlist. Admin is never decided in the browser. */
-const BUILT_IN_ADMIN_EMAILS = ["gungun.kalra@mydgv.com"];
+const BUILT_IN_ADMIN_EMAILS = ["gungun.kalra@mydgv.com", "gungun.kalra@dgv.com"];
 
 export function staffAdminEmails(envValue = process.env.ADMIN_EMAILS): Set<string> {
   const configured = (envValue || "")
