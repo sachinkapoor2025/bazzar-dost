@@ -57,14 +57,16 @@ export async function saveInquiry(input: Partial<InquiryInput> & { type: string;
   return writeJsonArray(FILE, [saved, ...rows]) ? { ok: true } : { ok: false };
 }
 
-export async function listInquiries(): Promise<{ messages: InquiryRecord[]; subscribers: number }> {
+export async function listInquiries(): Promise<{ messages: InquiryRecord[]; subscribers: number; subscriberEmails: string[] }> {
   if (databaseConfigured()) {
-    const [rows, subscribers] = await Promise.all([
+    const [rows, subscriberRows] = await Promise.all([
       prisma.inquiry.findMany({ where: { type: { not: "newsletter" } }, orderBy: { createdAt: "desc" }, take: 100 }),
-      prisma.inquiry.count({ where: { type: "newsletter" } }),
+      prisma.inquiry.findMany({ where: { type: "newsletter" }, orderBy: { createdAt: "desc" }, select: { email: true } }),
     ]);
+    const subscriberEmails = [...new Set(subscriberRows.map((item) => item.email).filter(Boolean))];
     return {
-      subscribers,
+      subscribers: subscriberEmails.length,
+      subscriberEmails,
       messages: rows.map((item) => ({
         id: item.id,
         type: item.type,
@@ -83,8 +85,10 @@ export async function listInquiries(): Promise<{ messages: InquiryRecord[]; subs
     };
   }
   const rows = readJsonArray<InquiryRecord>(FILE);
+  const subscriberEmails = [...new Set(rows.filter((item) => item.type === "newsletter").map((item) => item.email).filter(Boolean))];
   return {
-    subscribers: rows.filter((item) => item.type === "newsletter").length,
+    subscribers: subscriberEmails.length,
+    subscriberEmails,
     messages: rows.filter((item) => item.type !== "newsletter").slice(0, 100),
   };
 }

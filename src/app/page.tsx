@@ -66,54 +66,46 @@ export default async function HomePage() {
         </Container>
       </section>
 
-      <Container className="pt-10 pb-8">
-        <SectionTitle id="trending" title="Trending products" />
-        <p className="mb-4 max-w-3xl text-base leading-7 text-muted">Products shoppers open most often. The order follows recorded page views, not a hand-picked list.</p>
-        {data.trending.length > 0 ? (
+      {data.trending.length > 0 ? (
+        <Container className="pt-10 pb-8">
+          <SectionTitle id="trending" title="Trending products" />
+          <p className="mb-4 max-w-3xl text-base leading-7 text-muted">Products shoppers open most often. The order follows recorded page views, not a hand-picked list.</p>
           <ProductGrid products={data.trending} priorityCount={2} />
-        ) : (
-          <p className="rounded-2xl border border-dashed border-cream-300 bg-white px-4 py-5 text-sm text-muted">Trending products appear here after shoppers open product pages. Nothing has been ranked yet.</p>
-        )}
-      </Container>
+        </Container>
+      ) : null}
 
-      <Container className="pb-8 [content-visibility:auto] [contain-intrinsic-size:auto_32rem]">
-        <SectionTitle id="featured" title="Featured products" action={<Link href="/shop" className="text-sm font-semibold text-forest-800">Shop all</Link>} />
-        <p className="mb-4 max-w-3xl text-base leading-7 text-muted">Highlights marked in the catalogue. When none are marked, this section stays empty rather than filling in other products.</p>
-        {data.featured.length > 0 ? (
+      {data.featured.length > 0 ? (
+        <Container className="pt-10 pb-8 [content-visibility:auto] [contain-intrinsic-size:auto_32rem]">
+          <SectionTitle id="featured" title="Featured products" action={<Link href="/shop" className="text-sm font-semibold text-forest-800">Shop all</Link>} />
+          <p className="mb-4 max-w-3xl text-base leading-7 text-muted">Highlights marked in the catalogue.</p>
           <ProductGrid products={data.featured} />
-        ) : (
-          <p className="rounded-2xl border border-dashed border-cream-300 bg-white px-4 py-5 text-sm text-muted">Featured products appear here when the catalogue marks highlights.</p>
-        )}
-      </Container>
+        </Container>
+      ) : null}
 
-      <Container className="pb-8 [content-visibility:auto] [contain-intrinsic-size:auto_32rem]">
-        <SectionTitle id="searched" title="Most searched products" action={<Link href="/search" className="text-sm font-semibold text-forest-800">Search</Link>} />
-        <p className="mb-4 max-w-3xl text-base leading-7 text-muted">Products opened from search. The list grows as shoppers use the search box.</p>
-        {data.searched.length > 0 ? (
+      {data.searched.length > 0 ? (
+        <Container className="pb-8 [content-visibility:auto] [contain-intrinsic-size:auto_32rem]">
+          <SectionTitle id="searched" title="Most searched products" action={<Link href="/search" className="text-sm font-semibold text-forest-800">Search</Link>} />
+          <p className="mb-4 max-w-3xl text-base leading-7 text-muted">Products opened from search.</p>
           <ProductGrid products={data.searched} />
-        ) : (
-          <p className="rounded-2xl border border-dashed border-cream-300 bg-white px-4 py-5 text-sm text-muted">Most searched products appear here after shoppers open products from search.</p>
-        )}
-      </Container>
+        </Container>
+      ) : null}
 
-      <Container className="pb-8 [content-visibility:auto] [contain-intrinsic-size:auto_32rem]">
-        <SectionTitle id="trusted" title="Most trusted and best selling" action={<Link href="/best-sellers" className="text-sm font-semibold text-forest-800">View all</Link>} />
-        <p className="mb-4 max-w-3xl text-base leading-7 text-muted">Products customers have ordered. Cancelled orders are left out, and the list stays empty until the first sale.</p>
-        {data.bestSellers.length > 0 ? (
+      {data.bestSellers.length > 0 ? (
+        <Container className="pb-8 [content-visibility:auto] [contain-intrinsic-size:auto_32rem]">
+          <SectionTitle id="trusted" title="Most trusted and best selling" action={<Link href="/best-sellers" className="text-sm font-semibold text-forest-800">View all</Link>} />
+          <p className="mb-4 max-w-3xl text-base leading-7 text-muted">Products customers have ordered. Cancelled orders are left out.</p>
           <ProductGrid products={data.bestSellers} />
-        ) : (
-          <p className="rounded-2xl border border-dashed border-cream-300 bg-white px-4 py-5 text-sm text-muted">Best sellers are listed after customers place orders. No completed sales are recorded yet.</p>
-        )}
-      </Container>
+        </Container>
+      ) : null}
 
-      <Container className="pb-12">
+      <Container className="pt-10 pb-12">
         <section className="rounded-2xl border border-cream-300 bg-white p-5 sm:p-8">
           <h2 className="font-display text-3xl text-forest-900">Shop everyday products at BazaarDost</h2>
           <p className="mt-3 max-w-3xl text-base leading-7 text-muted">
             BazaarDost lists practical products for home and daily use. Each product page shows the selling price, the quantity in stock, and the photos stored for that item. A crossed-out price appears only when the catalogue also stores a higher compare-at price.
           </p>
           <h3 className="mt-6 font-display text-2xl text-forest-900">Departments you can browse</h3>
-          <p className="mt-2 max-w-3xl text-base leading-7 text-muted">Open a department to see only the products filed there. A parent department also includes the products in its smaller sections.</p>
+          <p className="mt-2 max-w-3xl text-base leading-7 text-muted">The full catalogue has {data.productCount} active {data.productCount === 1 ? "product" : "products"}, which is the same total shown on <Link href="/shop" className="font-semibold underline">All products</Link>. A department number includes that department and its smaller sections, so the chips are not a second product list. Open a department to see only the products filed there.</p>
           {data.categories.length > 0 ? (
             <ul className="mt-4 flex flex-wrap gap-2">
               {data.categories.map((category) => (
