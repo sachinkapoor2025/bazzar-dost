@@ -7,7 +7,7 @@ import type { CategoryLink } from "@/lib/types";
 
 export function Footer({ categories }: { categories: CategoryLink[] }) {
   return (
-    <footer className="mt-10 border-t border-cream-300 bg-forest-900 text-cream-100">
+    <footer className="mt-10 border-t border-cream-300 bg-forest-900 pb-24 text-cream-100 md:pb-0">
       <Container className="grid gap-8 py-10 md:grid-cols-4">
         <div>
           <Logo size="footer" />

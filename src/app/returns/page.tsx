@@ -15,7 +15,7 @@ export default function ReturnsPage() {
       <p>Orders marked Processing, Shipped, Out for Delivery, or Delivered are not cancelled by the website automatically. The store can still mark one cancelled after review. A cancelled order cannot be moved back to an earlier status, so stock is not adjusted twice.</p>
       <p>Cash on delivery orders have no online payment to refund. If the store has marked a payment as paid and later agrees a refund, the payment status can be set to refunded. The money movement itself happens outside this website.</p>
       <p>There is no automatic return window and no prepaid return label.</p>
-      <p>Write through the contact form with the order number and what you want changed. The store records the decision by updating the order. This page does not start a return by itself.</p>
+      <p>Write through the contact form with the order number and what you want changed. The store records the decision by updating the order. This page does not start a return by itself. Cash collected on delivery is refunded by the store outside this website, and the payment status can then be marked refunded.</p>
     </Info>
   );
 }

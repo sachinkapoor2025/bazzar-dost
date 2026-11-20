@@ -1,13 +1,9 @@
 import type { Metadata } from "next";
 import { Fraunces, Outfit } from "next/font/google";
-import { ChatWidget } from "@/components/chat-widget";
-import { Footer } from "@/components/footer";
-import { Header, MobileDock } from "@/components/header";
 import { Providers } from "@/components/providers";
-import { WhatsAppWidget } from "@/components/whatsapp-widget";
+import { StoreChrome } from "@/components/store-chrome";
 import { getAnnouncement, getCategories } from "@/lib/catalog";
 import { site } from "@/lib/site";
-import { whatsAppReady } from "@/lib/whatsapp";
 import "./globals.css";
 
 const display = Fraunces({ subsets: ["latin"], variable: "--font-display" });
@@ -43,19 +39,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       <body className="font-sans">
         <a href="#content" className="skip-link">Skip to content</a>
         <Providers>
-          {announcement ? (
-            <div className="bg-forest-800 px-4 py-2 text-center text-sm text-cream-50">
-              <span className="font-semibold">{announcement.title}. </span>
-              {announcement.message}{" "}
-              {announcement.href ? <a className="underline" href={announcement.href}>Details</a> : null}
-            </div>
-          ) : null}
-          <Header categories={categories} />
-          <main id="content" className="min-h-[60vh] pb-20 md:pb-8">{children}</main>
-          <Footer categories={categories} />
-          <ChatWidget raised={whatsAppReady()} />
-          <WhatsAppWidget />
-          <MobileDock />
+          <StoreChrome categories={categories} announcement={announcement}>{children}</StoreChrome>
         </Providers>
       </body>
     </html>

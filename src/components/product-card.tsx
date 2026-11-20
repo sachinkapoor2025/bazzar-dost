@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useId, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import { useCart } from "@/components/cart-provider";
 import { useCompare } from "@/components/compare-provider";
 import { useWishlist } from "@/components/wishlist-provider";
@@ -10,29 +10,34 @@ import { Price } from "@/components/price";
 import { buttonClass } from "@/components/ui";
 import { MAX_LINE_QTY } from "@/lib/commerce";
 import { unoptimizedImage } from "@/lib/format";
+import { sizedImage } from "@/lib/images";
 import type { ProductCardData } from "@/lib/types";
 
 export function ProductImage({
   src,
   alt,
   eager = false,
+  pixels = 400,
 }: {
   src: string;
   alt: string;
   eager?: boolean;
+  pixels?: number;
 }) {
   const [failed, setFailed] = useState(false);
   if (!src || failed) {
     return <span className="grid h-full w-full place-items-center bg-cream-200 font-display text-forest-800">BD</span>;
   }
+  const sized = sizedImage(src, pixels);
   return (
     <Image
-      src={src}
+      src={sized}
       alt={alt}
-      width={800}
-      height={800}
+      width={pixels}
+      height={pixels}
       priority={eager}
-      unoptimized={unoptimizedImage(src)}
+      sizes={pixels <= 160 ? "4rem" : "(max-width: 768px) 45vw, 240px"}
+      unoptimized={unoptimizedImage(sized)}
       className="h-full w-full object-cover motion-safe:transition motion-safe:duration-300 motion-safe:group-hover:scale-[1.03]"
       onError={() => setFailed(true)}
     />
@@ -45,8 +50,15 @@ export function ProductCard({ product, eager = false }: { product: ProductCardDa
   const compare = useCompare();
   const dialogRef = useRef<HTMLDialogElement>(null);
   const titleId = useId();
+  const [quickOpen, setQuickOpen] = useState(false);
   const saved = wishlist.ids.includes(product.id);
   const compared = compare.ids.includes(product.id);
+
+  useEffect(() => {
+    const dialog = dialogRef.current;
+    if (!quickOpen || !dialog || dialog.open) return;
+    dialog.showModal();
+  }, [quickOpen]);
 
   function addSimple() {
     cart.add({
@@ -73,7 +85,7 @@ export function ProductCard({ product, eager = false }: { product: ProductCardDa
       </Link>
       <div className="flex flex-1 flex-col gap-2 p-3">
         <p className="text-[0.7rem] font-semibold uppercase tracking-[0.14em] text-muted">{product.categoryName}</p>
-        <h3 className="font-display text-xl leading-tight">
+        <h3 className="line-clamp-3 font-display text-lg leading-tight sm:text-xl">
           <Link href={`/products/${product.slug}`} className="hover:text-forest-700" onClick={() => trackProductClick(product.slug)}>
             {product.name}
           </Link>
@@ -90,28 +102,29 @@ export function ProductCard({ product, eager = false }: { product: ProductCardDa
             <Heart filled={saved} />
           </button>
           {product.hasVariants ? (
-            <Link href={`/products/${product.slug}`} className={buttonClass("primary", "flex-1")} onClick={() => trackProductClick(product.slug)}>
+            <Link href={`/products/${product.slug}`} className={buttonClass("primary", "flex-1 px-2 text-xs sm:px-4 sm:text-sm")} onClick={() => trackProductClick(product.slug)}>
               Choose options
             </Link>
           ) : (
-            <button type="button" className={buttonClass("primary", "flex-1")} disabled={!product.inStock} onClick={addSimple}>
+            <button type="button" className={buttonClass("primary", "flex-1 px-2 text-xs sm:px-4 sm:text-sm")} disabled={!product.inStock} onClick={addSimple}>
               {product.inStock ? "Add to cart" : "Out of stock"}
             </button>
           )}
         </div>
-        <div className="flex gap-3 text-sm font-semibold text-forest-700">
+        <div className="flex flex-wrap gap-x-3 gap-y-1 text-xs font-semibold text-forest-700 sm:text-sm">
           <button type="button" className="underline-offset-2 hover:underline" aria-pressed={compared} onClick={() => compare.toggle(product.id)}>
             {compared ? "In compare" : "Compare"}
           </button>
-          <button type="button" className="underline-offset-2 hover:underline" onClick={() => { trackProductClick(product.slug); dialogRef.current?.showModal(); }}>
+          <button type="button" className="underline-offset-2 hover:underline" onClick={() => { trackProductClick(product.slug); setQuickOpen(true); }}>
             Quick view
           </button>
         </div>
       </div>
-      <dialog ref={dialogRef} aria-labelledby={titleId} className="w-[min(100%,40rem)] rounded-2xl border border-cream-300 bg-cream-50 p-0 text-ink backdrop:bg-forest-950/50">
+      {quickOpen ? (
+      <dialog ref={dialogRef} aria-labelledby={titleId} className="max-h-[90dvh] w-[min(calc(100vw-1.5rem),40rem)] overflow-y-auto rounded-2xl border border-cream-300 bg-cream-50 p-0 text-ink backdrop:bg-forest-950/50" onClose={() => setQuickOpen(false)}>
         <div className="grid gap-4 p-4 sm:grid-cols-2">
           <div className="aspect-square overflow-hidden rounded-xl bg-cream-100">
-            <ProductImage src={product.image} alt={product.imageAlt} />
+            <ProductImage src={product.image} alt={product.imageAlt} pixels={640} />
           </div>
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted">{product.categoryName}</p>
@@ -135,6 +148,7 @@ export function ProductCard({ product, eager = false }: { product: ProductCardDa
           </div>
         </div>
       </dialog>
+      ) : null}
     </article>
   );
 }
@@ -143,11 +157,11 @@ function trackProductClick(slug: string) {
   fetch(`/api/products/${encodeURIComponent(slug)}/click`, { method: "POST", keepalive: true }).catch(() => undefined);
 }
 
-export function ProductGrid({ products }: { products: ProductCardData[] }) {
+export function ProductGrid({ products, priorityCount = 0 }: { products: ProductCardData[]; priorityCount?: number }) {
   return (
     <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6">
       {products.map((product, index) => (
-        <ProductCard key={product.id} product={product} eager={index < 4} />
+        <ProductCard key={product.id} product={product} eager={index < priorityCount} />
       ))}
     </div>
   );

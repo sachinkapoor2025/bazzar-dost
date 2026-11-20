@@ -54,7 +54,7 @@ export default async function AdminOrdersPage({ searchParams }: { searchParams: 
         <input type="date" name="to" defaultValue={params.to || ""} className="min-h-11 rounded-xl border border-cream-300 bg-white px-2 text-sm" />
         <button className="min-h-11 rounded-full bg-forest-800 px-4 text-sm font-semibold text-cream-50">Filter</button>
       </form>
-      <div className="mt-4 overflow-x-auto">
+      <div className="mt-4 max-w-full overflow-x-auto">
         <table className="w-full min-w-[40rem] text-left text-sm">
           <thead><tr className="border-b border-cream-300"><th className="py-2">Order</th><th>Customer</th><th>Status</th><th>Payment</th><th>Total</th></tr></thead>
           <tbody>

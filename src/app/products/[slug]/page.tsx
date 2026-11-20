@@ -67,7 +67,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
         <Gallery images={images} name={product.name} />
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted">{product.category.name}</p>
-          <h1 className="mt-1 font-display text-4xl leading-tight text-forest-900">{product.name}</h1>
+          <h1 className="mt-1 break-words font-display text-3xl leading-tight text-forest-900 sm:text-4xl">{product.name}</h1>
           {product.shortDescription ? <p className="mt-3 text-sm leading-6 text-muted">{product.shortDescription}</p> : null}
           <p className="mt-3 text-sm leading-6 text-muted">{product.name} is listed under {product.category.name}{product.category.parent ? ` in ${product.category.parent.name}` : ""}. The selling price is the amount charged for this item.</p>
           <div className="mt-4">
@@ -104,6 +104,11 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
         <section>
           <h2 className="font-display text-2xl">Description</h2>
           <p className="mt-2 whitespace-pre-wrap text-sm leading-7">{product.description}</p>
+          <p className="mt-3 text-sm leading-7 text-muted">
+            {product.name} is sold by {site.name}
+            {card.inStock ? ` and ${card.stock} ${card.stock === 1 ? "unit is" : "units are"} available to order` : " and is currently out of stock"}.
+            {" "}The price on this page is the amount used at checkout. Shipping is {formatINR(SHIPPING_FLAT_RUPEES)} until the payable product total reaches {formatINR(FREE_SHIPPING_ABOVE)}, when shipping is free. Payment is cash on delivery.
+          </p>
         </section>
         {specs.length > 0 ? (
           <section>

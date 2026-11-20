@@ -4,6 +4,7 @@ import { selectDailyDeals } from "@/lib/deals";
 import { loadEngagementScores } from "@/lib/engagement";
 import { loadSoldUnits } from "@/lib/sales";
 import { parseRating, parseRupee, priceBounds } from "@/lib/commerce";
+import { databaseConfigured, readDatabase } from "@/lib/db";
 import { listStoreReviews } from "@/lib/local-reviews";
 import { loadReviewAverages } from "@/lib/product-review-store";
 import {
@@ -251,9 +252,21 @@ export async function productsBySlugs(slugs: string[]): Promise<ProductCardData[
 }
 
 export async function getReviews() {
+  if (databaseConfigured()) {
+    const rows = await readDatabase([] as Array<{ id: string; name: string; city: string; rating: number; comment: string; createdAt: Date }>, (client) =>
+      client.review.findMany({
+        orderBy: { createdAt: "desc" },
+        take: 12,
+        select: { id: true, name: true, city: true, rating: true, comment: true, createdAt: true },
+      }),
+    );
+    return rows
+      .filter((row) => row.name.trim() && row.comment.trim())
+      .map((row) => ({ ...row, createdAt: row.createdAt.toISOString() }));
+  }
   return readCatalogue(
     () => api<Array<{ id: string; name: string; city: string; rating: number; comment: string; createdAt: string }>>("/reviews"),
-    () => listStoreReviews(),
+    () => listStoreReviews().filter((row) => row.name.trim() && row.comment.trim()),
   );
 }
 

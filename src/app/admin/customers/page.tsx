@@ -52,7 +52,7 @@ export default async function AdminCustomersPage({ searchParams }: { searchParam
       <form className="mt-4" action="/admin/customers">
         <input name="q" defaultValue={q} placeholder="Search name, email, or phone" className="min-h-11 w-full rounded-full border border-cream-300 bg-white px-4 text-sm" />
       </form>
-      <div className="mt-4 overflow-x-auto">
+      <div className="mt-4 max-w-full overflow-x-auto">
         <table className="w-full min-w-[40rem] text-left text-sm">
           <thead><tr className="border-b border-cream-300"><th className="py-2">Name</th><th>Email</th><th>Phone</th><th>Orders</th><th>Spent</th><th>Joined</th></tr></thead>
           <tbody>

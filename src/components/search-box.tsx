@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useEffect, useId, useState } from "react";
 import { Money } from "@/components/money";
 import { unoptimizedImage } from "@/lib/format";
+import { sizedImage } from "@/lib/images";
 
 type Hit = { id: string; name: string; slug: string; price: number; image: string; categoryName: string; inStock: boolean };
 
@@ -60,7 +61,7 @@ export function SearchBox({ id, className = "" }: { id: string; className?: stri
                 <li key={product.id}>
                   <Link href={`/products/${product.slug}`} className="grid grid-cols-[3rem_1fr] gap-3 px-3 py-2 hover:bg-cream-100" onClick={() => setOpen(false)}>
                     <span className="block aspect-square overflow-hidden rounded-lg bg-cream-100">
-                      {product.image ? <Image src={product.image} alt="" width={64} height={64} unoptimized={unoptimizedImage(product.image)} className="h-full w-full object-cover" /> : null}
+                      {product.image ? <Image src={sizedImage(product.image, 128)} alt="" width={64} height={64} unoptimized={unoptimizedImage(product.image)} className="h-full w-full object-cover" /> : null}
                     </span>
                     <span>
                       <span className="block text-sm font-semibold leading-5">{product.name}</span>

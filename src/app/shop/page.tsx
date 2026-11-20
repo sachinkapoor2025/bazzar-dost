@@ -13,8 +13,11 @@ export default function ShopPage({ searchParams }: { searchParams: Promise<Recor
       title="All products"
       intro={
         <>
+          <h2 className="font-display text-2xl text-forest-900">The full catalogue</h2>
           <p>Every product currently in the BazaarDost catalogue is listed here, from kitchen tools and personal care to phone accessories, toys, bags, and outdoor items.</p>
+          <h2 className="font-display text-2xl text-forest-900">Search and filters</h2>
           <p>Search by name, then narrow by department, price, or availability. A product is marked out of stock only when its recorded quantity is zero. A lower price is shown only when that product has a higher compare-at price.</p>
+          <p>Open a product to read its description, check a PIN code, and add it to the cart while stock remains. Checkout is cash on delivery. Shipping is calculated from the payable product total before the order is placed.</p>
         </>
       }
       basePath="/shop"

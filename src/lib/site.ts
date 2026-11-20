@@ -33,7 +33,7 @@ export const site = {
   name: "BazaarDost",
   tagline: "Discover More. Shop Smart. Grow Together.",
   description:
-    "BazaarDost is an Indian shopping catalogue for everyday products, visible deals, and wholesale enquiries.",
+    "Shop BazaarDost for home, kitchen, beauty, phone accessories, toys, bags, and outdoor products in India. Prices and stock come from the catalogue, and checkout is cash on delivery.",
   url: resolveSiteUrl(),
   supportEmail: process.env.NEXT_PUBLIC_SUPPORT_EMAIL || "",
   social: [

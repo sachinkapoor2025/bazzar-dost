@@ -7,6 +7,7 @@ import { useCart } from "@/components/cart-provider";
 import { buttonClass } from "@/components/ui";
 import { FREE_SHIPPING_ABOVE, shippingCharge } from "@/lib/commerce";
 import { formatINR, unoptimizedImage } from "@/lib/format";
+import { sizedImage } from "@/lib/images";
 import { formatMoney } from "@/lib/money";
 import { usePreferences } from "@/components/preferences-provider";
 import type { CartLine } from "@/lib/types";
@@ -60,7 +61,7 @@ export function CartView() {
         {lines.map((line) => (
           <li key={line.key} className="grid grid-cols-[5rem_1fr] gap-3 rounded-2xl border border-cream-300 bg-white p-3">
             <Link href={`/products/${line.slug}`} className="block aspect-square overflow-hidden rounded-xl bg-cream-100">
-              {line.image ? <Image src={line.image} alt={line.name} width={160} height={160} unoptimized={unoptimizedImage(line.image)} className="h-full w-full object-cover" /> : null}
+              {line.image ? <Image src={sizedImage(line.image, 200)} alt={line.name} width={160} height={160} unoptimized={unoptimizedImage(line.image)} className="h-full w-full object-cover" /> : null}
             </Link>
             <div>
               <Link href={`/products/${line.slug}`} className="font-semibold">{line.name}{line.variantName ? ` — ${line.variantName}` : ""}</Link>

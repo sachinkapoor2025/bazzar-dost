@@ -1,12 +1,18 @@
-export const WHATSAPP_MESSAGE = "Hello BazaarDost, I need help with a product or order.";
+export const WHATSAPP_MESSAGE = "Hello, I need assistance.";
+const DEFAULT_WHATSAPP_NUMBER = "919911083275";
+
+function digits(value: string): string {
+  return value.replace(/\D/g, "");
+}
 
 export function whatsAppNumber(raw = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || ""): string {
-  return raw.replace(/\D/g, "");
+  const configured = digits(raw);
+  if (configured.length >= 10 && configured.length <= 15) return configured;
+  return DEFAULT_WHATSAPP_NUMBER;
 }
 
 export function whatsAppReady(raw = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || ""): boolean {
-  const number = whatsAppNumber(raw);
-  return number.length >= 10 && number.length <= 15;
+  return whatsAppNumber(raw).length >= 10;
 }
 
 export function whatsAppHref(raw = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || ""): string {

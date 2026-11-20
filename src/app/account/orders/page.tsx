@@ -18,7 +18,7 @@ export default async function OrdersPage() {
   return (
     <div>
       <h2 className="font-display text-3xl text-forest-900">Orders</h2>
-      <p className="mt-2 max-w-3xl text-base leading-7 text-muted">These are the orders placed while this account was signed in. Open an order number to see its items and status. Guest orders stay on the tracking page.</p>
+      <p className="mt-2 max-w-3xl text-base leading-7 text-muted">These are the orders placed while this account was signed in. Open an order number to see its items, address, and status. Guest orders placed before you signed in stay on the tracking page and need the checkout email.</p>
       {orders.length === 0 ? <p className="mt-3 text-sm">You have not placed an order on this account.</p> : (
         <table className="mt-4 w-full text-left text-sm">
           <thead>

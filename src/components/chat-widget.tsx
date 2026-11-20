@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent } from "react";
+import { WhatsAppWidget } from "@/components/whatsapp-widget";
 
 type ChatLink = { href: string; label: string };
 type ChatMessage = { role: "user" | "assistant"; text: string; links?: ChatLink[] };
@@ -30,11 +31,19 @@ const starter: ChatMessage = {
   text: "Hello. Ask me about BazaarDost products, orders, shipping, or other services on this website.",
 };
 
-export function ChatWidget({ raised = false }: { raised?: boolean }) {
+export function ChatWidget() {
   const [open, setOpen] = useState(false);
   const [input, setInput] = useState("");
   const [pending, setPending] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>([starter]);
+
+  useEffect(() => {
+    function openFromMenu() {
+      setOpen(true);
+    }
+    window.addEventListener("bazaardost-open-chat", openFromMenu);
+    return () => window.removeEventListener("bazaardost-open-chat", openFromMenu);
+  }, []);
 
   async function send(event: FormEvent) {
     event.preventDefault();
@@ -69,7 +78,7 @@ export function ChatWidget({ raised = false }: { raised?: boolean }) {
   }
 
   return (
-    <div className={raised ? "fixed bottom-[9.25rem] right-3 z-50 md:bottom-[5.75rem] md:right-6" : "fixed bottom-20 right-3 z-50 md:bottom-6 md:right-6"}>
+    <div className="fixed bottom-20 right-3 z-50 flex flex-col items-end gap-3 md:bottom-6 md:right-6">
       {open ? (
         <section className="mb-3 flex h-[min(32rem,70vh)] w-[min(22rem,calc(100vw-1.5rem))] flex-col overflow-hidden rounded-3xl border border-cream-300 bg-cream-50 shadow-card" aria-label="BazaarDost chat">
           <header className="flex items-center justify-between bg-forest-800 px-4 py-3 text-cream-50">
@@ -110,7 +119,7 @@ export function ChatWidget({ raised = false }: { raised?: boolean }) {
               onChange={(event) => setInput(event.target.value)}
               maxLength={500}
               placeholder="Ask about a product or order"
-              className="min-h-11 min-w-0 flex-1 rounded-full border border-cream-300 bg-white px-4 text-sm"
+              className="min-h-11 min-w-0 flex-1 rounded-full border border-cream-300 bg-white px-4 text-base sm:text-sm"
             />
             <button type="submit" disabled={pending} className="min-h-11 rounded-full bg-forest-800 px-4 text-sm font-semibold text-cream-50 disabled:opacity-60">
               Send
@@ -118,6 +127,7 @@ export function ChatWidget({ raised = false }: { raised?: boolean }) {
           </form>
         </section>
       ) : null}
+      <WhatsAppWidget />
       <button
         type="button"
         className="inline-flex h-14 w-14 items-center justify-center rounded-full bg-forest-800 text-cream-50 shadow-card"

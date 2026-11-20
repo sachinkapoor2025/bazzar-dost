@@ -1,3 +1,14 @@
+export function sizedImage(src: string, width: number): string {
+  if (!src.startsWith("https://cdn.shopify.com/")) return src;
+  try {
+    const url = new URL(src);
+    url.searchParams.set("width", String(width));
+    return url.toString();
+  } catch {
+    return src;
+  }
+}
+
 export function isAllowedImageUrl(url: string): boolean {
   if (url.startsWith("/") && !url.startsWith("//")) return true;
   if (url.startsWith("https://cdn.shopify.com/")) return true;

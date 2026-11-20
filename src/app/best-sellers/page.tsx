@@ -15,6 +15,7 @@ export default function BestSellersPage({ searchParams }: { searchParams: Promis
         <>
           <p>Products appear here after a customer places an order. The list uses units sold and leaves out cancelled orders. It stays empty until the first sale.</p>
           <p>Opening a product does not move it onto this list. Ranking follows completed orders only, using the quantities stored on those orders.</p>
+          <p>The homepage uses the same order counts for its best-selling row. If no completed sale is stored yet, both places stay empty instead of inventing a ranking.</p>
         </>
       }
       basePath="/best-sellers"

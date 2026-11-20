@@ -7,7 +7,7 @@ import { CURRENCIES } from "@/lib/money";
 
 export function StoreControls() {
   return (
-    <div className="flex items-center gap-2">
+    <div className="flex min-w-0 flex-wrap items-center gap-2">
       <LocationButton />
       <CurrencyButton />
     </div>
@@ -49,7 +49,7 @@ function LocationButton() {
 
   return (
     <>
-      <button type="button" className="inline-flex h-10 max-w-[11rem] items-center truncate rounded-full border border-cream-300 bg-white px-3 text-sm font-semibold text-forest-900 hover:border-forest-800 sm:max-w-[14rem]" onClick={openDialog}>
+      <button type="button" className="inline-flex h-10 max-w-[9.5rem] items-center truncate rounded-full border border-cream-300 bg-white px-3 text-sm font-semibold text-forest-900 hover:border-forest-800 sm:max-w-[14rem]" onClick={openDialog}>
         <span className="truncate">{location ? `Deliver to ${location.city}` : "Select delivery location"}</span>
       </button>
       {open ? (
@@ -104,7 +104,8 @@ function CurrencyButton() {
         aria-controls={menuId}
         onClick={() => setOpen((value) => !value)}
       >
-        Currency: {currency}
+        <span className="sm:hidden">{currency}</span>
+        <span className="hidden sm:inline">Currency: {currency}</span>
       </button>
       {open ? (
         <div id={menuId} className="absolute right-0 top-full z-30 w-56 rounded-2xl border border-cream-300 bg-white p-2 shadow-card">

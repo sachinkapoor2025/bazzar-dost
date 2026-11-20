@@ -15,7 +15,7 @@ export default async function CataloguePage() {
     <Container className="py-8">
       <h1 className="font-display text-4xl text-forest-900">Catalogue</h1>
       <p className="mt-3 max-w-3xl text-base leading-7 text-muted">
-        This list is the live shop: product name, SKU, department, selling price, and stock. A compare-at price is included only when the catalogue stores one. Downloading it does not reserve stock or create an order. The same products are the ones you can open from All products and from each department in the header menu.
+        This list is the live shop: product name, SKU, department, selling price, and stock. A compare-at price is included only when the catalogue stores one. Downloading it does not reserve stock or create an order. The same products are the ones you can open from All products and from each department below. Use a department link to see photos and add an item to the cart.
       </p>
       <a href="/api/catalogue" className={`${buttonClass("primary")} mt-5`}>Download product list</a>
       <h2 className="mt-8 font-display text-2xl">Departments</h2>

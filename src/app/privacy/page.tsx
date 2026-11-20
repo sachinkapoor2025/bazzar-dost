@@ -16,7 +16,7 @@ export default function PrivacyPage() {
       <p>Contact messages, wholesale enquiries, and newsletter addresses are stored so the store team can read them in the admin. They are not shown to other customers.</p>
       <p>Product pages record a view count. The count is not tied to your name.</p>
       <p>Card numbers are not collected. Do not send card details in a contact message.</p>
-      <p>The store does not sell customer lists from this website. Access to orders and addresses is limited to the signed-in customer and store admins.</p>
+      <p>The store does not sell customer lists from this website. Access to orders and addresses is limited to the signed-in customer and store admins. Product reviews show the name the customer entered, not the full delivery address.</p>
       <p>Newsletter addresses and contact messages stay with the store team. They are not published on the site and are not shown beside product reviews.</p>
     </Info>
   );
