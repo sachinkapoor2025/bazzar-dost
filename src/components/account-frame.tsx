@@ -4,7 +4,6 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
 import { SignOutButton } from "@/components/sign-out-button";
-import { buttonClass } from "@/components/ui";
 import type { PublicUser } from "@/lib/types";
 
 const tabs: { href: string; label: string; match: string[]; icon: ReactNode }[] = [
@@ -51,31 +50,34 @@ const tabs: { href: string; label: string; match: string[]; icon: ReactNode }[] 
   },
 ];
 
-const logoutClass = "inline-flex items-center gap-2 rounded-lg border border-cream-300 bg-white px-4 py-2 text-sm font-semibold text-forest-900 transition hover:border-forest-800 hover:bg-cream-100";
+const logoutClass = "inline-flex items-center gap-2 rounded-lg border border-slate-300 bg-white px-3.5 py-2 text-sm font-semibold text-slate-800 shadow-sm transition hover:bg-slate-50";
 
 export function AccountFrame({ user, children }: { user: PublicUser; children: React.ReactNode }) {
   const pathname = usePathname();
   return (
-    <div className="min-h-[70vh] bg-cream-100">
-      <div className="mx-auto w-full max-w-5xl px-4 py-8 sm:px-6 sm:py-10">
-        <div className="mb-6 rounded-xl bg-gradient-to-r from-forest-800 via-forest-700 to-forest-950 px-6 py-8 text-center text-cream-50 shadow-card sm:px-10 sm:py-10 sm:text-left">
-          <p className="mx-auto max-w-3xl text-lg font-medium leading-relaxed sm:mx-0 sm:text-xl">
+    <div className="min-h-[70vh] bg-slate-50">
+      <div className="mx-auto w-full max-w-6xl px-4 py-8 sm:px-6 sm:py-10">
+        <div className="mb-6 rounded-2xl bg-gradient-to-r from-blue-500 to-violet-600 px-6 py-8 text-center text-white shadow-md sm:px-10 sm:py-9">
+          <p className="mx-auto max-w-3xl text-lg font-medium leading-relaxed sm:text-xl">
             Welcome back to your account. Manage orders, addresses and profile details easily.
           </p>
         </div>
-        <div className="rounded-xl border border-cream-300 bg-white p-6 shadow-card sm:p-8">
-          <div className="mb-2 flex flex-wrap items-center justify-between gap-4">
+        <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
+          <div className="flex flex-wrap items-center justify-between gap-4">
             <div>
-              <h1 className="text-2xl font-bold text-forest-900 sm:text-3xl">My Account</h1>
-              <p className="mt-1 text-sm text-muted">Signed in as {user.email}</p>
+              <h1 className="text-3xl font-bold tracking-tight text-slate-900">My Account</h1>
+              <p className="mt-1 text-sm text-slate-500">Signed in as {user.email}</p>
             </div>
-            <div className="flex flex-wrap items-center gap-3">
-              <Link href="/wishlist" className="text-sm font-semibold text-forest-800 underline">Wishlist</Link>
-              {user.role === "admin" ? <Link href="/admin" className={buttonClass("primary")}>Admin Dashboard</Link> : null}
-              <SignOutButton className={logoutClass} />
+            <div className="flex flex-wrap items-center gap-4">
+              {user.role === "admin" ? (
+                <Link href="/admin" className="text-sm font-semibold text-blue-600 hover:text-blue-700">
+                  Admin portal
+                </Link>
+              ) : null}
+              <SignOutButton className={logoutClass} label="Logout" />
             </div>
           </div>
-          <nav aria-label="Account" className="flex flex-wrap gap-x-6 gap-y-3 pt-1 sm:gap-x-10">
+          <nav aria-label="Account" className="mt-6 flex flex-wrap gap-x-6 gap-y-3 sm:gap-x-8">
             {tabs.map((tab) => {
               const active = tab.match.some((path) => pathname === path || (path !== "/account" && pathname.startsWith(`${path}/`)));
               return (
@@ -83,7 +85,7 @@ export function AccountFrame({ user, children }: { user: PublicUser; children: R
                   key={tab.href}
                   href={tab.href}
                   aria-current={active ? "page" : undefined}
-                  className={active ? "inline-flex items-center gap-2 border-b-2 border-forest-900 pb-1 text-sm font-semibold text-forest-900" : "inline-flex items-center gap-2 border-b-2 border-transparent pb-1 text-sm font-semibold text-muted hover:border-cream-300 hover:text-forest-900"}
+                  className={active ? "inline-flex items-center gap-2 border-b-2 border-slate-900 pb-1 text-sm font-semibold text-slate-900" : "inline-flex items-center gap-2 border-b-2 border-transparent pb-1 text-sm font-semibold text-slate-500 hover:text-slate-900"}
                 >
                   {tab.icon}
                   {tab.label}
@@ -92,9 +94,6 @@ export function AccountFrame({ user, children }: { user: PublicUser; children: R
             })}
           </nav>
           <div className="mt-6">{children}</div>
-          <div className="mt-8 flex justify-end border-t border-cream-200 pt-6">
-            <SignOutButton className="inline-flex items-center gap-2 rounded-lg bg-cream-100 px-5 py-2.5 text-sm font-semibold text-forest-900 hover:bg-cream-200" label="Log out of your account" />
-          </div>
         </div>
       </div>
     </div>
