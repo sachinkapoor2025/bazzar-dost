@@ -31,6 +31,7 @@ const items: NavItem[] = [
       { href: "/admin/promotions", label: "Website content" },
     ],
   },
+  { type: "link", href: "/admin/email", label: "Marketing Email" },
   { type: "link", href: "/admin/products", label: "Products" },
   { type: "link", href: "/admin/reviews", label: "Reviews" },
   { type: "link", href: "/admin/categories", label: "Categories" },
