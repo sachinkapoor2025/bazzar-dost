@@ -93,6 +93,28 @@ export async function listInquiries(): Promise<{ messages: InquiryRecord[]; subs
   };
 }
 
+export async function listInquiriesByType(type: string): Promise<InquiryRecord[]> {
+  if (databaseConfigured()) {
+    const rows = await prisma.inquiry.findMany({ where: { type }, orderBy: { createdAt: "desc" }, take: 200 });
+    return rows.map((item) => ({
+      id: item.id,
+      type: item.type,
+      name: item.name,
+      email: item.email,
+      phone: item.phone,
+      business: item.business,
+      city: item.city,
+      subject: item.subject,
+      message: item.message,
+      productInterest: item.productInterest,
+      quantity: item.quantity,
+      status: item.status,
+      createdAt: item.createdAt.toISOString(),
+    }));
+  }
+  return readJsonArray<InquiryRecord>(FILE).filter((item) => item.type === type).slice(0, 200);
+}
+
 export async function updateInquiryStatus(id: string, status: string): Promise<boolean> {
   if (databaseConfigured()) {
     await prisma.inquiry.update({ where: { id }, data: { status } });

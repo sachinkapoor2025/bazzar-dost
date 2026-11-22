@@ -176,6 +176,7 @@ export const categorySchema = z.object({
   description: z.string().trim().max(400).optional().default(""),
   image: z.string().trim().max(800).optional().default(""),
   sortOrder: z.number().int().min(0).max(999),
+  parentId: z.string().trim().max(80).optional().default(""),
 }).superRefine((value, ctx) => {
   if (value.image && !isAllowedImageUrl(value.image)) {
     ctx.addIssue({

@@ -1,10 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
+import { usePathname, useSearchParams } from "next/navigation";
+import { Suspense, useEffect, useState } from "react";
 
-type NavLink = { href: string; label: string; exact?: boolean };
+type NavLink = { href: string; label: string; exact?: boolean; match?: string[] };
 type NavItem = { type: "link"; href: string; label: string; exact?: boolean } | { type: "group"; id: string; label: string; href: string; children: NavLink[] };
 
 const items: NavItem[] = [
@@ -14,8 +14,15 @@ const items: NavItem[] = [
     type: "group",
     id: "analytics",
     label: "Analytics",
-    href: "/admin/reports",
+    href: "/admin/analytics",
     children: [
+      { href: "/admin/analytics?tab=overview", label: "Overview" },
+      { href: "/admin/product-sales", label: "Product sales" },
+      { href: "/admin/analytics?tab=order-routes", label: "Order routes" },
+      { href: "/admin/analytics?tab=visitor-analytics", label: "Visitor analytics" },
+      { href: "/admin/analytics?tab=live", label: "Live visitor" },
+      { href: "/admin/analytics?tab=sessions", label: "Visitors" },
+      { href: "/admin/seo", label: "SEO keywords" },
       { href: "/admin/reports", label: "Reports" },
       { href: "/admin/customers", label: "Customers" },
     ],
@@ -24,25 +31,78 @@ const items: NavItem[] = [
     type: "group",
     id: "boost-sales",
     label: "Boost Sales",
-    href: "/admin/coupons",
+    href: "/admin/boost-sales",
     children: [
-      { href: "/admin/coupons", label: "Coupons" },
-      { href: "/admin/inquiries", label: "Inquiries" },
+      { href: "/admin/boost-sales?tab=welcome-leads", label: "Welcome Leads" },
+      { href: "/admin/boost-sales?tab=carts", label: "Abandoned Carts" },
+      { href: "/admin/boost-sales?tab=coupons", label: "Coupons", match: ["/admin/coupons"] },
+      { href: "/admin/boost-sales?tab=leads", label: "Leads", match: ["/admin/inquiries"] },
+      { href: "/admin/boost-sales?tab=unsubscribe", label: "Unsubscribe Email", match: ["/admin/email/suppression"] },
       { href: "/admin/promotions", label: "Website content" },
+      { href: "/admin/banners", label: "Banners" },
     ],
   },
-  { type: "link", href: "/admin/email", label: "Marketing Email" },
   { type: "link", href: "/admin/products", label: "Products" },
   { type: "link", href: "/admin/reviews", label: "Reviews" },
   { type: "link", href: "/admin/categories", label: "Categories" },
+  { type: "link", href: "/admin/shipping", label: "Shipping" },
   { type: "link", href: "/admin/inventory", label: "Inventory" },
   { type: "link", href: "/admin/payments", label: "Payments" },
+  {
+    type: "group",
+    id: "vendor",
+    label: "Vendor Management",
+    href: "/admin/vendor-management",
+    children: [
+      { href: "/admin/vendor-management?tab=expense", label: "Vendor expense" },
+      { href: "/admin/vendor-management?tab=api", label: "Vendor API" },
+    ],
+  },
+  { type: "link", href: "/admin/email", label: "Marketing Email" },
+  {
+    type: "group",
+    id: "expense-settlement",
+    label: "Expense & Settlement",
+    href: "/admin/expense-settlement",
+    children: [
+      { href: "/admin/expense-settlement?tab=expense", label: "Expense" },
+      { href: "/admin/expense-settlement?tab=settlement", label: "Settlement" },
+      { href: "/admin/expense-settlement?tab=reconciliation", label: "Reconciliation" },
+      { href: "/admin/gst-invoices", label: "GST sales invoices" },
+    ],
+  },
+  { type: "link", href: "/admin/users", label: "Users" },
+  { type: "link", href: "/admin/load-test", label: "Load Test" },
 ];
 
 const COLLAPSED_KEY = "bazaardost-admin-sidebar";
 
 function pathActive(pathname: string, href: string, exact?: boolean) {
-  return exact ? pathname === href : pathname === href || pathname.startsWith(`${href}/`);
+  const base = href.split("?")[0] || href;
+  return exact ? pathname === base : pathname === base || pathname.startsWith(`${base}/`);
+}
+
+function linkActive(pathname: string, search: string, item: NavLink) {
+  if (item.match?.some((href) => pathActive(pathname, href))) return true;
+  const [path, query = ""] = item.href.split("?");
+  const pathOk = item.exact ? pathname === path : pathname === path || pathname.startsWith(`${path}/`);
+  if (!pathOk || !path) return false;
+  if (!query) return true;
+  const wanted = new URLSearchParams(query);
+  const current = new URLSearchParams(search);
+  for (const [key, value] of wanted) {
+    const actual = current.get(key) || (key === "tab" ? defaultTab(path) : "");
+    if (actual !== value) return false;
+  }
+  return true;
+}
+
+function defaultTab(path: string) {
+  if (path === "/admin/analytics") return "overview";
+  if (path === "/admin/boost-sales") return "welcome-leads";
+  if (path === "/admin/vendor-management") return "expense";
+  if (path === "/admin/expense-settlement") return "expense";
+  return "";
 }
 
 function Chevron({ open }: { open: boolean }) {
@@ -53,7 +113,7 @@ function Chevron({ open }: { open: boolean }) {
   );
 }
 
-function NavButtons({ pathname, onNavigate, collapsed = false, variant = "desktop" }: { pathname: string; onNavigate?: () => void; collapsed?: boolean; variant?: "desktop" | "mobile" }) {
+function NavButtons({ pathname, search, onNavigate, collapsed = false, variant = "desktop" }: { pathname: string; search: string; onNavigate?: () => void; collapsed?: boolean; variant?: "desktop" | "mobile" }) {
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
   const [hovered, setHovered] = useState<string | null>(null);
 
@@ -62,11 +122,11 @@ function NavButtons({ pathname, onNavigate, collapsed = false, variant = "deskto
       const next = { ...current };
       for (const item of items) {
         if (item.type !== "group") continue;
-        if (variant === "mobile" || pathActive(pathname, item.href) || item.children.some((child) => pathActive(pathname, child.href))) next[item.id] = true;
+        if (variant === "mobile" || pathActive(pathname, item.href) || item.children.some((child) => linkActive(pathname, search, child))) next[item.id] = true;
       }
       return next;
     });
-  }, [pathname, variant]);
+  }, [pathname, search, variant]);
 
   const linkClass = (active: boolean) => `rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${collapsed ? "px-2 text-center" : ""} ${active ? "bg-forest-800 text-cream-50 shadow-sm" : "text-forest-900 hover:bg-forest-800 hover:text-cream-50"}`;
 
@@ -81,7 +141,7 @@ function NavButtons({ pathname, onNavigate, collapsed = false, variant = "deskto
             </Link>
           );
         }
-        const groupActive = pathActive(pathname, item.href) || item.children.some((child) => pathActive(pathname, child.href));
+        const groupActive = pathActive(pathname, item.href) || item.children.some((child) => linkActive(pathname, search, child));
         const open = variant === "mobile" ? Boolean(expanded[item.id]) : Boolean(expanded[item.id] || hovered === item.id || groupActive);
         if (collapsed) {
           return (
@@ -100,10 +160,10 @@ function NavButtons({ pathname, onNavigate, collapsed = false, variant = "deskto
                 <Chevron open={open} />
               </button>
             </div>
-            <div className={`overflow-hidden transition-all duration-200 ${open ? "mt-0.5 max-h-96 opacity-100" : "pointer-events-none max-h-0 opacity-0"}`}>
+            <div className={`overflow-hidden transition-all duration-200 ${open ? "mt-0.5 max-h-[40rem] opacity-100" : "pointer-events-none max-h-0 opacity-0"}`}>
               <div className="ml-2 flex flex-col gap-0.5 border-l-2 border-forest-800/30 py-0.5 pl-2">
                 {item.children.map((child) => {
-                  const active = pathActive(pathname, child.href, child.exact);
+                  const active = linkActive(pathname, search, child);
                   return (
                     <Link key={child.href} href={child.href} onClick={onNavigate} className={`rounded-md px-2.5 py-2 text-[13px] font-medium ${active ? "bg-forest-800 text-cream-50" : "text-forest-900 hover:bg-forest-800 hover:text-cream-50"}`}>
                       {child.label}
@@ -117,6 +177,11 @@ function NavButtons({ pathname, onNavigate, collapsed = false, variant = "deskto
       })}
     </nav>
   );
+}
+
+function SearchNav(props: Omit<Parameters<typeof NavButtons>[0], "search">) {
+  const search = useSearchParams();
+  return <NavButtons {...props} search={search.toString()} />;
 }
 
 export function AdminShell({ name, email, children }: { name: string; email: string; children: React.ReactNode }) {
@@ -172,7 +237,9 @@ export function AdminShell({ name, email, children }: { name: string; email: str
             </form>
           )}
           <div className="flex-1 overflow-y-auto px-1 pb-2">
-            <NavButtons pathname={pathname} collapsed={collapsed} />
+            <Suspense fallback={null}>
+              <SearchNav pathname={pathname} collapsed={collapsed} />
+            </Suspense>
           </div>
           {collapsed ? null : <Link href="/" className="mt-2 rounded-lg px-3 py-2.5 text-sm text-muted hover:bg-cream-100 hover:text-forest-900">← Storefront</Link>}
         </div>
@@ -209,7 +276,9 @@ export function AdminShell({ name, email, children }: { name: string; email: str
               <input id="admin-search-mobile" name="q" placeholder="Search products" className="min-h-11 w-full rounded-lg border border-cream-300 px-3 text-sm" />
             </form>
             <div className="flex-1 overflow-y-auto px-3 py-3">
-              <NavButtons pathname={pathname} onNavigate={() => setMenuOpen(false)} variant="mobile" />
+              <Suspense fallback={null}>
+                <SearchNav pathname={pathname} onNavigate={() => setMenuOpen(false)} variant="mobile" />
+              </Suspense>
             </div>
             <Link href="/" className="border-t border-cream-300 px-4 py-3 text-sm text-muted" onClick={() => setMenuOpen(false)}>← Storefront</Link>
           </aside>

@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useCart } from "@/components/cart-provider";
 import { buttonClass } from "@/components/ui";
-import { FREE_SHIPPING_ABOVE, shippingCharge } from "@/lib/commerce";
+import { FREE_SHIPPING_ABOVE, SHIPPING_FLAT_RUPEES, shippingFromRules } from "@/lib/commerce";
 import { formatINR, unoptimizedImage } from "@/lib/format";
 import { sizedImage } from "@/lib/images";
 import { formatMoney } from "@/lib/money";
@@ -19,6 +19,7 @@ export function CartView() {
   const { currency } = usePreferences();
   const [lines, setLines] = useState<QuoteLine[]>([]);
   const [error, setError] = useState("");
+  const [shipRules, setShipRules] = useState({ flat: SHIPPING_FLAT_RUPEES, freeAbove: FREE_SHIPPING_ABOVE });
 
   useEffect(() => {
     if (!cart.ready) return;
@@ -39,11 +40,18 @@ export function CartView() {
       .catch(() => setError("Prices could not be refreshed. Try again."));
   }, [cart.lines, cart.ready]);
 
+  useEffect(() => {
+    fetch("/api/shipping").then((response) => response.json()).then((data: { flat?: number; freeAbove?: number }) => {
+      if (typeof data.flat === "number" && typeof data.freeAbove === "number") setShipRules({ flat: data.flat, freeAbove: data.freeAbove });
+    }).catch(() => undefined);
+  }, []);
+
   const payable = lines.filter((line) => line.available);
   const subtotal = payable.reduce((sum, line) => sum + line.unitPrice * line.qty, 0);
-  const shipping = shippingCharge(subtotal);
-  const remaining = Math.max(0, FREE_SHIPPING_ABOVE - subtotal);
-  const progress = Math.min(100, Math.round((subtotal / FREE_SHIPPING_ABOVE) * 100));
+  const shipping = shippingFromRules(subtotal, shipRules);
+  const freeAbove = shipRules.freeAbove || FREE_SHIPPING_ABOVE;
+  const remaining = Math.max(0, freeAbove - subtotal);
+  const progress = freeAbove > 0 ? Math.min(100, Math.round((subtotal / freeAbove) * 100)) : 100;
 
   if (!cart.ready) return <p>Loading your cart…</p>;
   if (cart.lines.length === 0) {
@@ -80,7 +88,7 @@ export function CartView() {
       <aside className="h-fit rounded-2xl border border-cream-300 bg-white p-4">
         <h2 className="font-display text-2xl">Summary</h2>
         <p className="mt-3 text-sm">{remaining === 0 ? `This subtotal qualifies for free shipping.` : `Add ${formatMoney(remaining, currency)} more for free shipping.`}</p>
-        <div className="mt-2 h-2 overflow-hidden rounded-full bg-cream-200" role="progressbar" aria-valuemin={0} aria-valuemax={FREE_SHIPPING_ABOVE} aria-valuenow={Math.min(subtotal, FREE_SHIPPING_ABOVE)} aria-label="Progress toward free shipping">
+        <div className="mt-2 h-2 overflow-hidden rounded-full bg-cream-200" role="progressbar" aria-valuemin={0} aria-valuemax={freeAbove} aria-valuenow={Math.min(subtotal, freeAbove)} aria-label="Progress toward free shipping">
           <div className="h-full bg-forest-700" style={{ width: `${progress}%` }} />
         </div>
         <p className="mt-3 flex justify-between text-sm"><span>Subtotal</span><span>{formatMoney(subtotal, currency)}</span></p>

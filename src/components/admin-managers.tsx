@@ -5,7 +5,8 @@ import { buttonClass, fieldClass, labelClass } from "@/components/ui";
 import { ORDER_STATUS_VALUES, orderStatusLabel } from "@/lib/order-progress";
 import { slugify } from "@/lib/format";
 
-type Category = { id: string; name: string; slug: string; description: string; image: string; sortOrder: number };
+type Category = { id: string; name: string; slug: string; description: string; image: string; sortOrder: number; parentId?: string | null };
+type ParentOption = { id: string; name: string };
 
 function CategoryImageField({ initial }: { initial: string }) {
   const [image, setImage] = useState(initial);
@@ -36,7 +37,7 @@ function CategoryImageField({ initial }: { initial: string }) {
   );
 }
 
-export function CategoryManager({ categories }: { categories: Category[] }) {
+export function CategoryManager({ categories, parents }: { categories: Category[]; parents: ParentOption[] }) {
   const [message, setMessage] = useState("");
   async function save(event: React.FormEvent<HTMLFormElement>, id?: string) {
     event.preventDefault();
@@ -50,10 +51,18 @@ export function CategoryManager({ categories }: { categories: Category[] }) {
         description: form.get("description") || "",
         image: String(form.get("image") || ""),
         sortOrder: Number(form.get("sortOrder") || 0),
+        parentId: String(form.get("parentId") || ""),
       }),
     });
     const data = (await response.json()) as { error?: string };
     setMessage(data.error || "Saved.");
+    if (response.ok) window.location.reload();
+  }
+  async function remove(id: string) {
+    if (!window.confirm("Delete this category?")) return;
+    const response = await fetch(`/api/admin/categories/${id}`, { method: "DELETE" });
+    const data = (await response.json()) as { error?: string; message?: string };
+    setMessage(data.error || data.message || "Deleted.");
     if (response.ok) window.location.reload();
   }
   return (
@@ -63,7 +72,9 @@ export function CategoryManager({ categories }: { categories: Category[] }) {
           <input name="name" defaultValue={category.name} className={fieldClass} aria-label="Name" />
           <input name="slug" defaultValue={category.slug} className={fieldClass} aria-label="Slug" />
           <input name="sortOrder" type="number" defaultValue={category.sortOrder} className={fieldClass} aria-label="Sort order" />
+          <ParentField parents={parents.filter((parent) => parent.id !== category.id)} value={category.parentId || ""} />
           <button className={buttonClass("outline")}>Update</button>
+          <button type="button" className="text-sm font-semibold text-[#7F1D1D] underline" onClick={() => void remove(category.id)}>Delete</button>
           <input name="description" defaultValue={category.description} className={`${fieldClass} md:col-span-4`} aria-label="Description" />
           <CategoryImageField initial={category.image} />
         </form>
@@ -74,11 +85,23 @@ export function CategoryManager({ categories }: { categories: Category[] }) {
         <label className={labelClass}>Slug<input name="slug" required className={fieldClass} /></label>
         <label className={labelClass}>Description<input name="description" className={fieldClass} /></label>
         <label className={labelClass}>Sort order<input name="sortOrder" type="number" defaultValue={categories.length + 1} className={fieldClass} /></label>
+        <ParentField parents={parents} value="" />
         <CategoryImageField initial="" />
         <button className={buttonClass("primary")}>Add category</button>
       </form>
       {message ? <p className="text-sm">{message}</p> : null}
     </div>
+  );
+}
+
+function ParentField({ parents, value }: { parents: ParentOption[]; value: string }) {
+  return (
+    <label className={`${labelClass} md:col-span-2`}>Parent category
+      <select name="parentId" defaultValue={value} className={fieldClass}>
+        <option value="">None, this is a top category</option>
+        {parents.map((parent) => <option key={parent.id} value={parent.id}>{parent.name}</option>)}
+      </select>
+    </label>
   );
 }
 

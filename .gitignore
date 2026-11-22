@@ -37,6 +37,8 @@ data/wishlist.json.tmp
 data/stock.json
 data/stock.json.tmp
 data/session-secret
+data/admin-records.json
+data/admin-records.json.tmp
 
 *.log
 npm-debug.log*

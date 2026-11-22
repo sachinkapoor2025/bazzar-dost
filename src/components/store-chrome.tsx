@@ -2,6 +2,7 @@
 
 import { usePathname } from "next/navigation";
 import { ChatWidget } from "@/components/chat-widget";
+import { VisitBeacon } from "@/components/visit-beacon";
 import { Footer } from "@/components/footer";
 import { Header, MobileDock } from "@/components/header";
 import type { CategoryLink } from "@/lib/types";
@@ -26,6 +27,7 @@ export function StoreChrome({
           {announcement.href ? <a className="underline" href={announcement.href}>Details</a> : null}
         </div>
       ) : null}
+      <VisitBeacon />
       <Header categories={categories} />
       <main id="content" className="min-h-[60vh] pb-20 md:pb-8">{children}</main>
       <Footer categories={categories} />

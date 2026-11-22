@@ -1,7 +1,9 @@
 import { NextResponse } from "next/server";
+import { loadGstInvoices, loadProductSales } from "@/lib/admin-insights";
 import { requireAdmin } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { errorResponse } from "@/lib/http";
+import { loadGstSettings } from "@/lib/shipping-settings";
 
 function csv(rows: string[][]): string {
   return rows.map((row) => row.map((cell) => `"${String(cell ?? "").replace(/"/g, '""')}"`).join(",")).join("\n");
@@ -34,6 +36,23 @@ export async function GET(request: Request) {
         ...customers.map((customer) => [customer.name, customer.email, customer.phone, customer.createdAt.toISOString()]),
       ]);
       name = "bazaardost-customers.csv";
+    } else if (type === "product-sales") {
+      const rows = await loadProductSales();
+      body = csv([
+        ["sku", "name", "category", "stock", "views", "sold", "revenue"],
+        ...rows.map((row) => [row.sku, row.name, row.category, String(row.stock), String(row.views), String(row.qty), String(row.revenue)]),
+      ]);
+      name = "bazaardost-product-sales.csv";
+    } else if (type === "gst") {
+      const [settings, invoices] = await Promise.all([loadGstSettings(), loadGstInvoices()]);
+      body = csv([
+        ["invoice", "date", "customer", "state", "payment", "taxable", "gst", "total"],
+        ...invoices.map((invoice) => {
+          const gst = settings.ratePercent ? Math.round((invoice.total * settings.ratePercent) / (100 + settings.ratePercent)) : 0;
+          return [invoice.orderNumber, invoice.createdAt.toISOString(), invoice.name, invoice.state, invoice.paymentStatus, String(invoice.total - gst), String(gst), String(invoice.total)];
+        }),
+      ]);
+      name = "bazaardost-gst.csv";
     } else if (type === "payments") {
       const orders = await prisma.order.findMany({ orderBy: { createdAt: "desc" }, take: 2000 });
       body = csv([
@@ -42,7 +61,7 @@ export async function GET(request: Request) {
       ]);
       name = "bazaardost-payments.csv";
     } else {
-      return NextResponse.json({ error: "Choose products, orders, customers, or payments." }, { status: 400 });
+      return NextResponse.json({ error: "Choose products, orders, customers, payments, product-sales, or gst." }, { status: 400 });
     }
     return new NextResponse(body, {
       headers: {
