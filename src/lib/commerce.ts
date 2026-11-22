@@ -15,10 +15,16 @@ export function discountPercent(price: number, compareAt: number | null | undefi
   return Math.round(((compareAt - price) / compareAt) * 100);
 }
 
-export function shippingCharge(subtotalAfterDiscount: number): number {
+export function shippingFromRules(subtotalAfterDiscount: number, rules?: { flat?: number; freeAbove?: number }): number {
+  const flat = rules?.flat ?? SHIPPING_FLAT_RUPEES;
+  const freeAbove = rules?.freeAbove ?? FREE_SHIPPING_ABOVE;
   if (subtotalAfterDiscount <= 0) return 0;
-  if (subtotalAfterDiscount >= FREE_SHIPPING_ABOVE) return 0;
-  return SHIPPING_FLAT_RUPEES;
+  if (freeAbove > 0 && subtotalAfterDiscount >= freeAbove) return 0;
+  return Math.max(0, flat);
+}
+
+export function shippingCharge(subtotalAfterDiscount: number): number {
+  return shippingFromRules(subtotalAfterDiscount);
 }
 
 export function couponDiscount(subtotal: number, coupon: CouponRule | null): number {

@@ -3,11 +3,14 @@ import { readDatabase } from "@/lib/db";
 
 export default async function AdminCategoriesPage({ searchParams }: { searchParams: Promise<{ q?: string }> }) {
   const q = (await searchParams).q?.trim() || "";
-  const categories = await readDatabase([], (client) => client.category.findMany({
-    where: q ? { OR: [{ name: { contains: q, mode: "insensitive" } }, { slug: { contains: q, mode: "insensitive" } }] } : undefined,
-    orderBy: { sortOrder: "asc" },
-    include: { _count: { select: { products: true } } },
-  }));
+  const [categories, parents] = await readDatabase([[], []] as const, (client) => Promise.all([
+    client.category.findMany({
+      where: q ? { OR: [{ name: { contains: q, mode: "insensitive" } }, { slug: { contains: q, mode: "insensitive" } }] } : undefined,
+      orderBy: { sortOrder: "asc" },
+      include: { _count: { select: { products: true } } },
+    }),
+    client.category.findMany({ orderBy: { name: "asc" }, select: { id: true, name: true } }),
+  ]));
   return (
     <div>
       <h1 className="font-display text-4xl">Categories</h1>
@@ -18,7 +21,7 @@ export default async function AdminCategoriesPage({ searchParams }: { searchPara
       <ul className="mb-4 text-sm text-muted">
         {categories.map((category) => <li key={category.id}>{category.name}: {category._count.products} products</li>)}
       </ul>
-      <CategoryManager categories={categories} />
+      <CategoryManager categories={categories} parents={parents} />
     </div>
   );
 }

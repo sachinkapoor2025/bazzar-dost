@@ -202,6 +202,13 @@ export async function relatedProducts(categoryId: string, productId: string): Pr
 }
 
 export async function getAnnouncement() {
+  try {
+    const { liveAnnouncement } = await import("@/lib/admin-records");
+    const live = await liveAnnouncement();
+    if (live) return live;
+  } catch (error) {
+    console.error(error);
+  }
   return readCatalogue(() => api<{ title: string; message: string; href: string } | null>("/announcement"), () => localHome().announcement);
 }
 

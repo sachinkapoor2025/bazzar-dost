@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { markCartsOrdered } from "@/lib/admin-records";
 import { getCurrentUser } from "@/lib/auth";
 import { errorResponse } from "@/lib/http";
 import { placeOrder } from "@/lib/place-order";
@@ -19,6 +20,11 @@ export async function POST(request: Request) {
       address: { line1: body.line1, line2: body.line2, city: body.city, state: body.state, pincode: body.pincode },
       items: body.items.map((item) => ({ productId: item.productId, variantId: item.variantId, qty: item.qty })),
     });
+    try {
+      await markCartsOrdered(body.email);
+    } catch (error) {
+      console.error(error);
+    }
     return NextResponse.json({ orderNumber: order.orderNumber, accessToken: order.accessToken });
   } catch (error) {
     return errorResponse(error);

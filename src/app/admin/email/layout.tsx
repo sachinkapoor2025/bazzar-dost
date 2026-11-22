@@ -5,10 +5,15 @@ import { usePathname } from "next/navigation";
 
 const links = [
   { href: "/admin/email", label: "Dashboard", exact: true },
+  { href: "/admin/email/nudges", label: "Checkout nudges" },
   { href: "/admin/email/compose", label: "Compose" },
+  { href: "/admin/email/upload", label: "Upload recipients" },
   { href: "/admin/email/campaigns", label: "Campaigns" },
   { href: "/admin/email/templates", label: "Templates" },
+  { href: "/admin/email/queue", label: "Queue" },
+  { href: "/admin/email/analytics", label: "Analytics" },
   { href: "/admin/email/suppression", label: "Unsubscribed" },
+  { href: "/admin/email/review-request", label: "Review request" },
   { href: "/admin/email/settings", label: "Settings" },
 ];
 

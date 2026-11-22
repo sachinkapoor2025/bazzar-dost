@@ -1,6 +1,7 @@
 import "server-only";
 import crypto from "node:crypto";
-import { couponDiscount, orderTotal, shippingCharge, MAX_LINE_QTY } from "@/lib/commerce";
+import { couponDiscount, orderTotal, shippingFromRules, MAX_LINE_QTY } from "@/lib/commerce";
+import { loadShippingPricing } from "@/lib/shipping-settings";
 import { prisma, databaseConfigured } from "@/lib/db";
 import { findLocalCoupon } from "@/lib/local-coupons";
 import { changeLocalStock, findLocalProduct } from "@/lib/local-catalogue";
@@ -49,7 +50,7 @@ function asOrderError(error: unknown): OrderError | null {
   return null;
 }
 
-function placeLocalOrder(input: PlaceInput): StoredOrder {
+function placeLocalOrder(input: PlaceInput, pricing: { flat: number; freeAbove: number }): StoredOrder {
   const orders = listLocalOrders();
   const existing = orders.find((order) => order.idempotencyKey === input.idempotencyKey);
   if (existing) {
@@ -106,7 +107,7 @@ function placeLocalOrder(input: PlaceInput): StoredOrder {
 
     const discount = coupon ? couponDiscount(subtotal, coupon) : 0;
     if (coupon && discount <= 0) throw new OrderError(`That coupon needs a subtotal of at least ₹${coupon.minSubtotal}.`);
-    const shipping = shippingCharge(subtotal - discount);
+    const shipping = shippingFromRules(subtotal - discount, pricing);
     const now = new Date().toISOString();
     const order: StoredOrder = {
       id: newOrderId(),
@@ -145,7 +146,8 @@ function placeLocalOrder(input: PlaceInput): StoredOrder {
 }
 
 export async function placeOrder(input: PlaceInput) {
-  if (!databaseConfigured()) return placeLocalOrder(input);
+  const pricing = await loadShippingPricing();
+  if (!databaseConfigured()) return placeLocalOrder(input, pricing);
   const existing = await prisma.order.findUnique({
     where: { idempotencyKey: input.idempotencyKey },
     include: { items: true },
@@ -236,7 +238,7 @@ export async function placeOrder(input: PlaceInput) {
       if (coupon && discount <= 0) {
         throw new OrderError(`That coupon needs a subtotal of at least ₹${coupon.minSubtotal}.`);
       }
-      const shipping = shippingCharge(subtotal - discount);
+      const shipping = shippingFromRules(subtotal - discount, pricing);
       const total = orderTotal(subtotal, discount, shipping);
 
       return tx.order.create({

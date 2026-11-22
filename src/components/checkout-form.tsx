@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import { useCart } from "@/components/cart-provider";
 import { usePreferences } from "@/components/preferences-provider";
 import { buttonClass, fieldClass, labelClass } from "@/components/ui";
-import { couponDiscount, orderTotal, shippingCharge } from "@/lib/commerce";
+import { couponDiscount, FREE_SHIPPING_ABOVE, orderTotal, SHIPPING_FLAT_RUPEES, shippingFromRules } from "@/lib/commerce";
 import { formatINR } from "@/lib/format";
 import { INDIAN_STATES } from "@/lib/states";
 import type { CartLine, PublicUser } from "@/lib/types";
@@ -43,6 +43,8 @@ export function CheckoutForm({
   const [error, setError] = useState("");
   const [pending, setPending] = useState(false);
   const [priced, setPriced] = useState(false);
+  const [shipRules, setShipRules] = useState({ flat: SHIPPING_FLAT_RUPEES, freeAbove: FREE_SHIPPING_ABOVE });
+  const [nudge, setNudge] = useState<{ title: string; message: string; href: string } | null>(null);
   const [form, setForm] = useState({
     name: user?.name || "",
     email: user?.email || "",
@@ -83,11 +85,35 @@ export function CheckoutForm({
       .finally(() => setPriced(true));
   }, [cart.lines, cart.ready, mode]);
 
+  useEffect(() => {
+    fetch("/api/shipping").then((response) => response.json()).then((data: { flat?: number; freeAbove?: number }) => {
+      if (typeof data.flat === "number" && typeof data.freeAbove === "number") setShipRules({ flat: data.flat, freeAbove: data.freeAbove });
+    }).catch(() => undefined);
+    fetch("/api/nudges").then((response) => response.json()).then((data: { nudges?: Array<{ title: string; message: string; href: string }> }) => {
+      setNudge(data.nudges?.[0] || null);
+    }).catch(() => undefined);
+  }, []);
+
   const payable = lines.filter((line) => line.available);
   const subtotal = payable.reduce((sum, line) => sum + line.unitPrice * line.qty, 0);
   const discount = couponDiscount(subtotal, coupon);
-  const shipping = shippingCharge(Math.max(0, subtotal - discount));
+  const shipping = shippingFromRules(Math.max(0, subtotal - discount), shipRules);
   const total = orderTotal(subtotal, discount, shipping);
+
+  const cartKey = payable.map((line) => `${line.productId}:${line.qty}:${line.name}`).join("|");
+  useEffect(() => {
+    if (!form.email.includes("@") || payable.length === 0) return;
+    const items = payable.map((line) => ({ productId: line.productId, name: line.name, qty: line.qty }));
+    const handle = window.setTimeout(() => {
+      void fetch("/api/cart/hold", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: form.email, name: form.name, phone: form.phone, items }),
+      }).catch(() => undefined);
+    }, 1200);
+    return () => window.clearTimeout(handle);
+    // cartKey already describes the priced lines, so the timer is not reset on every render.
+  }, [form.email, form.name, form.phone, cartKey]);
 
   function applyAddress(address: Address) {
     setForm((current) => ({
@@ -158,6 +184,7 @@ export function CheckoutForm({
   return (
     <form onSubmit={onSubmit} className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_20rem]">
       <div className="grid gap-3">
+        {nudge ? <p className="rounded-xl bg-forest-800 px-3 py-2 text-sm text-cream-50">{nudge.title}. {nudge.message} {nudge.href ? <a className="underline" href={nudge.href}>Details</a> : null}</p> : null}
         {addresses.length > 0 ? (
           <div className="flex flex-wrap gap-2">
             {addresses.map((address) => (

@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { checkPincode } from "@/lib/delivery";
+import { loadDeliveryRules } from "@/lib/shipping-settings";
 import { rateLimit } from "@/lib/rate-limit";
 
 export async function POST(request: Request) {
@@ -14,7 +15,7 @@ export async function POST(request: Request) {
   } catch {
     return NextResponse.json({ error: "Enter a valid 6-digit PIN code." }, { status: 400 });
   }
-  const result = checkPincode(pincode);
+  const result = checkPincode(pincode, await loadDeliveryRules());
   if (!result.ok) return NextResponse.json({ error: result.message, available: false, estimate: null }, { status: 400 });
   return NextResponse.json({ available: result.available, estimate: result.estimate, message: result.message });
 }
