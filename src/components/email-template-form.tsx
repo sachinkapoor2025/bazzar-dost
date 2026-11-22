@@ -45,3 +45,29 @@ export function TemplateForm() {
     </form>
   );
 }
+
+export function DeleteTemplateButton({ id }: { id: string }) {
+  const [pending, setPending] = useState(false);
+  const [error, setError] = useState("");
+
+  async function onClick() {
+    if (!window.confirm("Delete this template?")) return;
+    setPending(true);
+    setError("");
+    const response = await fetch(`/api/admin/email/templates/${id}`, { method: "DELETE" });
+    const data = (await response.json()) as { error?: string };
+    setPending(false);
+    if (!response.ok) {
+      setError(data.error || "The template could not be deleted.");
+      return;
+    }
+    window.location.reload();
+  }
+
+  return (
+    <div className="mt-2">
+      <button type="button" className={buttonClass("outline")} disabled={pending} onClick={onClick}>{pending ? "Deleting…" : "Delete"}</button>
+      {error ? <p role="alert" className="mt-1 text-sm text-[#7F1D1D]">{error}</p> : null}
+    </div>
+  );
+}

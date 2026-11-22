@@ -4,6 +4,7 @@ import { randomUUID } from "node:crypto";
 import { prisma, databaseConfigured } from "@/lib/db";
 import { readJsonArray, writeJsonArray } from "@/lib/local-json";
 import { parseAdminWrite } from "@/lib/admin-record-schema";
+import { cleanCountry, cleanReferrer } from "@/lib/visit-report";
 
 const FILE = path.join(process.cwd(), "data", "admin-records.json");
 
@@ -18,6 +19,68 @@ export type StoredRecord = {
 };
 
 let storeMode: "unknown" | "prisma" | "file" = "unknown";
+let importedFileRecords = false;
+
+function storageError(message: string, status: number): Error {
+  const error = new Error(message);
+  (error as Error & { status?: number }).status = status;
+  return error;
+}
+
+function missingAdminTable(error: unknown): boolean {
+  const code = typeof error === "object" && error && "code" in error ? String((error as { code?: string }).code) : "";
+  const message = error instanceof Error ? error.message : "";
+  return code === "P2021" || (/AdminRecord/i.test(message) && /does not exist|not exist/i.test(message));
+}
+
+async function ensureAdminRecordTable(error: unknown): Promise<boolean> {
+  if (!missingAdminTable(error)) return false;
+  try {
+    await prisma.$executeRawUnsafe(`CREATE TABLE IF NOT EXISTS "AdminRecord" (
+      "id" TEXT NOT NULL,
+      "kind" TEXT NOT NULL,
+      "title" TEXT NOT NULL DEFAULT '',
+      "status" TEXT NOT NULL DEFAULT 'active',
+      "payload" TEXT NOT NULL DEFAULT '{}',
+      "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      CONSTRAINT "AdminRecord_pkey" PRIMARY KEY ("id")
+    )`);
+    await prisma.$executeRawUnsafe(`CREATE INDEX IF NOT EXISTS "AdminRecord_kind_createdAt_idx" ON "AdminRecord"("kind", "createdAt")`);
+    return true;
+  } catch (createError) {
+    console.error(createError instanceof Error ? createError.message : "AdminRecord table was not created");
+    return false;
+  }
+}
+
+async function importFileRecordsOnce(): Promise<void> {
+  if (importedFileRecords) return;
+  importedFileRecords = true;
+  const fileRows = readFile();
+  if (!fileRows.length) return;
+  const kinds = [...new Set(fileRows.map((row) => row.kind))];
+  for (const kind of kinds) {
+    const existing = await prisma.adminRecord.count({ where: { kind } });
+    if (existing > 0) continue;
+    const batch = fileRows.filter((row) => row.kind === kind).slice(0, 2000);
+    const data = batch.flatMap((row) => {
+      const createdAt = new Date(row.createdAt);
+      const updatedAt = new Date(row.updatedAt || row.createdAt);
+      if (Number.isNaN(createdAt.getTime()) || Number.isNaN(updatedAt.getTime())) return [];
+      return [{
+        id: row.id,
+        kind: row.kind,
+        title: row.title || "",
+        status: row.status || "active",
+        payload: JSON.stringify(row.payload || {}),
+        createdAt,
+        updatedAt,
+      }];
+    });
+    if (data.length) await prisma.adminRecord.createMany({ data, skipDuplicates: true });
+  }
+}
 
 function asPayload(value: string): Record<string, unknown> {
   try {
@@ -47,16 +110,18 @@ async function usePrisma(): Promise<boolean> {
     return false;
   }
   if (storeMode === "prisma") return true;
-  if (storeMode === "file") return false;
   try {
     await prisma.adminRecord.findFirst({ select: { id: true } });
-    storeMode = "prisma";
-    return true;
   } catch (error) {
-    console.error(error);
-    storeMode = "file";
-    return false;
+    if (!(await ensureAdminRecordTable(error))) return false;
   }
+  storeMode = "prisma";
+  try {
+    await importFileRecordsOnce();
+  } catch (error) {
+    console.error(error instanceof Error ? error.message : "Stored admin records were not imported");
+  }
+  return true;
 }
 
 function readFile(): StoredRecord[] {
@@ -223,11 +288,20 @@ export async function markCartsOrdered(email: string): Promise<void> {
   }
 }
 
-export async function recordVisit(input: { path: string; sessionId: string; device: string }): Promise<void> {
+export async function recordVisit(input: { path: string; sessionId: string; device: string; referrer?: string; country?: string }): Promise<void> {
   const clean = input.path.split("?")[0]?.slice(0, 180) || "/";
   if (!clean.startsWith("/") || clean.startsWith("/admin") || clean.startsWith("/api")) return;
-  const payload = { path: clean, sessionId: input.sessionId, device: input.device };
-  if (await usePrisma()) {
+  const payload = {
+    path: clean,
+    sessionId: input.sessionId,
+    device: input.device,
+    referrer: cleanReferrer(input.referrer || ""),
+    country: cleanCountry(input.country),
+  };
+  if (databaseConfigured()) {
+    if (!(await usePrisma())) throw storageError("Visitor storage is not ready.", 503);
+    const recent = await prisma.adminRecord.findFirst({ where: { kind: "visit", title: clean }, orderBy: { createdAt: "desc" } });
+    if (recent && Date.now() - recent.createdAt.getTime() < 1500 && asPayload(recent.payload).sessionId === payload.sessionId) return;
     await prisma.adminRecord.create({ data: { kind: "visit", title: clean, status: "seen", payload: JSON.stringify(payload) } });
     const overflow = await prisma.adminRecord.findMany({
       where: { kind: "visit" },
@@ -239,11 +313,13 @@ export async function recordVisit(input: { path: string; sessionId: string; devi
     return;
   }
   const now = new Date().toISOString();
-  const saved: StoredRecord = { id: randomUUID(), kind: "visit", title: clean, status: "seen", payload, createdAt: now, updatedAt: now };
   const rows = readFile();
+  const duplicate = rows.find((row) => row.kind === "visit" && row.payload.path === clean && row.payload.sessionId === payload.sessionId && Date.now() - Date.parse(row.createdAt) < 1500);
+  if (duplicate) return;
+  const saved: StoredRecord = { id: randomUUID(), kind: "visit", title: clean, status: "seen", payload, createdAt: now, updatedAt: now };
   const visits = [saved, ...rows.filter((row) => row.kind === "visit")].slice(0, 2000);
   const others = rows.filter((row) => row.kind !== "visit");
-  writeJsonArray(FILE, [...visits, ...others]);
+  if (!writeJsonArray(FILE, [...visits, ...others])) throw storageError("The visit could not be stored.", 503);
 }
 
 export async function liveAnnouncement(): Promise<{ title: string; message: string; href: string } | null> {

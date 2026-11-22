@@ -57,6 +57,7 @@ export const visitSchema = z.object({
   path: z.string().trim().min(1).max(180),
   sessionId: z.string().trim().regex(/^[a-zA-Z0-9-]{8,80}$/, "Session id is not valid."),
   device: z.enum(["mobile", "tablet", "desktop"]),
+  referrer: z.string().trim().max(300).optional().default(""),
 });
 
 export const cartHoldSchema = z.object({

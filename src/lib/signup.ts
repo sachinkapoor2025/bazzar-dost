@@ -60,7 +60,7 @@ async function deliver(email: string, otp: string): Promise<boolean> {
 export async function startLiveSignup(input: { email: string; name: string; phone: string; password: string }): Promise<
   { ok: true; resendIn: number; message: string } | { ok: false; status: number; error: string }
 > {
-  if (!mailConfigured()) return { ok: false, status: 503, error: mailError };
+  if (!(await mailConfigured())) return { ok: false, status: 503, error: mailError };
   const email = input.email.toLowerCase();
   const otp = createOtpCode();
   const result = await api<{ status: "sent" | "cooldown"; resendAt: string }>("/auth/signup/start", {
@@ -89,7 +89,7 @@ export async function startLiveSignup(input: { email: string; name: string; phon
 export async function resendLiveSignup(emailInput: string): Promise<
   { ok: true; resendIn: number; message: string } | { ok: false; status: number; error: string; resendIn?: number }
 > {
-  if (!mailConfigured()) return { ok: false, status: 503, error: mailError };
+  if (!(await mailConfigured())) return { ok: false, status: 503, error: mailError };
   const email = emailInput.toLowerCase();
   const otp = createOtpCode();
   const result = await api<{ status: "sent" | "cooldown"; resendAt: string }>("/auth/signup/resend", {

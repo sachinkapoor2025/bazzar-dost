@@ -7,7 +7,7 @@ const links = [
   { href: "/admin/email", label: "Dashboard", exact: true },
   { href: "/admin/email/nudges", label: "Checkout nudges" },
   { href: "/admin/email/compose", label: "Compose" },
-  { href: "/admin/email/upload", label: "Upload recipients" },
+  { href: "/admin/email/upload", label: "Subscribers" },
   { href: "/admin/email/campaigns", label: "Campaigns" },
   { href: "/admin/email/templates", label: "Templates" },
   { href: "/admin/email/queue", label: "Queue" },

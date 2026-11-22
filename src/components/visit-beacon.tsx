@@ -20,10 +20,17 @@ export function VisitBeacon() {
     }
     const width = window.innerWidth;
     const device = width < 640 ? "mobile" : width < 1024 ? "tablet" : "desktop";
+    let referrer = "";
+    try {
+      referrer = document.referrer || "";
+    } catch {
+      referrer = "";
+    }
     void fetch("/api/visits", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ path: pathname, sessionId, device }),
+      body: JSON.stringify({ path: pathname, sessionId, device, referrer }),
+      keepalive: true,
     }).catch(() => undefined);
   }, [pathname]);
   return null;

@@ -3,7 +3,7 @@ import path from "node:path";
 import { randomUUID } from "node:crypto";
 import { prisma, databaseConfigured } from "@/lib/db";
 import { readJsonArray, writeJsonArray } from "@/lib/local-json";
-import { mailConfigured, sendMail } from "@/lib/mail";
+import { mailConfigured, mailFailure, sendMail } from "@/lib/mail";
 import { absoluteUrl } from "@/lib/site";
 
 const FILE = path.join(process.cwd(), "data", "email-marketing.json");
@@ -16,6 +16,7 @@ export type CampaignRecord = {
   audience: string;
   sent: number;
   failed: number;
+  skipped: number;
   status: string;
   createdAt: string;
 };
@@ -36,6 +37,7 @@ type Row = {
   message: string;
   sent: number;
   failed: number;
+  skipped: number;
   status: string;
   createdAt: string;
 };
@@ -98,7 +100,7 @@ export async function saveTemplate(input: { name: string; subject: string; messa
     });
     return true;
   }
-  const row: Row = { id: randomUUID(), type: "template", email: "template", name, subject, message, sent: 0, failed: 0, status: "saved", createdAt: new Date().toISOString() };
+  const row: Row = { id: randomUUID(), type: "template", email: "template", name, subject, message, sent: 0, failed: 0, skipped: 0, status: "saved", createdAt: new Date().toISOString() };
   return writeLocal([row, ...readLocal()]);
 }
 
@@ -129,7 +131,7 @@ export async function suppressEmail(emailInput: string): Promise<boolean> {
     await prisma.inquiry.create({ data: { type: "suppression", email, status: "suppressed", subject: "Unsubscribed" } });
     return true;
   }
-  const row: Row = { id: randomUUID(), type: "suppression", email, name: "", subject: "Unsubscribed", message: "", sent: 0, failed: 0, status: "suppressed", createdAt: new Date().toISOString() };
+  const row: Row = { id: randomUUID(), type: "suppression", email, name: "", subject: "Unsubscribed", message: "", sent: 0, failed: 0, skipped: 0, status: "suppressed", createdAt: new Date().toISOString() };
   return writeLocal([row, ...readLocal()]);
 }
 
@@ -143,17 +145,31 @@ export async function listCampaigns(): Promise<CampaignRecord[]> {
       audience: row.name || "subscribers",
       sent: Number(row.productInterest) || 0,
       failed: Number(row.quantity) || 0,
+      skipped: Number(row.business) || 0,
       status: row.status,
       createdAt: row.createdAt.toISOString(),
     }));
   }
   return readLocal()
     .filter((row) => row.type === "campaign")
-    .map((row) => ({ id: row.id, subject: row.subject, message: row.message, audience: row.name, sent: row.sent, failed: row.failed, status: row.status, createdAt: row.createdAt }));
+    .map((row) => ({ id: row.id, subject: row.subject, message: row.message, audience: row.name, sent: row.sent, failed: row.failed, skipped: row.skipped || 0, status: row.status, createdAt: row.createdAt }));
+}
+
+export async function deleteTemplate(id: string): Promise<boolean> {
+  if (builtInTemplates.some((template) => template.id === id)) return false;
+  if (databaseConfigured()) {
+    const row = await prisma.inquiry.findUnique({ where: { id } });
+    if (!row || row.type !== "template") return false;
+    await prisma.inquiry.delete({ where: { id } });
+    return true;
+  }
+  const rows = readLocal();
+  if (!rows.some((row) => row.id === id && row.type === "template")) return false;
+  return writeLocal(rows.filter((row) => row.id !== id));
 }
 
 export async function sendCampaign(input: { subject: string; message: string; audience: "subscribers" | "custom"; customEmails?: string }): Promise<{ ok: true; sent: number; failed: number; skipped: number } | { ok: false; error: string }> {
-  if (!mailConfigured()) return { ok: false, error: "Email is not configured. Set SMTP host, port, and from address before sending." };
+  if (!(await mailConfigured())) return { ok: false, error: "Email is not configured. Add the mail server on the email settings page, or set the SMTP environment values." };
   const subject = input.subject.trim().slice(0, 140);
   const message = input.message.trim().slice(0, 5000);
   if (!subject || !message) return { ok: false, error: "Enter a subject and a message." };
@@ -167,15 +183,20 @@ export async function sendCampaign(input: { subject: string; message: string; au
   const skipped = unique.length - batch.length;
   let sent = 0;
   let failed = 0;
+  let reason = "";
   const footer = `\n\nBazaarDost\n${absoluteUrl("/")}\nTo stop these emails, open ${absoluteUrl("/unsubscribe")}`;
   for (const email of batch) {
     try {
       const delivered = await sendMail(email, subject, `${message}${footer}`);
       if (delivered) sent += 1;
-      else failed += 1;
+      else {
+        failed += 1;
+        if (!reason) reason = "Email is not configured. Add the mail server on the email settings page, or set the SMTP environment values.";
+      }
     } catch (error) {
-      console.error(error);
+      console.error(mailFailure(error));
       failed += 1;
+      if (!reason) reason = mailFailure(error);
     }
   }
   const status = failed === 0 ? "sent" : sent === 0 ? "failed" : "partial";
@@ -189,12 +210,14 @@ export async function sendCampaign(input: { subject: string; message: string; au
         message,
         productInterest: String(sent),
         quantity: String(failed),
+        business: String(skipped),
         status,
       },
     });
   } else {
-    const row: Row = { id: randomUUID(), type: "campaign", email: "campaign", name: input.audience, subject, message, sent, failed, status, createdAt: new Date().toISOString() };
+    const row: Row = { id: randomUUID(), type: "campaign", email: "campaign", name: input.audience, subject, message, sent, failed, skipped, status, createdAt: new Date().toISOString() };
     writeLocal([row, ...readLocal()]);
   }
+  if (sent === 0) return { ok: false, error: reason || "No messages were delivered." };
   return { ok: true, sent, failed, skipped };
 }

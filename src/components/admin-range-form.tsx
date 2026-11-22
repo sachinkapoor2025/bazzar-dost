@@ -3,11 +3,13 @@ export function AdminRangeForm({
   from,
   to,
   action = "/admin",
+  extra,
 }: {
   range: string;
   from?: string;
   to?: string;
   action?: string;
+  extra?: Record<string, string>;
 }) {
   const choices = [
     ["today", "Today"],
@@ -17,6 +19,7 @@ export function AdminRangeForm({
   ];
   return (
     <form action={action} className="flex flex-wrap items-end gap-2">
+      {Object.entries(extra || {}).map(([name, value]) => <input key={name} type="hidden" name={name} value={value} />)}
       {choices.map(([value, label]) => (
         <button key={value} name="range" value={value} className={`min-h-11 rounded-full px-3 text-sm font-semibold ${range === value ? "bg-forest-800 text-cream-50" : "bg-white"}`}>
           {label}

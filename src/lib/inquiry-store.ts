@@ -115,6 +115,50 @@ export async function listInquiriesByType(type: string): Promise<InquiryRecord[]
   return readJsonArray<InquiryRecord>(FILE).filter((item) => item.type === type).slice(0, 200);
 }
 
+export async function listNewsletterSubscribers(): Promise<Array<{ id: string; email: string; createdAt: string }>> {
+  if (databaseConfigured()) {
+    const rows = await prisma.inquiry.findMany({ where: { type: "newsletter" }, orderBy: { createdAt: "desc" }, take: 500 });
+    return rows.map((row) => ({ id: row.id, email: row.email, createdAt: row.createdAt.toISOString() }));
+  }
+  return readJsonArray<InquiryRecord>(FILE)
+    .filter((item) => item.type === "newsletter")
+    .slice(0, 500)
+    .map((item) => ({ id: item.id, email: item.email, createdAt: item.createdAt }));
+}
+
+export async function updateNewsletterEmail(id: string, email: string): Promise<{ ok: true } | { ok: false; error: string }> {
+  const clean = email.trim().toLowerCase();
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(clean)) return { ok: false, error: "Enter a valid email." };
+  if (databaseConfigured()) {
+    const row = await prisma.inquiry.findUnique({ where: { id } });
+    if (!row || row.type !== "newsletter") return { ok: false, error: "That subscriber was not found." };
+    const duplicate = await prisma.inquiry.findFirst({ where: { type: "newsletter", email: clean, NOT: { id } } });
+    if (duplicate) return { ok: false, error: "That email is already on the list." };
+    await prisma.inquiry.update({ where: { id }, data: { email: clean } });
+    return { ok: true };
+  }
+  const rows = readJsonArray<InquiryRecord>(FILE);
+  const current = rows.find((item) => item.id === id);
+  if (!current || current.type !== "newsletter") return { ok: false, error: "That subscriber was not found." };
+  if (rows.some((item) => item.type === "newsletter" && item.email === clean && item.id !== id)) {
+    return { ok: false, error: "That email is already on the list." };
+  }
+  const next = rows.map((item) => (item.id === id ? { ...item, email: clean } : item));
+  return writeJsonArray(FILE, next) ? { ok: true } : { ok: false, error: "The subscriber could not be saved." };
+}
+
+export async function deleteInquiryOfType(id: string, type: string): Promise<boolean> {
+  if (databaseConfigured()) {
+    const row = await prisma.inquiry.findUnique({ where: { id } });
+    if (!row || row.type !== type) return false;
+    await prisma.inquiry.delete({ where: { id } });
+    return true;
+  }
+  const rows = readJsonArray<InquiryRecord>(FILE);
+  if (!rows.some((item) => item.id === id && item.type === type)) return false;
+  return writeJsonArray(FILE, rows.filter((item) => item.id !== id));
+}
+
 export async function updateInquiryStatus(id: string, status: string): Promise<boolean> {
   if (databaseConfigured()) {
     await prisma.inquiry.update({ where: { id }, data: { status } });

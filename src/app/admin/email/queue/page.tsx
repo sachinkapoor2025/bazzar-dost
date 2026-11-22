@@ -12,7 +12,7 @@ export default async function EmailQueuePage() {
           {campaigns.map((campaign) => (
             <li key={campaign.id} className="px-3 py-2">
               <span className="font-semibold">{campaign.subject}</span>
-              <span className="block text-xs text-muted">{campaign.status} · sent {campaign.sent} · failed {campaign.failed} · {formatDate(campaign.createdAt)}</span>
+              <span className="block text-xs text-muted">{campaign.status} · sent {campaign.sent} · failed {campaign.failed} · pending {campaign.skipped} · {formatDate(campaign.createdAt)}</span>
             </li>
           ))}
         </ul>

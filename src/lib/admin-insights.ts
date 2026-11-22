@@ -1,5 +1,7 @@
 import "server-only";
 import { listRecords } from "@/lib/admin-records";
+import { parseAdminRange } from "@/lib/admin-range";
+import { summarizeVisits, type VisitPoint } from "@/lib/visit-report";
 import { databaseConfigured, readDatabase } from "@/lib/db";
 import { loadEngagementScores } from "@/lib/engagement";
 import { localQuery } from "@/lib/local-catalogue";
@@ -129,35 +131,18 @@ export async function loadOrderRoutes() {
   return [...grouped.values()].sort((a, b) => b.revenue - a.revenue);
 }
 
-export async function loadVisitReport() {
+export async function loadVisitReport(input?: { range?: string; from?: string; to?: string }) {
+  const { range, start, end } = parseAdminRange(input || {});
   const visits = await listRecords("visit", 2000);
-  const byPath = new Map<string, number>();
-  const byDevice = new Map<string, number>();
-  const sessions = new Map<string, { sessionId: string; device: string; views: number; lastPath: string; lastAt: string }>();
-  for (const visit of visits) {
-    const path = String(visit.payload.path || visit.title || "/");
-    const device = String(visit.payload.device || "desktop");
-    const sessionId = String(visit.payload.sessionId || visit.id);
-    byPath.set(path, (byPath.get(path) || 0) + 1);
-    byDevice.set(device, (byDevice.get(device) || 0) + 1);
-    const current = sessions.get(sessionId) || { sessionId, device, views: 0, lastPath: path, lastAt: visit.createdAt };
-    current.views += 1;
-    if (visit.createdAt > current.lastAt) {
-      current.lastAt = visit.createdAt;
-      current.lastPath = path;
-    }
-    sessions.set(sessionId, current);
-  }
-  const cutoff = Date.now() - 15 * 60 * 1000;
-  const live = [...sessions.values()].filter((session) => Date.parse(session.lastAt) >= cutoff);
-  return {
-    total: visits.length,
-    byPath: [...byPath.entries()].map(([path, count]) => ({ path, count })).sort((a, b) => b.count - a.count),
-    byDevice: [...byDevice.entries()].map(([device, count]) => ({ device, count })).sort((a, b) => b.count - a.count),
-    sessions: [...sessions.values()].sort((a, b) => b.lastAt.localeCompare(a.lastAt)),
-    live,
-    recent: visits.slice(0, 100),
-  };
+  const points: VisitPoint[] = visits.map((visit) => ({
+    createdAt: visit.createdAt,
+    path: String(visit.payload.path || visit.title || "/"),
+    sessionId: String(visit.payload.sessionId || visit.id),
+    device: String(visit.payload.device || "desktop"),
+    referrer: String(visit.payload.referrer || ""),
+    country: String(visit.payload.country || ""),
+  }));
+  return { range, start, end, ...summarizeVisits(points, start, end) };
 }
 
 export async function loadGstInvoices() {
