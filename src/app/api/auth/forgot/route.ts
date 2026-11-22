@@ -15,7 +15,7 @@ export async function POST(request: Request) {
     const body = forgotSchema.parse(await request.json());
     const email = body.email.toLowerCase();
     if (!rateLimit(`forgot:${email}`, 5, 60 * 60 * 1000)) return NextResponse.json({ message });
-    if (mailConfigured()) {
+    if (await mailConfigured()) {
       const token = crypto.randomBytes(32).toString("hex");
       const tokenHash = crypto.createHash("sha256").update(token).digest("hex");
       const expiresAt = new Date(Date.now() + 30 * 60 * 1000);

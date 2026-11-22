@@ -10,7 +10,7 @@ export default async function CampaignsPage() {
           {campaigns.map((campaign) => (
             <li key={campaign.id} className="px-4 py-3 text-sm">
               <p className="font-semibold">{campaign.subject}</p>
-              <p className="text-muted">{campaign.status} · sent {campaign.sent} · failed {campaign.failed} · {campaign.audience} · {campaign.createdAt.slice(0, 10)}</p>
+              <p className="text-muted">{campaign.status} · sent {campaign.sent} · failed {campaign.failed} · pending {campaign.skipped} · {campaign.audience} · {campaign.createdAt.slice(0, 10)}</p>
             </li>
           ))}
         </ul>

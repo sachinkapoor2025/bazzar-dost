@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
 import { loadGstInvoices, loadProductSales } from "@/lib/admin-insights";
 import { requireAdmin } from "@/lib/auth";
-import { prisma } from "@/lib/db";
+import { databaseConfigured, prisma } from "@/lib/db";
+import { listNewsletterSubscribers } from "@/lib/inquiry-store";
 import { errorResponse } from "@/lib/http";
 import { loadGstSettings } from "@/lib/shipping-settings";
 
@@ -13,6 +14,9 @@ export async function GET(request: Request) {
   try {
     await requireAdmin();
     const type = new URL(request.url).searchParams.get("type");
+    if (["products", "orders", "customers", "payments"].includes(type || "") && !databaseConfigured()) {
+      return NextResponse.json({ error: "That export needs the shop database." }, { status: 503 });
+    }
     let body = "";
     let name = "bazaardost.csv";
     if (type === "products") {
@@ -53,6 +57,13 @@ export async function GET(request: Request) {
         }),
       ]);
       name = "bazaardost-gst.csv";
+    } else if (type === "subscribers") {
+      const rows = await listNewsletterSubscribers();
+      body = csv([
+        ["email", "createdAt"],
+        ...rows.map((row) => [row.email, row.createdAt]),
+      ]);
+      name = "bazaardost-subscribers.csv";
     } else if (type === "payments") {
       const orders = await prisma.order.findMany({ orderBy: { createdAt: "desc" }, take: 2000 });
       body = csv([
@@ -61,7 +72,7 @@ export async function GET(request: Request) {
       ]);
       name = "bazaardost-payments.csv";
     } else {
-      return NextResponse.json({ error: "Choose products, orders, customers, payments, product-sales, or gst." }, { status: 400 });
+      return NextResponse.json({ error: "Choose products, orders, customers, payments, subscribers, product-sales, or gst." }, { status: 400 });
     }
     return new NextResponse(body, {
       headers: {

@@ -1,17 +1,18 @@
 import Link from "next/link";
 import { AdminRangeForm } from "@/components/admin-range-form";
+import { loadVisitReport } from "@/lib/admin-insights";
 import { loadAdminOverview } from "@/lib/admin-stats";
 import { formatINR } from "@/lib/format";
 import { orderStatusLabel } from "@/lib/order-progress";
 
 export default async function AdminHomePage({ searchParams }: { searchParams: Promise<{ range?: string; from?: string; to?: string }> }) {
   const params = await searchParams;
-  const data = await loadAdminOverview(params);
+  const [data, visits] = await Promise.all([loadAdminOverview(params), loadVisitReport(params)]);
   const peak = Math.max(1, ...data.days.map((day) => day.revenue));
   return (
     <div>
       <h1 className="font-display text-4xl">Dashboard</h1>
-      <p className="mt-2 text-sm leading-6 text-muted">Figures come from orders, products, and customer accounts stored for BazaarDost. Revenue excludes cancelled orders. Checkout is cash on delivery.</p>
+      <p className="mt-2 text-sm leading-6 text-muted">Figures come from orders, products, customer accounts, and page visits stored for BazaarDost. Revenue excludes cancelled orders. Checkout is cash on delivery.</p>
       <div className="mt-4">
         <AdminRangeForm range={data.range} from={params.from} to={params.to} />
       </div>
@@ -25,6 +26,8 @@ export default async function AdminHomePage({ searchParams }: { searchParams: Pr
           ["Delivered", data.totals.completed],
           ["Cancelled", data.totals.cancelled],
           ["Low stock", data.totals.lowStock],
+          ["Page views", visits.views],
+          ["Visitors", visits.visitors],
         ].map(([label, value]) => (
           <div key={String(label)} className="rounded-xl border border-cream-300 bg-white p-5">
             <dt className="text-xs uppercase tracking-wide text-muted">{label}</dt>
@@ -32,6 +35,7 @@ export default async function AdminHomePage({ searchParams }: { searchParams: Pr
           </div>
         ))}
       </dl>
+      <p className="mt-3 text-sm"><Link className="font-semibold underline" href="/admin/analytics?tab=visitor-analytics">Open visitor analytics</Link></p>
       <section className="mt-6 rounded-2xl bg-white p-4">
         <h2 className="font-display text-2xl">Revenue</h2>
         <div className="mt-3 flex h-40 items-end gap-1 overflow-x-auto">
