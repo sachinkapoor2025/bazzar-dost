@@ -31,7 +31,12 @@ export default async function HomePage() {
               name: site.name,
               url: site.url,
               slogan: site.tagline,
-              logo: absoluteUrl("/logo.png"),
+              logo: {
+                "@type": "ImageObject",
+                url: absoluteUrl("/logo.png"),
+                width: 850,
+                height: 731,
+              },
               description: site.description,
             },
             {
