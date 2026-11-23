@@ -38,14 +38,14 @@ export function SectionTitle({
   action?: React.ReactNode;
 }) {
   return (
-    <div className="mb-4 flex items-end justify-between gap-3">
-      <div>
+    <div className="mb-4 flex items-start justify-between gap-3">
+      <div className="min-w-0">
         {eyebrow ? <p className="text-xs font-semibold uppercase tracking-[0.16em] text-gold-700">{eyebrow}</p> : null}
-        <h2 id={id} className="font-display text-3xl leading-tight text-forest-900">
+        <h2 id={id} className="font-display text-2xl leading-tight text-forest-900 sm:text-3xl">
           {title}
         </h2>
       </div>
-      {action}
+      {action ? <div className="shrink-0">{action}</div> : null}
     </div>
   );
 }

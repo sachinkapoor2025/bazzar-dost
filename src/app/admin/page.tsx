@@ -18,26 +18,25 @@ export default async function AdminHomePage({ searchParams }: { searchParams: Pr
       </div>
       <dl className="mt-5 grid grid-cols-2 gap-3 lg:grid-cols-4">
         {[
-          ["Orders", data.totals.orders],
-          ["Revenue", formatINR(data.totals.revenue)],
-          ["Products", data.totals.products],
-          ["Customers", data.totals.customers],
-          ["Pending", data.totals.pending],
-          ["Delivered", data.totals.completed],
-          ["Cancelled", data.totals.cancelled],
-          ["Low stock", data.totals.lowStock],
-          ["Page views", visits.views],
-          ["Visitors", visits.visitors],
-        ].map(([label, value]) => (
-          <div key={String(label)} className="rounded-xl border border-cream-300 bg-white p-5">
+          ["Orders", data.totals.orders, "/admin/orders"],
+          ["Revenue", formatINR(data.totals.revenue), "/admin/reports"],
+          ["Products", data.totals.products, "/admin/products"],
+          ["Customers", data.totals.customers, "/admin/customers"],
+          ["Pending", data.totals.pending, "/admin/orders"],
+          ["Delivered", data.totals.completed, "/admin/orders?status=delivered"],
+          ["Cancelled", data.totals.cancelled, "/admin/orders?status=cancelled"],
+          ["Low stock", data.totals.lowStock, "/admin/inventory"],
+          ["Page views", visits.views, "/admin/analytics?tab=visitor-analytics"],
+          ["Visitors", visits.visitors, "/admin/analytics?tab=sessions"],
+        ].map(([label, value, href]) => (
+          <Link key={String(label)} href={String(href)} className="rounded-xl border border-cream-300 bg-white p-5 transition hover:border-forest-800">
             <dt className="text-xs uppercase tracking-wide text-muted">{label}</dt>
             <dd className="mt-1 text-2xl font-bold text-forest-900">{value}</dd>
-          </div>
+          </Link>
         ))}
       </dl>
-      <p className="mt-3 text-sm"><Link className="font-semibold underline" href="/admin/analytics?tab=visitor-analytics">Open visitor analytics</Link></p>
       <section className="mt-6 rounded-2xl bg-white p-4">
-        <h2 className="font-display text-2xl">Revenue</h2>
+        <h2 className="font-display text-2xl"><Link className="underline" href="/admin/reports">Revenue</Link></h2>
         <div className="mt-3 flex h-40 items-end gap-1 overflow-x-auto">
           {data.days.map((day) => (
             <div key={day.day} className="flex min-w-3 flex-1 flex-col items-center justify-end" title={`${day.day}: ${formatINR(day.revenue)}`}>
@@ -51,8 +50,10 @@ export default async function AdminHomePage({ searchParams }: { searchParams: Pr
         <h2 className="font-display text-2xl">Order status</h2>
         <ul className="mt-3 grid gap-2 sm:grid-cols-3">
           {data.statusCounts.map((item) => (
-            <li key={item.status} className="flex items-center justify-between rounded-xl bg-cream-100 px-3 py-2 text-sm">
-              <span>{orderStatusLabel(item.status)}</span><strong>{item.count}</strong>
+            <li key={item.status}>
+              <Link href={`/admin/orders?status=${item.status}`} className="flex items-center justify-between rounded-xl bg-cream-100 px-3 py-2 text-sm hover:bg-cream-200">
+                <span>{orderStatusLabel(item.status)}</span><strong>{item.count}</strong>
+              </Link>
             </li>
           ))}
         </ul>
@@ -78,7 +79,7 @@ export default async function AdminHomePage({ searchParams }: { searchParams: Pr
           <h2 className="font-display text-2xl">Best sellers</h2>
           <ul className="mt-2 space-y-2 text-sm">
             {data.bestSellers.length === 0 ? <li>No completed sales in this period.</li> : data.bestSellers.map((item) => (
-              <li key={`${item.productId}-${item.name}`}>{item.name} · {item.qty} sold</li>
+              <li key={`${item.productId}-${item.name}`}>{item.productId ? <Link className="underline" href={`/admin/products/${item.productId}`}>{item.name}</Link> : item.name} · {item.qty} sold</li>
             ))}
           </ul>
         </section>

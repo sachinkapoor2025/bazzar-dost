@@ -61,6 +61,12 @@ test("filters by real review averages and ranks popularity by units sold", () =>
   assert.equal(popular.items[0]?.slug, "new");
 });
 
+test("featured filter keeps only products marked featured", () => {
+  const featured = product({ id: "prod_featured", slug: "featured", name: "Featured lamp", price: 250, stock: 3, createdAt: "2026-02-01T00:00:00.000Z", isFeatured: true });
+  const result = queryCatalog([featured, ...products], [category], new Map(), { featuredOnly: true });
+  assert.deepEqual(result.items.map((item) => item.slug), ["featured"]);
+});
+
 test("keeps newest order when no sales are recorded", () => {
   const result = queryCatalog(products, [category], new Map(), { sort: "newest" });
   assert.equal(result.items[0]?.slug, "new");

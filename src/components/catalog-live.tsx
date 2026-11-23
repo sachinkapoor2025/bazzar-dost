@@ -45,7 +45,8 @@ export function CatalogLive({
   initialQuery: CatalogInput;
   initialResult: CatalogResult;
 }) {
-  const fallbackSort = preset?.bestSellersOnly ? "popular" : "newest";
+  const rankedDefault = Boolean(preset?.trendingOnly || preset?.searchedOnly);
+  const fallbackSort = rankedDefault ? "" : preset?.bestSellersOnly ? "popular" : "newest";
   const [filters, setFilters] = useState(() => filtersFromQuery(initialQuery, fallbackSort));
   const [query, setQuery] = useState(initialQuery);
   const [result, setResult] = useState(initialResult);
@@ -60,7 +61,7 @@ export function CatalogLive({
       category: lockCategory ? preset?.category || initialQuery.category : nextFilters.category || undefined,
       min,
       max,
-      sort: nextFilters.sort || fallbackSort,
+      sort: nextFilters.sort || fallbackSort || undefined,
       page,
       inStockOnly: nextFilters.stock === "in" || preset?.inStockOnly,
       outOfStockOnly: nextFilters.stock === "out",
@@ -68,6 +69,9 @@ export function CatalogLive({
       dealsOnly: preset?.dealsOnly,
       wholesaleOnly: preset?.wholesaleOnly,
       arrivalsOnly: preset?.arrivalsOnly,
+      featuredOnly: preset?.featuredOnly,
+      trendingOnly: preset?.trendingOnly,
+      searchedOnly: preset?.searchedOnly,
       bestSellersOnly: preset?.bestSellersOnly,
     };
     setPending(true);
@@ -191,6 +195,7 @@ export function CatalogLive({
         <div>
           <label className={labelClass} htmlFor="filter-sort">Sort</label>
           <select id="filter-sort" value={filters.sort} onChange={(event) => update({ sort: event.target.value })} className={fieldClass}>
+            {rankedDefault ? <option value="">Recommended</option> : null}
             <option value="newest">Newest</option>
             <option value="price-asc">Price: low to high</option>
             <option value="price-desc">Price: high to low</option>
