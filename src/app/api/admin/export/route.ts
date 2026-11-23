@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
 import { loadGstInvoices, loadProductSales } from "@/lib/admin-insights";
 import { requireAdmin } from "@/lib/auth";
-import { databaseConfigured, prisma } from "@/lib/db";
+import { databaseConfigured, databaseHasProducts, prisma } from "@/lib/db";
+import { listAdminCatalogueProducts } from "@/lib/local-catalogue";
 import { listNewsletterSubscribers } from "@/lib/inquiry-store";
 import { errorResponse } from "@/lib/http";
 import { loadGstSettings } from "@/lib/shipping-settings";
@@ -14,17 +15,26 @@ export async function GET(request: Request) {
   try {
     await requireAdmin();
     const type = new URL(request.url).searchParams.get("type");
-    if (["products", "orders", "customers", "payments"].includes(type || "") && !databaseConfigured()) {
+    if (["orders", "customers", "payments"].includes(type || "") && !databaseConfigured()) {
       return NextResponse.json({ error: "That export needs the shop database." }, { status: 503 });
     }
     let body = "";
     let name = "bazaardost.csv";
     if (type === "products") {
-      const products = await prisma.product.findMany({ include: { category: true }, orderBy: { name: "asc" } });
-      body = csv([
-        ["sku", "name", "category", "price", "compareAtPrice", "stock", "active"],
-        ...products.map((product) => [product.sku, product.name, product.category.name, String(product.price), product.compareAtPrice ? String(product.compareAtPrice) : "", String(product.stock), product.isActive ? "yes" : "no"]),
-      ]);
+      const header = ["sku", "name", "category", "price", "compareAtPrice", "stock", "active"];
+      if (await databaseHasProducts()) {
+        const products = await prisma.product.findMany({ include: { category: true }, orderBy: { name: "asc" } });
+        body = csv([
+          header,
+          ...products.map((product) => [product.sku, product.name, product.category.name, String(product.price), product.compareAtPrice ? String(product.compareAtPrice) : "", String(product.stock), product.isActive ? "yes" : "no"]),
+        ]);
+      } else {
+        const listed = listAdminCatalogueProducts({ page: 1, pageSize: 5000, sort: "name" });
+        body = csv([
+          header,
+          ...listed.products.map((product) => [product.sku, product.name, product.category, String(product.price), product.compareAtPrice ? String(product.compareAtPrice) : "", String(product.stock), product.active ? "yes" : "no"]),
+        ]);
+      }
       name = "bazaardost-products.csv";
     } else if (type === "orders") {
       const orders = await prisma.order.findMany({ orderBy: { createdAt: "desc" }, take: 2000 });

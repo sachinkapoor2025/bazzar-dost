@@ -5,7 +5,7 @@ import { listLocalCoupons } from "@/lib/local-coupons";
 import { listLocalOrders } from "@/lib/local-orders";
 
 export default async function CouponsPage() {
-  const [coupons, usage] = databaseConfigured()
+  const stored = databaseConfigured()
     ? await readDatabase([[], []] as const, (client) => Promise.all([
         client.coupon.findMany({ orderBy: { code: "asc" } }),
         client.order.groupBy({
@@ -14,8 +14,11 @@ export default async function CouponsPage() {
           _count: { _all: true },
         }),
       ]))
+    : null;
+  const [coupons, usage] = stored && stored[0].length > 0
+    ? stored
     : [listLocalCoupons().map((coupon) => ({ ...coupon, expiresAt: coupon.expiresAt ? new Date(coupon.expiresAt) : null })), [] as Array<{ couponCode: string; _count: { _all: number } }>];
-  const used = databaseConfigured()
+  const used = stored && stored[0].length > 0
     ? new Map(usage.map((row) => [row.couponCode.toUpperCase(), row._count._all]))
     : listLocalOrders().filter((order) => order.couponCode && order.status !== "cancelled").reduce((map, order) => {
         const code = order.couponCode.toUpperCase();

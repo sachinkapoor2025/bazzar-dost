@@ -1,19 +1,19 @@
 import Link from "next/link";
 import { StockEditor } from "@/components/stock-editor";
-import { databaseConfigured, readDatabase } from "@/lib/db";
+import { databaseHasProducts, readDatabase } from "@/lib/db";
 import { localInventory } from "@/lib/local-catalogue";
 
 export default async function InventoryPage({ searchParams }: { searchParams: Promise<{ stock?: string; q?: string }> }) {
   const params = await searchParams;
   const q = params.q?.trim() || "";
-  const products = databaseConfigured()
+  const products = (await databaseHasProducts())
     ? await readDatabase([], (client) => client.product.findMany({
         where: q ? { OR: [{ name: { contains: q, mode: "insensitive" } }, { sku: { contains: q, mode: "insensitive" } }] } : undefined,
         include: { variants: true, category: true },
         orderBy: { name: "asc" },
         take: 200,
       }))
-    : localInventory(q).map((product) => ({ ...product, category: { name: product.category.name } }));
+    : localInventory(q, 800).map((product) => ({ ...product, category: { name: product.category.name } }));
   const rows = products.flatMap((product) => {
     if (product.variants.length === 0) {
       return [{ key: product.id, productId: product.id, name: product.name, sku: product.sku, category: product.category.name, stock: product.stock, variantId: undefined as string | undefined }];

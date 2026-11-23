@@ -7,12 +7,11 @@ import { listLocalOrders } from "@/lib/local-orders";
 
 export default async function ProductSaleDetailPage({ params }: { params: Promise<{ slug: string }> }) {
   const slug = (await params).slug;
-  const product = databaseConfigured()
+  const stored = databaseConfigured()
     ? await readDatabase(null, (client) => client.product.findUnique({ where: { slug }, select: { id: true, name: true, sku: true, slug: true } }))
-    : (() => {
-        const local = localProduct(slug);
-        return local ? { id: local.id, name: local.name, sku: local.sku, slug: local.slug } : null;
-      })();
+    : null;
+  const local = stored ? null : localProduct(slug);
+  const product = stored || (local ? { id: local.id, name: local.name, sku: local.sku, slug: local.slug } : null);
   if (!product) notFound();
   const orders = databaseConfigured()
     ? await readDatabase([], (client) => client.order.findMany({

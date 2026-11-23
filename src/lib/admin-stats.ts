@@ -1,6 +1,7 @@
 import "server-only";
 import { readDatabase } from "@/lib/db";
 import { dayKey, parseAdminRange } from "@/lib/admin-range";
+import { localActiveProductCount, localLowStock } from "@/lib/local-catalogue";
 
 const LOW_STOCK = 5;
 
@@ -46,7 +47,17 @@ export async function loadAdminOverview(input: { range?: string; from?: string; 
       return { orders, productCount, customerCount, lowStock, recentOrders, recentCustomers, sold };
     },
   );
-  const { orders, productCount, customerCount, lowStock, recentOrders, recentCustomers, sold } = loaded;
+  let { orders, productCount, customerCount, lowStock, recentOrders, recentCustomers, sold } = loaded;
+  if (productCount === 0) {
+    productCount = localActiveProductCount();
+    lowStock = localLowStock(8).map((product) => ({
+      id: product.id,
+      name: product.name,
+      sku: product.sku,
+      stock: product.variants.length ? Math.min(...product.variants.map((variant) => variant.stock)) : product.stock,
+      variants: product.variants.map((variant) => ({ stock: variant.stock })),
+    }));
+  }
 
   const activeOrders = orders.filter((order) => order.status !== "cancelled");
   const revenue = activeOrders.reduce((sum, order) => sum + order.total, 0);
