@@ -35,7 +35,7 @@ const items: NavItem[] = [
     children: [
       { href: "/admin/boost-sales?tab=welcome-leads", label: "Welcome Leads" },
       { href: "/admin/boost-sales?tab=carts", label: "Abandoned Carts" },
-      { href: "/admin/boost-sales?tab=coupons", label: "Coupons", match: ["/admin/coupons"] },
+      { href: "/admin/coupons", label: "Coupons" },
       { href: "/admin/boost-sales?tab=leads", label: "Leads", match: ["/admin/inquiries"] },
       { href: "/admin/boost-sales?tab=unsubscribe", label: "Unsubscribe Email", match: ["/admin/email/suppression"] },
       { href: "/admin/promotions", label: "Website content" },
@@ -72,7 +72,6 @@ const items: NavItem[] = [
     ],
   },
   { type: "link", href: "/admin/users", label: "Users" },
-  { type: "link", href: "/admin/load-test", label: "Load Test" },
 ];
 
 const COLLAPSED_KEY = "bazaardost-admin-sidebar";

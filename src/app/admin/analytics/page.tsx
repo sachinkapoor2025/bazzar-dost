@@ -47,25 +47,26 @@ async function Overview({ params }: { params: { range?: string; from?: string; t
       <AdminRangeForm range={data.range} from={params.from} to={params.to} action="/admin/analytics" />
       <dl className="mt-4 grid grid-cols-2 gap-3 lg:grid-cols-4">
         {[
-          ["Orders", data.totals.orders],
-          ["Revenue", formatINR(data.totals.revenue)],
-          ["Customers", data.totals.customers],
-          ["Low stock", data.totals.lowStock],
-        ].map(([label, value]) => (
-          <div key={String(label)} className="rounded-xl border border-cream-300 bg-white p-4">
+          ["Orders", data.totals.orders, "/admin/orders"],
+          ["Revenue", formatINR(data.totals.revenue), "/admin/reports"],
+          ["Customers", data.totals.customers, "/admin/customers"],
+          ["Low stock", data.totals.lowStock, "/admin/inventory"],
+        ].map(([label, value, href]) => (
+          <Link key={String(label)} href={String(href)} className="rounded-xl border border-cream-300 bg-white p-4 transition hover:border-forest-800">
             <dt className="text-xs uppercase tracking-wide text-muted">{label}</dt>
             <dd className="mt-1 text-2xl font-bold">{value}</dd>
-          </div>
+          </Link>
         ))}
       </dl>
       <ul className="mt-4 grid gap-2 sm:grid-cols-3">
         {data.statusCounts.map((item) => (
-          <li key={item.status} className="flex items-center justify-between rounded-xl bg-white px-3 py-2 text-sm">
-            <span>{orderStatusLabel(item.status)}</span><strong>{item.count}</strong>
+          <li key={item.status}>
+            <Link href={`/admin/orders?status=${item.status}`} className="flex items-center justify-between rounded-xl bg-white px-3 py-2 text-sm hover:bg-cream-100">
+              <span>{orderStatusLabel(item.status)}</span><strong>{item.count}</strong>
+            </Link>
           </li>
         ))}
       </ul>
-      <p className="mt-4 text-sm"><Link className="font-semibold underline" href="/admin/reports">Open the full report</Link></p>
     </div>
   );
 }

@@ -13,7 +13,7 @@ import {
 import type { Category, HydratedProduct } from "../../apps/api/src/lib/types";
 import { categories as starterCategories } from "../../apps/api/src/starter-catalog";
 import shopifyCatalogueJson from "@/data/shopify-catalogue.json";
-import { MAX_LINE_QTY, sellingPrice } from "@/lib/commerce";
+import { MAX_LINE_QTY, PAGE_SIZE, sellingPrice } from "@/lib/commerce";
 import { displayImages, duplicateListingIds, isLoadableProductImage } from "@/lib/product-images";
 import { rankBestSellers, rankMostSearched, rankTrending, type EngagementScore } from "@/lib/trending";
 
@@ -297,19 +297,56 @@ export function localHome() {
   };
 }
 
+function sectionMembers(kind: "trending" | "searched", scores: Map<string, EngagementScore>) {
+  const products = catalogue.products;
+  if (kind === "trending") {
+    return rankTrending(products, scores, products.length, false);
+  }
+  const clicked = rankMostSearched(products, scores, 1);
+  if (clicked.ranked) return rankMostSearched(products, scores, products.length);
+  return rankMostSearched(products, scores, 5);
+}
+
+export function localSectionQuery(
+  kind: "trending" | "searched",
+  input: CatalogInput,
+  scores: Map<string, EngagementScore>,
+  sales: Map<string, number> = new Map(),
+  ratings: Map<string, number> = new Map(),
+) {
+  const members = sectionMembers(kind, scores);
+  const order = new Map(members.items.map((product, index) => [product.slug, index]));
+  const filtered = queryRows(catalogue.products, catalogue.categories, sales, { ...input, page: 1, take: catalogue.products.length || 1 }, ratings);
+  const matched = filtered.items.filter((item) => order.has(item.slug));
+  const items = input.sort ? matched : matched.sort((a, b) => (order.get(a.slug) || 0) - (order.get(b.slug) || 0));
+  const page = Math.max(1, input.page || 1);
+  const pageCount = Math.max(1, Math.ceil(items.length / PAGE_SIZE));
+  if (items.length > 0 && page > pageCount) {
+    return { items: [], total: items.length, page, pageCount, outOfRange: true as const };
+  }
+  return {
+    items: items.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE),
+    total: items.length,
+    page,
+    pageCount,
+    outOfRange: false as const,
+  };
+}
+
 export function localTrending(scores: Map<string, EngagementScore>) {
-  const ranked = rankTrending(catalogue.products, scores, 8);
-  return { products: ranked.items.map(toCard), ranked: ranked.ranked };
+  const ranked = sectionMembers("trending", scores);
+  return { products: ranked.items.slice(0, 5).map(toCard), ranked: ranked.ranked };
 }
 
 export function localBestSellers(sold: Map<string, number> | null) {
-  const ranked = rankBestSellers(catalogue.products, sold, 8);
-  return { products: ranked.items.map(toCard), ranked: ranked.ranked };
+  const ranked = rankBestSellers(catalogue.products, sold, catalogue.products.length);
+  if (!ranked.ranked) return { products: [] as ReturnType<typeof toCard>[], ranked: false };
+  return { products: ranked.items.slice(0, 5).map(toCard), ranked: true };
 }
 
 export function localMostSearched(scores: Map<string, EngagementScore>) {
-  const ranked = rankMostSearched(catalogue.products, scores, 8);
-  return { products: ranked.items.map(toCard), ranked: ranked.ranked };
+  const ranked = sectionMembers("searched", scores);
+  return { products: ranked.items.slice(0, 5).map(toCard), ranked: ranked.ranked };
 }
 
 export function localQuery(input: CatalogInput, sales: Map<string, number> = new Map(), ratings: Map<string, number> = new Map()) {

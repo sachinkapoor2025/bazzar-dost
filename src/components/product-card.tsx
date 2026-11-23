@@ -157,9 +157,10 @@ function trackProductClick(slug: string) {
   fetch(`/api/products/${encodeURIComponent(slug)}/click`, { method: "POST", keepalive: true }).catch(() => undefined);
 }
 
-export function ProductGrid({ products, priorityCount = 0 }: { products: ProductCardData[]; priorityCount?: number }) {
+export function ProductGrid({ products, priorityCount = 0, layout = "catalog" }: { products: ProductCardData[]; priorityCount?: number; layout?: "catalog" | "home" }) {
+  const columns = layout === "home" ? "grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5" : "grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6";
   return (
-    <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6">
+    <div className={`grid ${columns}`}>
       {products.map((product, index) => (
         <ProductCard key={product.id} product={product} eager={index < priorityCount} />
       ))}

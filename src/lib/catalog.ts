@@ -16,6 +16,7 @@ import {
   localHome,
   localMostSearched,
   localProduct,
+  localSectionQuery,
   localTrending,
   localQuery,
   localRelated,
@@ -112,6 +113,9 @@ export type CatalogInput = {
   dealsOnly?: boolean;
   wholesaleOnly?: boolean;
   arrivalsOnly?: boolean;
+  featuredOnly?: boolean;
+  trendingOnly?: boolean;
+  searchedOnly?: boolean;
   bestSellersOnly?: boolean;
   inStockOnly?: boolean;
   outOfStockOnly?: boolean;
@@ -136,12 +140,15 @@ export async function searchCards(query: string, take = 6): Promise<ProductCardD
 }
 
 async function queryLocalCatalog(input: CatalogInput): Promise<CatalogResult> {
-  const [sold, ratings] = await Promise.all([loadSoldUnits(), loadReviewAverages()]);
+  const [sold, ratings, scores] = await Promise.all([loadSoldUnits(), loadReviewAverages(), loadEngagementScores()]);
+  if (input.trendingOnly || input.searchedOnly) {
+    return localSectionQuery(input.trendingOnly ? "trending" : "searched", input, scores, sold ?? new Map(), ratings);
+  }
   return localQuery(input, sold ?? new Map(), ratings);
 }
 
 export async function queryCatalog(input: CatalogInput): Promise<CatalogResult> {
-  if (input.minRating) return queryLocalCatalog(input);
+  if (input.minRating || input.featuredOnly || input.trendingOnly || input.searchedOnly) return queryLocalCatalog(input);
   return readCatalogue(() => api<CatalogResult>("/catalog", { body: input }), () => queryLocalCatalog(input));
 }
 
@@ -161,6 +168,9 @@ export function readCatalogQuery(raw: Record<string, string | string[] | undefin
     dealsOnly: defaults?.dealsOnly,
     wholesaleOnly: defaults?.wholesaleOnly,
     arrivalsOnly: defaults?.arrivalsOnly,
+    featuredOnly: defaults?.featuredOnly,
+    trendingOnly: defaults?.trendingOnly,
+    searchedOnly: defaults?.searchedOnly,
     bestSellersOnly: defaults?.bestSellersOnly,
     inStockOnly: first("stock") === "in" || defaults?.inStockOnly,
     outOfStockOnly: first("stock") === "out",
@@ -241,15 +251,18 @@ export async function getHomeData() {
     ? { products: data.bestSellers, ranked: true }
     : localBestSellers(sold);
   const daily = selectDailyDeals(data.deals, new Date());
+  const preview = <T,>(items: T[]) => items.slice(0, 5);
   return {
     ...data,
-    trending: trending.products,
+    featured: preview(data.featured),
+    arrivals: preview(data.arrivals),
+    trending: preview(trending.products),
     trendingRanked: trending.ranked,
-    searched: searched.products,
+    searched: preview(searched.products),
     searchedRanked: searched.ranked,
-    bestSellers: bestSellers.products,
+    bestSellers: preview(bestSellers.products),
     bestSellersRanked: bestSellers.ranked,
-    deals: daily.items,
+    deals: preview(daily.items),
     dealEndsAt: daily.endsAt,
   };
 }

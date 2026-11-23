@@ -65,6 +65,7 @@ export function rankTrending<T extends TrendCandidate>(
   products: T[],
   scores: Map<string, EngagementScore>,
   take = 8,
+  pad = true,
 ): { items: T[]; ranked: boolean } {
   const active = products.filter((product) => product.isActive);
   const engaged = active
@@ -85,7 +86,7 @@ export function rankTrending<T extends TrendCandidate>(
   if (engaged.length === 0) return { items: popularAvailable(active, take), ranked: false };
 
   const items = engaged.slice(0, take).map((row) => row.product);
-  if (items.length < take) {
+  if (pad && items.length < take) {
     const seen = new Set(items.map((product) => product.slug));
     for (const product of popularAvailable(active, take)) {
       if (items.length >= take) break;

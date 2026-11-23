@@ -11,6 +11,7 @@ export type CatalogInput = {
   dealsOnly?: boolean;
   wholesaleOnly?: boolean;
   arrivalsOnly?: boolean;
+  featuredOnly?: boolean;
   bestSellersOnly?: boolean;
   inStockOnly?: boolean;
   outOfStockOnly?: boolean;
@@ -101,6 +102,7 @@ export function queryCatalog(
     const since = Date.now() - NEW_ARRIVAL_DAYS * 24 * 60 * 60 * 1000;
     rows = rows.filter((product) => Date.parse(product.createdAt) >= since);
   }
+  if (input.featuredOnly) rows = rows.filter((product) => product.isFeatured);
   if (range.min != null) rows = rows.filter((product) => product.price >= range.min!);
   if (range.max != null) rows = rows.filter((product) => product.price <= range.max!);
   if (input.q) {

@@ -9,7 +9,6 @@ import { listInquiries, listInquiriesByType } from "@/lib/inquiry-store";
 const tabs = [
   { id: "welcome-leads", label: "Welcome Leads" },
   { id: "carts", label: "Abandoned Carts" },
-  { id: "coupons", label: "Coupons" },
   { id: "leads", label: "Leads" },
   { id: "unsubscribe", label: "Unsubscribe Email" },
 ];
@@ -31,7 +30,6 @@ export default async function BoostSalesPage({ searchParams }: { searchParams: P
       <div className="mt-6">
         {current === "welcome-leads" ? <WelcomeLeads /> : null}
         {current === "carts" ? <Carts /> : null}
-        {current === "coupons" ? <p className="text-sm">Coupon create, edit, and delete live on the coupons page. <Link className="font-semibold underline" href="/admin/coupons">Open coupons</Link></p> : null}
         {current === "leads" ? <Leads /> : null}
         {current === "unsubscribe" ? <Unsubscribe /> : null}
       </div>

@@ -11,6 +11,14 @@ import { absoluteUrl, site } from "@/lib/site";
 
 export const dynamic = "force-dynamic";
 
+function ViewAll({ href }: { href: string }) {
+  return (
+    <Link href={href} className={`${buttonClass("outline")} whitespace-nowrap px-3`}>
+      View all
+    </Link>
+  );
+}
+
 export const metadata: Metadata = {
   title: `${site.name} — ${site.tagline}`,
   description: site.description,
@@ -73,33 +81,49 @@ export default async function HomePage() {
 
       {data.trending.length > 0 ? (
         <Container className="pt-10 pb-8">
-          <SectionTitle id="trending" title="Trending products" />
+          <SectionTitle id="trending" title="Trending products" action={<ViewAll href="/trending" />} />
           <p className="mb-4 max-w-3xl text-base leading-7 text-muted">Products shoppers open most often. The order follows recorded page views, not a hand-picked list.</p>
-          <ProductGrid products={data.trending} priorityCount={2} />
+          <ProductGrid products={data.trending} priorityCount={2} layout="home" />
         </Container>
       ) : null}
 
       {data.featured.length > 0 ? (
         <Container className="pt-10 pb-8 [content-visibility:auto] [contain-intrinsic-size:auto_32rem]">
-          <SectionTitle id="featured" title="Featured products" action={<Link href="/shop" className="text-sm font-semibold text-forest-800">Shop all</Link>} />
+          <SectionTitle id="featured" title="Featured products" action={<ViewAll href="/featured" />} />
           <p className="mb-4 max-w-3xl text-base leading-7 text-muted">Highlights marked in the catalogue.</p>
-          <ProductGrid products={data.featured} />
+          <ProductGrid products={data.featured} layout="home" />
+        </Container>
+      ) : null}
+
+      {data.arrivals.length > 0 ? (
+        <Container className="pb-8 [content-visibility:auto] [contain-intrinsic-size:auto_32rem]">
+          <SectionTitle id="arrivals" title="New arrivals" action={<ViewAll href="/new-arrivals" />} />
+          <p className="mb-4 max-w-3xl text-base leading-7 text-muted">Products added to the catalogue in the last 90 days.</p>
+          <ProductGrid products={data.arrivals} layout="home" />
         </Container>
       ) : null}
 
       {data.searched.length > 0 ? (
         <Container className="pb-8 [content-visibility:auto] [contain-intrinsic-size:auto_32rem]">
-          <SectionTitle id="searched" title="Most searched products" action={<Link href="/search" className="text-sm font-semibold text-forest-800">Search</Link>} />
+          <SectionTitle id="searched" title="Most searched products" action={<ViewAll href="/most-searched" />} />
           <p className="mb-4 max-w-3xl text-base leading-7 text-muted">Products opened from search.</p>
-          <ProductGrid products={data.searched} />
+          <ProductGrid products={data.searched} layout="home" />
+        </Container>
+      ) : null}
+
+      {data.deals.length > 0 ? (
+        <Container className="pb-8 [content-visibility:auto] [contain-intrinsic-size:auto_32rem]">
+          <SectionTitle id="deals" title="Deals and offers" action={<ViewAll href="/deals" />} />
+          <p className="mb-4 max-w-3xl text-base leading-7 text-muted">Products whose selling price is lower than the compare-at price stored in the catalogue.</p>
+          <ProductGrid products={data.deals} layout="home" />
         </Container>
       ) : null}
 
       {data.bestSellers.length > 0 ? (
         <Container className="pb-8 [content-visibility:auto] [contain-intrinsic-size:auto_32rem]">
-          <SectionTitle id="trusted" title="Most trusted and best selling" action={<Link href="/best-sellers" className="text-sm font-semibold text-forest-800">View all</Link>} />
+          <SectionTitle id="trusted" title="Most trusted and best selling" action={<ViewAll href="/best-sellers" />} />
           <p className="mb-4 max-w-3xl text-base leading-7 text-muted">Products customers have ordered. Cancelled orders are left out.</p>
-          <ProductGrid products={data.bestSellers} />
+          <ProductGrid products={data.bestSellers} layout="home" />
         </Container>
       ) : null}
 
