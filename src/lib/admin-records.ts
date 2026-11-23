@@ -104,7 +104,7 @@ function fromDb(row: { id: string; kind: string; title: string; status: string; 
   };
 }
 
-async function usePrisma(): Promise<boolean> {
+async function prismaReady(): Promise<boolean> {
   if (!databaseConfigured()) {
     storeMode = "file";
     return false;
@@ -129,7 +129,7 @@ function readFile(): StoredRecord[] {
 }
 
 export async function listRecords(kind: string, take = 200): Promise<StoredRecord[]> {
-  if (await usePrisma()) {
+  if (await prismaReady()) {
     const rows = await prisma.adminRecord.findMany({ where: { kind }, orderBy: { createdAt: "desc" }, take });
     return rows.map(fromDb);
   }
@@ -139,7 +139,7 @@ export async function listRecords(kind: string, take = 200): Promise<StoredRecor
 export async function createRecord(kind: string, input: unknown): Promise<StoredRecord> {
   const parsed = parseAdminWrite(kind, input);
   const now = new Date();
-  if (await usePrisma()) {
+  if (await prismaReady()) {
     const row = await prisma.adminRecord.create({
       data: { kind, title: parsed.title, status: parsed.status, payload: JSON.stringify(parsed.payload) },
     });
@@ -184,7 +184,7 @@ export async function updateRecord(id: string, input: unknown): Promise<StoredRe
 }
 
 async function writeExisting(next: StoredRecord): Promise<StoredRecord> {
-  if (await usePrisma()) {
+  if (await prismaReady()) {
     const row = await prisma.adminRecord.update({
       where: { id: next.id },
       data: { title: next.title, status: next.status, payload: JSON.stringify(next.payload) },
@@ -212,7 +212,7 @@ export async function deleteRecord(id: string): Promise<void> {
     (error as Error & { status?: number }).status = 400;
     throw error;
   }
-  if (await usePrisma()) {
+  if (await prismaReady()) {
     await prisma.adminRecord.delete({ where: { id } });
     return;
   }
@@ -225,7 +225,7 @@ export async function deleteRecord(id: string): Promise<void> {
 }
 
 async function findRecord(id: string): Promise<StoredRecord | null> {
-  if (await usePrisma()) {
+  if (await prismaReady()) {
     const row = await prisma.adminRecord.findUnique({ where: { id } });
     return row ? fromDb(row) : null;
   }
@@ -239,7 +239,7 @@ export async function readSingleton(kind: string): Promise<Record<string, unknow
 
 export async function saveSingleton(kind: string, title: string, payload: Record<string, unknown>): Promise<void> {
   const body = JSON.stringify(payload);
-  if (await usePrisma()) {
+  if (await prismaReady()) {
     const existing = await prisma.adminRecord.findFirst({ where: { kind }, orderBy: { createdAt: "asc" } });
     if (existing) {
       await prisma.adminRecord.update({ where: { id: existing.id }, data: { title, payload: body, status: "active" } });
@@ -271,7 +271,7 @@ export async function holdCart(input: { email: string; name: string; phone: stri
     return;
   }
   const now = new Date().toISOString();
-  if (await usePrisma()) {
+  if (await prismaReady()) {
     await prisma.adminRecord.create({ data: { kind: "cart", title: email, status: "open", payload: JSON.stringify(payload) } });
     return;
   }
@@ -299,7 +299,7 @@ export async function recordVisit(input: { path: string; sessionId: string; devi
     country: cleanCountry(input.country),
   };
   if (databaseConfigured()) {
-    if (!(await usePrisma())) throw storageError("Visitor storage is not ready.", 503);
+    if (!(await prismaReady())) throw storageError("Visitor storage is not ready.", 503);
     const recent = await prisma.adminRecord.findFirst({ where: { kind: "visit", title: clean }, orderBy: { createdAt: "desc" } });
     if (recent && Date.now() - recent.createdAt.getTime() < 1500 && asPayload(recent.payload).sessionId === payload.sessionId) return;
     await prisma.adminRecord.create({ data: { kind: "visit", title: clean, status: "seen", payload: JSON.stringify(payload) } });
