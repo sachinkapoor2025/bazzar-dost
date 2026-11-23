@@ -7,7 +7,21 @@ import { listLocalOrders } from "@/lib/local-orders";
 export default async function AdminCustomersPage({ searchParams }: { searchParams: Promise<{ q?: string }> }) {
   const q = (await searchParams).q?.trim() || "";
   const needle = q.toLowerCase();
-  const customers = databaseConfigured()
+  const localCustomers = listLocalCustomers()
+    .filter((customer) => !needle || [customer.name, customer.email, customer.phone].some((value) => value.toLowerCase().includes(needle)))
+    .map((customer) => {
+      const orders = listLocalOrders().filter((order) => order.status !== "cancelled" && (order.userId === customer.id || order.email.toLowerCase() === customer.email.toLowerCase()));
+      return {
+        id: customer.id,
+        name: customer.name,
+        email: customer.email,
+        phone: customer.phone,
+        createdAt: customer.createdAt ?? new Date(0),
+        orders: orders.map((order) => ({ total: order.total })),
+        _count: { orders: orders.length },
+      };
+    });
+  const storedCustomers = databaseConfigured()
     ? await readDatabase([], (client) => client.user.findMany({
     where: {
       role: "customer",
@@ -28,20 +42,8 @@ export default async function AdminCustomersPage({ searchParams }: { searchParam
       _count: { select: { orders: true } },
     },
   }))
-    : listLocalCustomers()
-      .filter((customer) => !needle || [customer.name, customer.email, customer.phone].some((value) => value.toLowerCase().includes(needle)))
-      .map((customer) => {
-        const orders = listLocalOrders().filter((order) => order.status !== "cancelled" && (order.userId === customer.id || order.email.toLowerCase() === customer.email.toLowerCase()));
-        return {
-          id: customer.id,
-          name: customer.name,
-          email: customer.email,
-          phone: customer.phone,
-          createdAt: customer.createdAt ?? new Date(0),
-          orders: orders.map((order) => ({ total: order.total })),
-          _count: { orders: orders.length },
-        };
-      });
+    : [];
+  const customers = storedCustomers.length > 0 ? storedCustomers : localCustomers;
   return (
     <div>
       <div className="flex flex-wrap items-center justify-between gap-3">

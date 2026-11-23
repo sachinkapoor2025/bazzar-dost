@@ -236,6 +236,80 @@ export function setLocalStock(productId: string, variantId: string | null, stock
   return changeLocalStock(productId, null, stock - product.stock);
 }
 
+function unitsInStock(product: HydratedProduct) {
+  return product.variants.length ? product.variants.reduce((sum, variant) => sum + variant.stock, 0) : product.stock;
+}
+
+export function listAdminCatalogueProducts(input: {
+  q?: string;
+  category?: string;
+  active?: string;
+  stock?: string;
+  sort?: string;
+  page: number;
+  pageSize: number;
+}) {
+  const needle = input.q?.trim().toLowerCase() || "";
+  const byId = new Map(catalogue.categories.map((category) => [category.id, category]));
+  const rows = catalogue.products.filter((product) => {
+    const category = byId.get(product.categoryId);
+    if (needle && !`${product.name} ${product.sku} ${category?.name || ""}`.toLowerCase().includes(needle)) return false;
+    if (input.category && category?.slug !== input.category) return false;
+    if (input.active === "yes" && !product.isActive) return false;
+    if (input.active === "no" && product.isActive) return false;
+    const stock = unitsInStock(product);
+    if (input.stock === "out" && stock !== 0) return false;
+    if (input.stock === "low" && !(stock > 0 && stock <= 5)) return false;
+    return true;
+  });
+  const sort = input.sort || "name";
+  rows.sort((a, b) => {
+    if (sort === "price-asc") return a.price - b.price || a.name.localeCompare(b.name);
+    if (sort === "price-desc") return b.price - a.price || a.name.localeCompare(b.name);
+    if (sort === "stock") return unitsInStock(a) - unitsInStock(b) || a.name.localeCompare(b.name);
+    if (sort === "newest") return Date.parse(b.createdAt) - Date.parse(a.createdAt);
+    return a.name.localeCompare(b.name);
+  });
+  const start = (Math.max(1, input.page) - 1) * input.pageSize;
+  return {
+    categories: [...byId.values()].map((category) => ({ slug: category.slug, name: category.name })).sort((a, b) => a.name.localeCompare(b.name)),
+    total: rows.length,
+    products: rows.slice(start, start + input.pageSize).map((product) => ({
+      id: product.id,
+      name: product.name,
+      sku: product.sku,
+      category: byId.get(product.categoryId)?.name || "",
+      price: product.price,
+      compareAtPrice: product.compareAtPrice,
+      stock: unitsInStock(product),
+      active: product.isActive,
+    })),
+  };
+}
+
+export function listAdminCatalogueCategories(query = "") {
+  const needle = query.trim().toLowerCase();
+  const categories = catalogue.categories
+    .filter((category) => !needle || category.name.toLowerCase().includes(needle) || category.slug.includes(needle))
+    .sort((a, b) => a.sortOrder - b.sortOrder || a.name.localeCompare(b.name))
+    .map((category) => ({
+      ...category,
+      _count: { products: catalogue.products.filter((product) => product.categoryId === category.id).length },
+    }));
+  const parents = catalogue.categories
+    .map((category) => ({ id: category.id, name: category.name }))
+    .sort((a, b) => a.name.localeCompare(b.name));
+  return { categories, parents };
+}
+
+export function listCatalogueFeaturedChoices(take = 80) {
+  return catalogue.products
+    .filter((product) => product.isActive)
+    .sort((a, b) => a.name.localeCompare(b.name))
+    .slice(0, take)
+    .map((product) => ({ id: product.id, name: product.name, isFeatured: product.isFeatured }));
+}
+
 export function localInventory(query: string, take = 200) {
   const needle = query.trim().toLowerCase();
   return catalogue.products

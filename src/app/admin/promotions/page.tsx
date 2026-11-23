@@ -1,12 +1,14 @@
 import { FeaturedToggle } from "@/components/featured-toggle";
 import { PromotionManager } from "@/components/promo-forms";
-import { readDatabase } from "@/lib/db";
+import { databaseHasProducts, readDatabase } from "@/lib/db";
+import { listCatalogueFeaturedChoices } from "@/lib/local-catalogue";
 
 export default async function PromotionsPage() {
-  const [items, featured] = await readDatabase([[], []] as const, (client) => Promise.all([
+  const [items, storedFeatured] = await readDatabase([[], []] as const, (client) => Promise.all([
     client.promotion.findMany({ orderBy: { createdAt: "desc" } }),
     client.product.findMany({ where: { isActive: true }, orderBy: { name: "asc" }, select: { id: true, name: true, isFeatured: true }, take: 80 }),
   ]));
+  const featured = storedFeatured.length > 0 || (await databaseHasProducts()) ? storedFeatured : listCatalogueFeaturedChoices();
   return (
     <div>
       <h1 className="mb-2 font-display text-4xl">Website content</h1>

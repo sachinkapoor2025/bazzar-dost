@@ -5,12 +5,15 @@ import { listProductReviews } from "@/lib/local-reviews";
 export const dynamic = "force-dynamic";
 
 export default async function AdminReviewsPage() {
-  const reviews = databaseConfigured()
+  const storedReviews = databaseConfigured()
     ? await readDatabase([], (client) => client.productReview.findMany({
         orderBy: { createdAt: "desc" },
         take: 100,
         include: { user: { select: { name: true, email: true } } },
       }))
+    : [];
+  const reviews = storedReviews.length > 0
+    ? storedReviews
     : listProductReviews().slice(0, 100).map((review) => ({
         id: review.id,
         productSlug: review.productSlug,

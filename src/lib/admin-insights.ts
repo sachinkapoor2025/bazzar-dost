@@ -2,7 +2,7 @@ import "server-only";
 import { listRecords } from "@/lib/admin-records";
 import { parseAdminRange } from "@/lib/admin-range";
 import { summarizeVisits, type VisitPoint } from "@/lib/visit-report";
-import { databaseConfigured, readDatabase } from "@/lib/db";
+import { databaseConfigured, databaseHasProducts, readDatabase } from "@/lib/db";
 import { loadEngagementScores } from "@/lib/engagement";
 import { localQuery } from "@/lib/local-catalogue";
 import { listLocalOrders } from "@/lib/local-orders";
@@ -75,7 +75,7 @@ export async function loadProductSales(query = ""): Promise<SaleRow[]> {
   }
 
   let rows: SaleRow[] = [];
-  if (databaseConfigured()) {
+  if (await databaseHasProducts()) {
     const products = await readDatabase([], (client) => client.product.findMany({
       where: { isActive: true },
       select: { id: true, slug: true, name: true, sku: true, stock: true, viewCount: true, category: { select: { name: true } } },

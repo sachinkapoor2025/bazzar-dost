@@ -25,6 +25,11 @@ export function isUniqueConstraint(error: unknown): boolean {
   return typeof error === "object" && error !== null && "code" in error && (error as { code?: string }).code === "P2002";
 }
 
+export async function databaseHasProducts(): Promise<boolean> {
+  const count = await readDatabase(0, (client) => client.product.count());
+  return count > 0;
+}
+
 export async function readDatabase<T>(fallback: T, read: (client: PrismaClient) => Promise<T>): Promise<T> {
   if (!databaseConfigured()) return fallback;
   try {
