@@ -5,7 +5,7 @@ import { absoluteUrl } from "@/lib/site";
 export function Breadcrumbs({ items }: { items: Array<{ name: string; href?: string }> }) {
   return (
     <nav aria-label="Breadcrumb" className="mb-4 text-sm text-muted">
-      <ol className="flex flex-wrap items-center gap-2">
+      <ol className="flex flex-wrap items-center gap-x-2 gap-y-1 break-words">
         {items.map((item, index) => (
           <li key={`${item.name}-${index}`} className="flex items-center gap-2">
             {index > 0 ? <span aria-hidden="true">/</span> : null}

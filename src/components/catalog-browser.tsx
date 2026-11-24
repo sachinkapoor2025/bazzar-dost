@@ -31,7 +31,7 @@ export async function CatalogBrowser({
   return (
     <Container className="py-6">
       {crumbs ? <Breadcrumbs items={crumbs} /> : null}
-      <h1 className="font-display text-4xl text-forest-900">{title}</h1>
+      <h1 className="font-display text-3xl leading-tight text-forest-900 sm:text-4xl">{title}</h1>
       {intro ? (
         <div className="mt-3 max-w-3xl space-y-3 text-base leading-7 text-muted">
           {typeof intro === "string" ? <p>{intro}</p> : intro}

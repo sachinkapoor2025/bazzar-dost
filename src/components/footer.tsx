@@ -15,7 +15,7 @@ export function Footer({ categories }: { categories: CategoryLink[] }) {
         </div>
         <div>
           <h2 className="font-semibold text-gold-400">Shop</h2>
-          <ul className="mt-3 space-y-2 text-sm">
+          <ul className="mt-3 space-y-1 text-sm">
             <li><Link href="/shop">Shop all</Link></li>
             <li><Link href="/deals">Deals and offers</Link></li>
             <li><Link href="/new-arrivals">New arrivals</Link></li>
@@ -28,7 +28,7 @@ export function Footer({ categories }: { categories: CategoryLink[] }) {
         </div>
         <div>
           <h2 className="font-semibold text-gold-400">Help</h2>
-          <ul className="mt-3 space-y-2 text-sm">
+          <ul className="mt-3 space-y-1 text-sm">
             <li><Link href="/account">My account</Link></li>
             <li><Link href="/track">Track an order</Link></li>
             <li><Link href="/about">About</Link></li>

@@ -49,8 +49,9 @@ function LocationButton() {
 
   return (
     <>
-      <button type="button" className="inline-flex h-10 max-w-[9.5rem] items-center truncate rounded-full border border-cream-300 bg-white px-3 text-sm font-semibold text-forest-900 hover:border-forest-800 sm:max-w-[14rem]" onClick={openDialog}>
-        <span className="truncate">{location ? `Deliver to ${location.city}` : "Select delivery location"}</span>
+      <button type="button" className="inline-flex h-10 max-w-[9rem] items-center truncate rounded-full border border-cream-300 bg-white px-3 text-sm font-semibold text-forest-900 hover:border-forest-800 sm:max-w-[14rem]" onClick={openDialog}>
+        <span className="truncate sm:hidden">{location ? location.city : "Delivery"}</span>
+        <span className="hidden truncate sm:inline">{location ? `Deliver to ${location.city}` : "Select delivery location"}</span>
       </button>
       {open ? (
         <div className="fixed inset-0 z-50 grid place-items-center bg-forest-950/50 p-4" role="presentation" onClick={() => setOpen(false)}>

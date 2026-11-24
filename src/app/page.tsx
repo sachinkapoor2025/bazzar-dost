@@ -61,7 +61,7 @@ export default async function HomePage() {
           ],
         }}
       />
-      <section className="relative isolate min-h-[24rem] overflow-hidden bg-forest-950 text-cream-50 sm:min-h-[32rem] lg:min-h-[40rem]">
+      <section className="home-banner relative isolate flex flex-col justify-end overflow-hidden bg-forest-950 text-cream-50">
         <div className="pointer-events-none absolute inset-0" aria-hidden="true">
           <picture>
             <source media="(max-width: 639px)" srcSet="/media/hero-mobile.jpg" />
@@ -69,13 +69,13 @@ export default async function HomePage() {
           </picture>
           <div className="absolute inset-0 bg-gradient-to-r from-forest-950 via-forest-950/88 to-forest-950/45" />
         </div>
-        <Container className="relative flex min-h-[24rem] flex-col justify-end gap-6 py-12 sm:min-h-[32rem] sm:py-16 lg:min-h-[40rem] lg:py-20">
+        <Container className="relative flex h-full min-h-0 flex-col justify-end gap-3 py-5 sm:gap-4 sm:py-8">
           <div className="max-w-4xl">
-            <p className="text-sm font-semibold uppercase tracking-[0.16em] text-gold-400">{site.tagline}</p>
-            <h1 className="mt-3 font-display text-4xl leading-tight sm:text-6xl lg:text-7xl">Practical products for home and everyday use.</h1>
-            <p className="mt-5 max-w-2xl text-lg leading-8 text-cream-100">Kitchen tools, personal care, phone accessories, toys, bags, and outdoor items from the current catalogue. Each price and stock count is the one stored for that product.</p>
+            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-gold-400 sm:text-sm">{site.tagline}</p>
+            <h1 className="mt-2 font-display text-3xl leading-tight sm:text-5xl lg:text-6xl">Practical products for home and everyday use.</h1>
+            <p className="mt-3 line-clamp-3 max-w-2xl text-sm leading-6 text-cream-100 sm:line-clamp-4 sm:text-base sm:leading-7">Kitchen tools, personal care, phone accessories, toys, bags, and outdoor items from the current catalogue. Each price and stock count is the one stored for that product.</p>
           </div>
-          <Link href="/shop" className={`${buttonClass("gold")} w-fit px-8 py-3 text-base`}>Shop now</Link>
+          <Link href="/shop" className={`${buttonClass("gold")} w-fit px-6 py-2.5 text-sm sm:px-8 sm:py-3 sm:text-base`}>Shop now</Link>
         </Container>
       </section>
 

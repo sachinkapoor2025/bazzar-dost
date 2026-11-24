@@ -17,7 +17,7 @@ export default async function CheckoutPage({ searchParams }: { searchParams: Pro
     : [];
   return (
     <Container className="py-6">
-      <h1 className="mb-2 font-display text-4xl text-forest-900">Checkout</h1>
+      <h1 className="mb-2 font-display text-3xl leading-tight text-forest-900 sm:text-4xl">Checkout</h1>
       <p className="mb-4 max-w-3xl text-base leading-7 text-muted">{user ? `Signed in as ${user.email}. Saved addresses for this account can be used below.` : "You can check out as a guest, or sign in to use saved addresses."} The cart total is checked again here, shipping is added before you place the order, and payment is cash on delivery. The form needs a full name, mobile number, street, city, state, and a 6-digit PIN code. Placing the order once reserves the available stock.</p>
       <CheckoutForm mode={params.mode === "now" ? "now" : "cart"} user={user} addresses={addresses} />
     </Container>
