@@ -36,6 +36,13 @@ function publicAddress(row: StoredAddress): SavedAddress {
   };
 }
 
+export function listStoredAddresses(userId: string): SavedAddress[] {
+  return readJsonArray<StoredAddress>(FILE)
+    .filter((row) => row.userId === userId)
+    .sort((a, b) => Number(b.isDefault) - Number(a.isDefault))
+    .map(publicAddress);
+}
+
 export async function listAddresses(userId: string): Promise<SavedAddress[]> {
   if (databaseConfigured()) {
     const rows = await prisma.address.findMany({ where: { userId }, orderBy: [{ isDefault: "desc" }, { id: "asc" }] });
@@ -52,10 +59,7 @@ export async function listAddresses(userId: string): Promise<SavedAddress[]> {
       isDefault: row.isDefault,
     }));
   }
-  return readJsonArray<StoredAddress>(FILE)
-    .filter((row) => row.userId === userId)
-    .sort((a, b) => Number(b.isDefault) - Number(a.isDefault))
-    .map(publicAddress);
+  return listStoredAddresses(userId);
 }
 
 export async function createAddress(userId: string, input: Omit<SavedAddress, "id">): Promise<SavedAddress[] | null> {

@@ -2,7 +2,7 @@ import "server-only";
 import { listRecords } from "@/lib/admin-records";
 import { parseAdminRange } from "@/lib/admin-range";
 import { summarizeVisits, type VisitPoint } from "@/lib/visit-report";
-import { databaseConfigured, databaseHasProducts, readDatabase } from "@/lib/db";
+import { databaseHasOrders, databaseHasProducts, readDatabase } from "@/lib/db";
 import { loadEngagementScores } from "@/lib/engagement";
 import { localQuery } from "@/lib/local-catalogue";
 import { listLocalOrders } from "@/lib/local-orders";
@@ -33,7 +33,7 @@ type OrderSlice = {
 };
 
 async function loadOrders(): Promise<OrderSlice[]> {
-  if (!databaseConfigured()) {
+  if (!(await databaseHasOrders())) {
     return listLocalOrders().map((order) => ({
       ...order,
       createdAt: new Date(order.createdAt),

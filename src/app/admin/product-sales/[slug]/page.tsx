@@ -1,19 +1,17 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { databaseConfigured, readDatabase } from "@/lib/db";
+import { databaseHasOrders, readDatabase } from "@/lib/db";
 import { formatDate, formatINR } from "@/lib/format";
 import { localProduct } from "@/lib/local-catalogue";
 import { listLocalOrders } from "@/lib/local-orders";
 
 export default async function ProductSaleDetailPage({ params }: { params: Promise<{ slug: string }> }) {
   const slug = (await params).slug;
-  const stored = databaseConfigured()
-    ? await readDatabase(null, (client) => client.product.findUnique({ where: { slug }, select: { id: true, name: true, sku: true, slug: true } }))
-    : null;
+  const stored = await readDatabase(null, (client) => client.product.findUnique({ where: { slug }, select: { id: true, name: true, sku: true, slug: true } }));
   const local = stored ? null : localProduct(slug);
   const product = stored || (local ? { id: local.id, name: local.name, sku: local.sku, slug: local.slug } : null);
   if (!product) notFound();
-  const orders = databaseConfigured()
+  const orders = (await databaseHasOrders())
     ? await readDatabase([], (client) => client.order.findMany({
         where: { items: { some: { productId: product.id } }, status: { not: "cancelled" } },
         orderBy: { createdAt: "desc" },

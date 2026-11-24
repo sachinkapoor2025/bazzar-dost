@@ -14,6 +14,7 @@ import type { Category, HydratedProduct } from "../../apps/api/src/lib/types";
 import { categories as starterCategories } from "../../apps/api/src/starter-catalog";
 import shopifyCatalogueJson from "@/data/shopify-catalogue.json";
 import { MAX_LINE_QTY, PAGE_SIZE, sellingPrice } from "@/lib/commerce";
+import { productSchema } from "@/lib/validators";
 import { displayImages, duplicateListingIds, isLoadableProductImage } from "@/lib/product-images";
 import { rankBestSellers, rankMostSearched, rankTrending, type EngagementScore } from "@/lib/trending";
 
@@ -203,8 +204,153 @@ function applyStockOverlay() {
 
 applyStockOverlay();
 
+type ProductOverride = {
+  name?: string;
+  slug?: string;
+  sku?: string;
+  description?: string;
+  shortDescription?: string;
+  price?: number;
+  compareAtPrice?: number | null;
+  categoryId?: string;
+  specifications?: string;
+  isActive?: boolean;
+  isFeatured?: boolean;
+  wholesaleEligible?: boolean;
+  minOrderQty?: number | null;
+  wholesalePrice?: number | null;
+  images?: Array<{ url: string; alt: string }>;
+  variants?: Array<{ name: string; sku: string; price: number | null; stock: number }>;
+};
+
+const OVERRIDE_FILE = path.join(process.cwd(), "data", "product-overrides.json");
+
+function readProductOverrides(): Record<string, ProductOverride> {
+  try {
+    const parsed = JSON.parse(fs.readFileSync(OVERRIDE_FILE, "utf8")) as unknown;
+    if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) return {};
+    return parsed as Record<string, ProductOverride>;
+  } catch (error) {
+    const code = typeof error === "object" && error && "code" in error ? (error as { code?: string }).code : "";
+    if (code !== "ENOENT") console.error(error);
+    return {};
+  }
+}
+
+function writeProductOverrides(overrides: Record<string, ProductOverride>) {
+  fs.mkdirSync(path.dirname(OVERRIDE_FILE), { recursive: true });
+  const tmp = `${OVERRIDE_FILE}.tmp`;
+  fs.writeFileSync(tmp, JSON.stringify(overrides));
+  fs.copyFileSync(tmp, OVERRIDE_FILE);
+  fs.unlinkSync(tmp);
+}
+
+function applyOverride(product: HydratedProduct, patch: ProductOverride) {
+  if (patch.name != null) product.name = patch.name;
+  if (patch.slug != null) product.slug = patch.slug;
+  if (patch.sku != null) product.sku = patch.sku;
+  if (patch.description != null) product.description = patch.description;
+  if (patch.shortDescription != null) product.shortDescription = patch.shortDescription;
+  if (patch.price != null) product.price = patch.price;
+  if (patch.compareAtPrice !== undefined) product.compareAtPrice = patch.compareAtPrice;
+  if (patch.specifications != null) product.specifications = patch.specifications;
+  if (typeof patch.isActive === "boolean") product.isActive = patch.isActive;
+  if (typeof patch.isFeatured === "boolean") product.isFeatured = patch.isFeatured;
+  if (typeof patch.wholesaleEligible === "boolean") product.wholesaleEligible = patch.wholesaleEligible;
+  if (patch.minOrderQty !== undefined) product.minOrderQty = patch.minOrderQty;
+  if (patch.wholesalePrice !== undefined) product.wholesalePrice = patch.wholesalePrice;
+  if (patch.categoryId) {
+    product.categoryId = patch.categoryId;
+    const category = catalogue.categories.find((item) => item.id === patch.categoryId);
+    if (category) product.category = categoryView(category, catalogue.categories);
+  }
+  if (patch.images) {
+    product.images = patch.images.map((image, index) => ({
+      id: product.images[index]?.id || `img_${product.slug}_${index}`,
+      url: image.url,
+      alt: image.alt || product.name,
+      sortOrder: index,
+    }));
+  }
+  if (patch.variants) {
+    product.variants = patch.variants.map((variant, index) => ({
+      id: product.variants.find((item) => item.sku === variant.sku)?.id || product.variants[index]?.id || `var_${variant.sku || index}`,
+      name: variant.name,
+      sku: variant.sku,
+      price: variant.price,
+      stock: variant.stock,
+      image: "",
+    }));
+    product.stock = product.variants.length ? 0 : product.stock;
+  }
+}
+
+function applyProductOverrides() {
+  const overrides = readProductOverrides();
+  for (const product of catalogue.products) {
+    const patch = overrides[product.id];
+    if (patch) applyOverride(product, patch);
+  }
+}
+
+applyProductOverrides();
+
 export function findLocalProduct(id: string) {
   return catalogue.products.find((product) => product.id === id) ?? null;
+}
+
+export function setLocalProductFlags(id: string, patch: { isActive?: boolean; isFeatured?: boolean }): boolean {
+  const product = findLocalProduct(id);
+  if (!product) return false;
+  const overrides = readProductOverrides();
+  const current = overrides[id] || {};
+  if (typeof patch.isActive === "boolean") current.isActive = patch.isActive;
+  if (typeof patch.isFeatured === "boolean") current.isFeatured = patch.isFeatured;
+  overrides[id] = current;
+  writeProductOverrides(overrides);
+  applyOverride(product, current);
+  return true;
+}
+
+export function updateLocalProduct(id: string, input: unknown): { id: string } | null {
+  const product = findLocalProduct(id);
+  if (!product) return null;
+  const parsed = productSchema.parse(input);
+  const patch: ProductOverride = {
+    name: parsed.name,
+    slug: parsed.slug,
+    sku: parsed.sku,
+    description: parsed.description,
+    shortDescription: parsed.shortDescription || "",
+    price: parsed.price,
+    compareAtPrice: parsed.compareAtPrice ?? null,
+    categoryId: parsed.categoryId,
+    specifications: JSON.stringify(parsed.specifications.map((pair) => ({ label: pair.label, value: pair.value }))),
+    isActive: parsed.isActive,
+    isFeatured: parsed.isFeatured,
+    wholesaleEligible: parsed.wholesaleEligible,
+    minOrderQty: parsed.wholesaleEligible ? parsed.minOrderQty ?? null : null,
+    wholesalePrice: parsed.wholesaleEligible ? parsed.wholesalePrice ?? null : null,
+    images: (parsed.images.length ? parsed.images : product.images.map((image) => ({ url: image.url, alt: image.alt }))).map((image) => ({
+      url: image.url,
+      alt: image.alt || parsed.name,
+    })),
+    variants: parsed.variants.map((variant) => ({ name: variant.name, sku: variant.sku, price: variant.price ?? null, stock: variant.stock })),
+  };
+  const overrides = readProductOverrides();
+  overrides[id] = patch;
+  writeProductOverrides(overrides);
+  applyOverride(product, patch);
+  const stock = readStockOverlay();
+  if (product.variants.length === 0) {
+    product.stock = parsed.stock;
+    stock[product.id] = parsed.stock;
+  } else {
+    product.stock = 0;
+    for (const variant of product.variants) stock[variant.id] = variant.stock;
+  }
+  writeStockOverlay(stock);
+  return { id: product.id };
 }
 
 export function changeLocalStock(productId: string, variantId: string | null, delta: number): boolean {

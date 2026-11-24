@@ -2,17 +2,16 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { OrderStatusForm } from "@/components/admin-managers";
 import { OrderDetail, toOrderView } from "@/components/order-detail";
-import { databaseConfigured, readDatabase } from "@/lib/db";
+import { databaseHasOrders, readDatabase } from "@/lib/db";
 import { datedOrder, listLocalOrders } from "@/lib/local-orders";
 
 export default async function AdminOrderPage({ params }: { params: Promise<{ id: string }> }) {
   const id = (await params).id;
-  const order = databaseConfigured()
+  const stored = (await databaseHasOrders())
     ? await readDatabase(null, (client) => client.order.findUnique({ where: { id }, include: { items: true } }))
-    : (() => {
-        const stored = listLocalOrders().find((item) => item.id === id);
-        return stored ? datedOrder(stored) : null;
-      })();
+    : null;
+  const local = stored ? null : listLocalOrders().find((item) => item.id === id);
+  const order = stored || (local ? datedOrder(local) : null);
   if (!order) notFound();
   return (
     <div>

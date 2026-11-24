@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { databaseConfigured, readDatabase } from "@/lib/db";
+import { databaseHasOrders, readDatabase } from "@/lib/db";
 import { datedOrder, listLocalOrders } from "@/lib/local-orders";
 import { formatDate, formatINR } from "@/lib/format";
 import { ORDER_STATUS_VALUES, orderStatusLabel } from "@/lib/order-progress";
@@ -24,7 +24,7 @@ export default async function AdminOrdersPage({ searchParams }: { searchParams: 
       lte: params.to ? new Date(`${params.to}T23:59:59.999`) : undefined,
     };
   }
-  const orders = databaseConfigured()
+  const orders = (await databaseHasOrders())
     ? await readDatabase([], (client) => client.order.findMany({ where, orderBy: { createdAt: "desc" }, take: 200 }))
     : listLocalOrders().filter((order) => {
         if (params.status && statuses.includes(params.status) && order.status !== params.status) return false;

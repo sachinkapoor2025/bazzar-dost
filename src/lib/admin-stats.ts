@@ -1,7 +1,9 @@
 import "server-only";
 import { readDatabase } from "@/lib/db";
 import { dayKey, parseAdminRange } from "@/lib/admin-range";
+import { listLocalCustomers } from "@/lib/account-store";
 import { localActiveProductCount, localLowStock } from "@/lib/local-catalogue";
+import { listLocalOrders } from "@/lib/local-orders";
 
 const LOW_STOCK = 5;
 
@@ -56,6 +58,61 @@ export async function loadAdminOverview(input: { range?: string; from?: string; 
       sku: product.sku,
       stock: product.variants.length ? Math.min(...product.variants.map((variant) => variant.stock)) : product.stock,
       variants: product.variants.map((variant) => ({ stock: variant.stock })),
+    }));
+  }
+  if (orders.length === 0) {
+    const inRange = listLocalOrders().filter((order) => {
+      const created = new Date(order.createdAt);
+      return created >= start && created <= end;
+    });
+    if (inRange.length > 0) {
+      orders = inRange.map((order) => ({
+        id: order.id,
+        orderNumber: order.orderNumber,
+        name: order.name,
+        email: order.email,
+        status: order.status,
+        paymentStatus: order.paymentStatus,
+        total: order.total,
+        createdAt: new Date(order.createdAt),
+      }));
+      recentOrders = listLocalOrders().slice(0, 8).map((order) => ({
+        id: order.id,
+        orderNumber: order.orderNumber,
+        name: order.name,
+        status: order.status,
+        total: order.total,
+        createdAt: new Date(order.createdAt),
+      }));
+      const qty = new Map<string, { productId: string | null; name: string; qty: number }>();
+      for (const order of inRange) {
+        if (order.status === "cancelled") continue;
+        for (const item of order.items) {
+          const key = `${item.productId || ""}:${item.name}`;
+          const current = qty.get(key) || { productId: item.productId, name: item.name, qty: 0 };
+          current.qty += item.qty;
+          qty.set(key, current);
+        }
+      }
+      sold = [...qty.values()].sort((a, b) => b.qty - a.qty).slice(0, 8).map((item) => ({
+        productId: item.productId,
+        name: item.name,
+        _sum: { qty: item.qty },
+      }));
+    }
+  }
+  if (customerCount === 0) {
+    const customers = listLocalCustomers();
+    customerCount = customers.length;
+    const localOrders = listLocalOrders();
+    recentCustomers = customers.slice(0, 6).map((customer) => ({
+      id: customer.id,
+      name: customer.name,
+      email: customer.email,
+      createdAt: customer.createdAt ?? new Date(0),
+      _count: {
+        orders: localOrders.filter((order) => order.userId === customer.id || order.email.toLowerCase() === customer.email.toLowerCase()).length,
+      },
     }));
   }
 

@@ -19,15 +19,15 @@ export default async function ReportsPage({ searchParams }: { searchParams: Prom
       </div>
       <dl className="mt-5 grid grid-cols-2 gap-3 md:grid-cols-4">
         {[
-          ["Sales", formatINR(data.totals.revenue)],
-          ["Orders", data.totals.orders],
-          ["Delivered", data.totals.completed],
-          ["Cancelled", data.totals.cancelled],
-        ].map(([label, value]) => (
-          <div key={String(label)} className="rounded-2xl bg-white p-4">
+          ["Sales", formatINR(data.totals.revenue), "/admin/orders"],
+          ["Orders", data.totals.orders, "/admin/orders"],
+          ["Delivered", data.totals.completed, "/admin/orders?status=delivered"],
+          ["Cancelled", data.totals.cancelled, "/admin/orders?status=cancelled"],
+        ].map(([label, value, href]) => (
+          <Link key={String(label)} href={String(href)} className="rounded-2xl bg-white p-4 transition hover:ring-1 hover:ring-forest-800">
             <dt className="text-sm text-muted">{label}</dt>
             <dd className="font-display text-3xl">{value}</dd>
-          </div>
+          </Link>
         ))}
       </dl>
       <h2 className="mt-6 font-display text-2xl">Daily orders</h2>

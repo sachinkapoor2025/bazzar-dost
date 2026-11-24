@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { UserDeleteButton } from "@/components/user-delete-button";
 import { listLocalCustomers } from "@/lib/account-store";
-import { databaseConfigured, readDatabase } from "@/lib/db";
+import { databaseConfigured, databaseHasUsers, readDatabase } from "@/lib/db";
 import { formatDate } from "@/lib/format";
 
 export default async function UsersPage({ searchParams }: { searchParams: Promise<{ q?: string; role?: string }> }) {
@@ -9,7 +9,7 @@ export default async function UsersPage({ searchParams }: { searchParams: Promis
   const q = params.q?.trim() || "";
   const role = params.role === "admin" || params.role === "customer" ? params.role : "";
   const needle = q.toLowerCase();
-  const users = databaseConfigured()
+  const users = (await databaseHasUsers())
     ? await readDatabase([], (client) => client.user.findMany({
         where: {
           ...(role ? { role } : {}),

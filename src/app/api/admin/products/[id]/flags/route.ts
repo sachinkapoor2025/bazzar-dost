@@ -1,8 +1,9 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { requireAdmin } from "@/lib/auth";
-import { prisma } from "@/lib/db";
+import { databaseHasProducts, prisma } from "@/lib/db";
 import { errorResponse } from "@/lib/http";
+import { setLocalProductFlags } from "@/lib/local-catalogue";
 
 const schema = z.object({
   isFeatured: z.boolean().optional(),
@@ -13,8 +14,13 @@ export async function PATCH(request: Request, context: { params: Promise<{ id: s
   try {
     await requireAdmin();
     const body = schema.parse(await request.json());
-    const updated = await prisma.product.updateMany({ where: { id: (await context.params).id }, data: body });
-    if (updated.count !== 1) return NextResponse.json({ error: "Product not found." }, { status: 404 });
+    const id = (await context.params).id;
+    if (!(await databaseHasProducts())) {
+      if (!setLocalProductFlags(id, body)) return NextResponse.json({ error: "Product not found." }, { status: 404 });
+      return NextResponse.json({ message: "Product updated." });
+    }
+    const updated = await prisma.product.updateMany({ where: { id }, data: body });
+    if (updated.count !== 1 && !setLocalProductFlags(id, body)) return NextResponse.json({ error: "Product not found." }, { status: 404 });
     return NextResponse.json({ message: "Product updated." });
   } catch (error) {
     return errorResponse(error);
