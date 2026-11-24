@@ -145,13 +145,13 @@ export function CatalogLive({
   return (
     <>
       <form
-        className="mt-5 grid gap-3 rounded-2xl border border-cream-300 bg-white p-3 md:grid-cols-6"
+        className="mt-5 grid grid-cols-2 gap-3 rounded-2xl border border-cream-300 bg-white p-3 md:grid-cols-6"
         onSubmit={(event) => {
           event.preventDefault();
           void load(filters, 1);
         }}
       >
-        <div className="md:col-span-2">
+        <div className="col-span-2">
           <label className={labelClass} htmlFor="filter-q">Search</label>
           <input id="filter-q" value={filters.q} onChange={(event) => setFilters({ ...filters, q: event.target.value })} className={fieldClass} />
         </div>
@@ -202,7 +202,7 @@ export function CatalogLive({
             <option value="popular">Most ordered</option>
           </select>
         </div>
-        <div className="flex items-end gap-3 md:col-span-6">
+        <div className="col-span-2 flex flex-wrap items-end gap-3 md:col-span-6">
           <button className="min-h-11 rounded-full bg-forest-800 px-4 text-sm font-semibold text-cream-50 disabled:opacity-60" disabled={pending}>
             {pending ? "Updating…" : "Apply filters"}
           </button>

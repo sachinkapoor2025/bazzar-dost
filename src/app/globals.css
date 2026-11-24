@@ -8,12 +8,40 @@
 
 html {
   scroll-behavior: smooth;
+  overflow-x: clip;
 }
 
 body {
   min-height: 100vh;
+  overflow-x: clip;
   background: #fbf8f3;
   color: #1c1915;
+}
+
+/* The first screen is the announcement, header, and bottom dock. The banner uses what is left. */
+.home-banner {
+  height: calc(100vh - 16rem);
+  height: calc(100svh - 16rem);
+  max-height: calc(100vh - 16rem);
+  max-height: calc(100svh - 16rem);
+}
+
+@media (min-width: 768px) {
+  .home-banner {
+    height: calc(100vh - 11.5rem);
+    height: calc(100svh - 11.5rem);
+    max-height: calc(100vh - 11.5rem);
+    max-height: calc(100svh - 11.5rem);
+  }
+}
+
+@media (min-width: 1024px) {
+  .home-banner {
+    height: calc(100vh - 12rem);
+    height: calc(100svh - 12rem);
+    max-height: calc(100vh - 12rem);
+    max-height: calc(100svh - 12rem);
+  }
 }
 
 ::selection {
@@ -24,6 +52,12 @@ body {
 :focus-visible {
   outline: 2px solid #1b4332;
   outline-offset: 2px;
+}
+
+footer a {
+  display: inline-flex;
+  min-height: 2.75rem;
+  align-items: center;
 }
 
 .skip-link {

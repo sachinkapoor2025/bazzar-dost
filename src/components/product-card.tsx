@@ -84,7 +84,7 @@ export function ProductCard({ product, eager = false }: { product: ProductCardDa
         ) : null}
       </Link>
       <div className="flex flex-1 flex-col gap-2 p-3">
-        <p className="text-[0.7rem] font-semibold uppercase tracking-[0.14em] text-muted">{product.categoryName}</p>
+        <p className="truncate text-[0.7rem] font-semibold uppercase tracking-[0.14em] text-muted">{product.categoryName}</p>
         <h3 className="line-clamp-3 font-display text-lg leading-tight sm:text-xl">
           <Link href={`/products/${product.slug}`} className="hover:text-forest-700" onClick={() => trackProductClick(product.slug)}>
             {product.name}
@@ -102,11 +102,11 @@ export function ProductCard({ product, eager = false }: { product: ProductCardDa
             <Heart filled={saved} />
           </button>
           {product.hasVariants ? (
-            <Link href={`/products/${product.slug}`} className={buttonClass("primary", "flex-1 px-2 text-xs sm:px-4 sm:text-sm")} onClick={() => trackProductClick(product.slug)}>
+            <Link href={`/products/${product.slug}`} className={buttonClass("primary", "min-w-0 flex-1 whitespace-normal px-2 text-center text-[0.7rem] leading-tight sm:px-4 sm:text-sm")} onClick={() => trackProductClick(product.slug)}>
               Choose options
             </Link>
           ) : (
-            <button type="button" className={buttonClass("primary", "flex-1 px-2 text-xs sm:px-4 sm:text-sm")} disabled={!product.inStock} onClick={addSimple}>
+            <button type="button" className={buttonClass("primary", "min-w-0 flex-1 whitespace-normal px-2 text-center text-[0.7rem] leading-tight sm:px-4 sm:text-sm")} disabled={!product.inStock} onClick={addSimple}>
               {product.inStock ? "Add to cart" : "Out of stock"}
             </button>
           )}

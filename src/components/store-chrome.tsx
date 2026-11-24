@@ -21,7 +21,7 @@ export function StoreChrome({
   return (
     <>
       {announcement ? (
-        <div className="bg-forest-800 px-4 py-2 text-center text-sm text-cream-50">
+        <div className="bg-forest-800 px-4 py-2 text-center text-sm leading-5 text-cream-50">
           <span className="font-semibold">{announcement.title}. </span>
           {announcement.message}{" "}
           {announcement.href ? <a className="underline" href={announcement.href}>Details</a> : null}

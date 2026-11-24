@@ -32,9 +32,9 @@ export function Gallery({ images, name }: { images: Array<{ url: string; alt: st
         </dialog>
       ) : null}
       {images.length > 1 ? (
-        <div className="mt-3 flex gap-2">
+        <div className="mt-3 flex gap-2 overflow-x-auto pb-1">
           {images.map((image, imageIndex) => (
-            <button key={image.url} type="button" className={`h-16 w-16 overflow-hidden rounded-xl border ${imageIndex === index ? "border-forest-800" : "border-cream-300"}`} onClick={() => { setFailed(false); setIndex(imageIndex); }} aria-label={`Show image ${imageIndex + 1}`}>
+            <button key={image.url} type="button" className={`h-16 w-16 shrink-0 overflow-hidden rounded-xl border ${imageIndex === index ? "border-forest-800" : "border-cream-300"}`} onClick={() => { setFailed(false); setIndex(imageIndex); }} aria-label={`Show image ${imageIndex + 1}`}>
               <Image src={sizedImage(image.url, 128)} alt="" width={64} height={64} unoptimized={unoptimizedImage(image.url)} className="h-full w-full object-cover" />
             </button>
           ))}

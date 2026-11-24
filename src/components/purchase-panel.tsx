@@ -75,10 +75,10 @@ export function PurchasePanel({ product }: { product: PurchaseProduct }) {
         <label className={labelClass} htmlFor="qty">Quantity</label>
         <input id="qty" className={`${fieldClass} max-w-28`} type="number" min={1} max={Math.max(1, maxQty)} value={qty} disabled={stock < 1} onChange={(event) => setQty(Math.min(Math.max(1, Number(event.target.value) || 1), Math.max(1, maxQty)))} />
       </div>
-      <div className="mt-4 flex flex-wrap gap-2">
-        <button type="button" className={buttonClass("primary")} disabled={stock < 1} onClick={() => cart.add({ ...line, qty })}>Add to cart</button>
-        <button type="button" className={buttonClass("gold")} disabled={stock < 1} onClick={() => cart.buyNow({ ...line, qty })}>Buy now</button>
-        <button type="button" className={buttonClass("outline")} aria-pressed={saved} aria-label={saved ? `Remove ${product.name} from wishlist` : `Save ${product.name} to wishlist`} onClick={() => wishlist.toggle(product.id)}>
+      <div className="mt-4 grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">
+        <button type="button" className={buttonClass("primary", "w-full sm:w-auto")} disabled={stock < 1} onClick={() => cart.add({ ...line, qty })}>Add to cart</button>
+        <button type="button" className={buttonClass("gold", "w-full sm:w-auto")} disabled={stock < 1} onClick={() => cart.buyNow({ ...line, qty })}>Buy now</button>
+        <button type="button" className={buttonClass("outline", "col-span-2 w-full sm:w-auto")} aria-pressed={saved} aria-label={saved ? `Remove ${product.name} from wishlist` : `Save ${product.name} to wishlist`} onClick={() => wishlist.toggle(product.id)}>
           <Heart filled={saved} />
           {saved ? "Saved" : "Wishlist"}
         </button>
