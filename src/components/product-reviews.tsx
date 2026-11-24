@@ -42,11 +42,9 @@ export function ProductReviews({
     setPending(false);
     if (!response.ok || !data.review) {
       setError(data.error || "The review could not be saved.");
-      if (response.status === 409) setReason("already-reviewed");
       return;
     }
     setReviews((current) => [data.review as PublicProductReview, ...current]);
-    setReason("already-reviewed");
     setMessage(data.message || "Review saved.");
     event.currentTarget.reset();
   }
@@ -94,7 +92,6 @@ export function ProductReviews({
         <p className="mt-4 text-sm leading-6 text-muted">
           {reason === "signed-out" ? <><Link href={loginHref} className="font-semibold text-forest-800 underline">Sign in</Link> to review this product after you buy it.</> : null}
           {reason === "not-purchased" ? "Only customers who bought this product can review it. Cancelled orders are not counted." : null}
-          {reason === "already-reviewed" ? message || "You have already reviewed this product." : null}
           {reason === "unavailable" ? "Reviews cannot be loaded right now." : null}
         </p>
       )}

@@ -229,8 +229,8 @@ model ProductReview {
   comment     String
   createdAt   DateTime @default(now())
 
-  @@unique([userId, productSlug])
   @@index([productSlug])
+  @@index([userId, productSlug])
 }
 
 model Promotion {
