@@ -1,11 +1,15 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { listLocalCustomers } from "@/lib/account-store";
+import { listStoredAddresses } from "@/lib/address-store";
 import { readDatabase } from "@/lib/db";
 import { formatDate, formatINR } from "@/lib/format";
+import { datedOrder, listLocalOrders } from "@/lib/local-orders";
 
 export default async function AdminCustomerPage({ params }: { params: Promise<{ id: string }> }) {
-  const customer = await readDatabase(null, async (client) => client.user.findUnique({
-    where: { id: (await params).id },
+  const id = (await params).id;
+  const stored = await readDatabase(null, async (client) => client.user.findUnique({
+    where: { id },
     select: {
       id: true,
       name: true,
@@ -17,6 +21,15 @@ export default async function AdminCustomerPage({ params }: { params: Promise<{ 
       orders: { orderBy: { createdAt: "desc" }, include: { items: true } },
     },
   }));
+  const local = stored ? null : listLocalCustomers().find((customer) => customer.id === id);
+  const customer = stored || (local ? {
+    ...local,
+    createdAt: local.createdAt ?? new Date(0),
+    addresses: listStoredAddresses(local.id),
+    orders: listLocalOrders()
+      .filter((order) => order.userId === local.id || order.email.toLowerCase() === local.email.toLowerCase())
+      .map((order) => datedOrder(order)),
+  } : null);
   if (!customer || customer.role === "admin") notFound();
   const spent = customer.orders.filter((order) => order.status !== "cancelled").reduce((sum, order) => sum + order.total, 0);
   return (

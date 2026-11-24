@@ -89,13 +89,16 @@ async function Routes() {
   );
 }
 
-function CountList({ title, empty, rows }: { title: string; empty: string; rows: Array<{ key: string; label: string; count: number }> }) {
+function CountList({ title, empty, rows }: { title: string; empty: string; rows: Array<{ key: string; label: string; count: number; href?: string }> }) {
   return (
     <section>
       <h2 className="font-display text-2xl">{title}</h2>
       <ul className="mt-3 divide-y divide-cream-200 rounded-2xl border border-cream-300 bg-white text-sm">
         {rows.length === 0 ? <li className="px-3 py-2 text-muted">{empty}</li> : rows.slice(0, 20).map((row) => (
-          <li key={row.key} className="flex justify-between gap-3 px-3 py-2"><span className="break-all">{row.label}</span><strong>{row.count}</strong></li>
+          <li key={row.key} className="flex justify-between gap-3 px-3 py-2">
+            {row.href ? <Link className="break-all font-semibold underline" href={row.href}>{row.label}</Link> : <span className="break-all">{row.label}</span>}
+            <strong>{row.count}</strong>
+          </li>
         ))}
       </ul>
     </section>
@@ -138,7 +141,7 @@ async function VisitorAnalytics({ params }: { params: { range?: string; from?: s
         <p className="mt-2 text-xs text-muted">{report.days[0]?.day} to {report.days[report.days.length - 1]?.day}{report.chartTruncated ? ". The chart shows the latest 62 days." : ""}</p>
       </section>
       <div className="mt-6 grid gap-6 lg:grid-cols-2">
-        <CountList title="Pages" empty="No page views in this range." rows={report.byPath.map((row) => ({ key: row.path, label: row.path, count: row.count }))} />
+        <CountList title="Pages" empty="No page views in this range." rows={report.byPath.map((row) => ({ key: row.path, label: row.path, count: row.count, href: row.path.startsWith("/") && !row.path.startsWith("/admin") ? row.path : undefined }))} />
         <CountList title="Devices" empty="No device data in this range." rows={report.byDevice.map((row) => ({ key: row.device, label: row.device, count: row.count }))} />
         <CountList title="Sources" empty="No visits in this range." rows={report.byReferrer.map((row) => ({ key: row.source, label: row.source, count: row.count }))} />
         <CountList title="Countries" empty="No visits in this range." rows={report.byCountry.map((row) => ({ key: row.country, label: row.country, count: row.count }))} />
@@ -198,7 +201,7 @@ async function Sessions({ params }: { params: { range?: string; from?: string; t
           <tbody>
             {rows.slice(0, 100).length === 0 ? <tr><td className="py-3 text-muted" colSpan={6}>No visitors stored for this range.</td></tr> : rows.slice(0, 100).map((session) => (
               <tr key={session.sessionId} className="border-b border-cream-200">
-                <td className="py-2">{session.lastPath}</td>
+                <td className="py-2">{session.lastPath.startsWith("/") && !session.lastPath.startsWith("/admin") ? <Link className="font-semibold underline" href={session.lastPath}>{session.lastPath}</Link> : session.lastPath}</td>
                 <td>{session.referrer}</td>
                 <td>{session.country}</td>
                 <td className="capitalize">{session.device}</td>

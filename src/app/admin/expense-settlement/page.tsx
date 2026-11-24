@@ -62,10 +62,10 @@ export default async function ExpenseSettlementPage({ searchParams }: { searchPa
         ) : null}
         {tab === "reconciliation" ? (
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-            <Card label="Paid orders" value={`${reconciliation.paid.count} · ${formatINR(reconciliation.paid.amount)}`} />
-            <Card label="Unpaid COD" value={`${reconciliation.unpaid.count} · ${formatINR(reconciliation.unpaid.amount)}`} />
-            <Card label="Refunded" value={`${reconciliation.refunded.count} · ${formatINR(reconciliation.refunded.amount)}`} />
-            <Card label="Settlements marked settled" value={formatINR(settled)} />
+            <Card label="Paid orders" value={`${reconciliation.paid.count} · ${formatINR(reconciliation.paid.amount)}`} href="/admin/payments?status=paid" />
+            <Card label="Unpaid COD" value={`${reconciliation.unpaid.count} · ${formatINR(reconciliation.unpaid.amount)}`} href="/admin/payments?status=unpaid" />
+            <Card label="Refunded" value={`${reconciliation.refunded.count} · ${formatINR(reconciliation.refunded.amount)}`} href="/admin/payments?status=refunded" />
+            <Card label="Settlements marked settled" value={formatINR(settled)} href="/admin/expense-settlement?tab=settlement" />
             <p className="sm:col-span-2 text-sm text-muted">Paid means a staff member marked the cash collected. There is no card gateway balance to match. The gap between paid orders and settled amounts is {formatINR(reconciliation.paid.amount - settled)}.</p>
           </div>
         ) : null}
@@ -74,8 +74,8 @@ export default async function ExpenseSettlementPage({ searchParams }: { searchPa
   );
 }
 
-function Card({ label, value }: { label: string; value: string }) {
-  return <article className="rounded-2xl border border-cream-300 bg-white p-4"><p className="text-sm text-muted">{label}</p><p className="mt-1 text-xl font-bold">{value}</p></article>;
+function Card({ label, value, href }: { label: string; value: string; href: string }) {
+  return <Link href={href} className="rounded-2xl border border-cream-300 bg-white p-4 transition hover:border-forest-800"><p className="text-sm text-muted">{label}</p><p className="mt-1 text-xl font-bold">{value}</p></Link>;
 }
 
 function toRow(record: { id: string; title: string; status: string; createdAt: string; payload: Record<string, unknown> }) {

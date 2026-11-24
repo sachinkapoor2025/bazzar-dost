@@ -1,20 +1,19 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { databaseConfigured, readDatabase } from "@/lib/db";
+import { databaseHasOrders, readDatabase } from "@/lib/db";
 import { datedOrder, listLocalOrders } from "@/lib/local-orders";
 import { orderStatusLabel } from "@/lib/order-progress";
 
 export default async function OrderRoutePage({ params }: { params: Promise<{ id: string }> }) {
   const id = (await params).id;
-  const order = databaseConfigured()
+  const stored = (await databaseHasOrders())
     ? await readDatabase(null, (client) => client.order.findUnique({
         where: { id },
         select: { id: true, orderNumber: true, status: true, city: true, state: true, pincode: true, addressLine1: true, trackingNote: true },
       }))
-    : (() => {
-        const stored = listLocalOrders().find((item) => item.id === id);
-        return stored ? datedOrder(stored) : null;
-      })();
+    : null;
+  const local = stored ? null : listLocalOrders().find((item) => item.id === id);
+  const order = stored || (local ? datedOrder(local) : null);
   if (!order) notFound();
   return (
     <div>

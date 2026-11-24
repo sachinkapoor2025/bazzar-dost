@@ -1,12 +1,12 @@
 import Link from "next/link";
-import { databaseConfigured, readDatabase } from "@/lib/db";
+import { databaseHasOrders, readDatabase } from "@/lib/db";
 import { datedOrder, listLocalOrders } from "@/lib/local-orders";
 import { formatDate, formatINR } from "@/lib/format";
 
 export default async function PaymentsPage({ searchParams }: { searchParams: Promise<{ status?: string }> }) {
   const status = (await searchParams).status || "";
   const allowed = ["unpaid", "paid", "refunded"];
-  const orders = databaseConfigured()
+  const orders = (await databaseHasOrders())
     ? await readDatabase([], (client) => client.order.findMany({
         where: allowed.includes(status) ? { paymentStatus: status } : undefined,
         orderBy: { createdAt: "desc" },

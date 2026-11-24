@@ -30,6 +30,16 @@ export async function databaseHasProducts(): Promise<boolean> {
   return count > 0;
 }
 
+export async function databaseHasOrders(): Promise<boolean> {
+  const count = await readDatabase(0, (client) => client.order.count());
+  return count > 0;
+}
+
+export async function databaseHasUsers(): Promise<boolean> {
+  const count = await readDatabase(0, (client) => client.user.count());
+  return count > 0;
+}
+
 export async function readDatabase<T>(fallback: T, read: (client: PrismaClient) => Promise<T>): Promise<T> {
   if (!databaseConfigured()) return fallback;
   try {
