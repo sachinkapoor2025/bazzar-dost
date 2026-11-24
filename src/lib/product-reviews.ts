@@ -17,7 +17,7 @@ export type ProductReviewState = {
   average: number | null;
   count: number;
   canReview: boolean;
-  reason: "signed-out" | "not-purchased" | "already-reviewed" | "unavailable" | null;
+  reason: "signed-out" | "not-purchased" | "unavailable" | null;
 };
 
 export type ReviewDecision =
@@ -44,10 +44,6 @@ export function reviewDecision(input: {
   }
   if (!input.purchasedOrderId) {
     return { ok: false, status: 403, error: "Only customers who bought this product can review it." };
-  }
-  const duplicate = input.existing.some((review) => review.userId === input.userId && review.productSlug === input.productSlug);
-  if (duplicate) {
-    return { ok: false, status: 409, error: "You have already reviewed this product." };
   }
   if (!Number.isInteger(input.rating) || input.rating < 1 || input.rating > 5) {
     return { ok: false, status: 400, error: "Choose a rating." };

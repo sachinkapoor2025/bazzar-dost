@@ -674,7 +674,6 @@ export async function productReviewState(slug: string, user: PublicUser | null) 
   const summary = reviewSummary(rows);
   const reviews = rows.map((row) => ({ id: row.id, name: row.name, rating: row.rating, comment: row.comment, createdAt: row.createdAt }));
   if (!user) return { ...summary, reviews, canReview: false, reason: "signed-out" as const };
-  if (rows.some((row) => row.userId === user.id)) return { ...summary, reviews, canReview: false, reason: "already-reviewed" as const };
   const order = (await ordersForBuyer(user)).find((entry) => entry.status !== "cancelled" && entry.items.some((item) => lineMatches(item, product)));
   if (!order) return { ...summary, reviews, canReview: false, reason: "not-purchased" as const };
   return { ...summary, reviews, canReview: true, reason: null };

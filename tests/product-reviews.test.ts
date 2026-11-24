@@ -28,13 +28,12 @@ test("rejects a signed-out review", () => {
   if (!decision.ok) assert.equal(decision.status, 401);
 });
 
-test("rejects a second review of the same product by the same customer", () => {
+test("allows another review of the same product by the same customer", () => {
   const decision = reviewDecision({
     ...base,
     existing: [{ userId: "user_1", productSlug: "iron-dosa-tawa", rating: 4 }],
   });
-  assert.equal(decision.ok, false);
-  if (!decision.ok) assert.equal(decision.status, 409);
+  assert.deepEqual(decision, { ok: true, orderId: "order_1" });
 });
 
 test("rejects a review that repeats the same characters", () => {

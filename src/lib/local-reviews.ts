@@ -44,7 +44,6 @@ export function listProductReviews(): StoredProductReview[] {
 export function saveProductReviewRecord(input: Omit<StoredProductReview, "id" | "createdAt">): StoredProductReview | null {
   const review: StoredProductReview = { ...input, id: randomUUID(), createdAt: new Date().toISOString() };
   const rows = listProductReviews();
-  if (rows.some((item) => item.userId === review.userId && item.productSlug === review.productSlug)) return null;
   return writeJsonArray(PRODUCT_FILE, [review, ...rows]) ? review : null;
 }
 

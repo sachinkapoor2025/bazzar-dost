@@ -56,7 +56,6 @@ export async function getProductReviewState(product: ProductIdentity, user: Publ
     const summary = reviewSummary(rows);
     const reviews = rows.map((row) => ({ id: row.id, name: row.userName, rating: row.rating, comment: row.comment, createdAt: row.createdAt }));
     if (!user) return { ...summary, reviews, canReview: false, reason: "signed-out" };
-    if (rows.some((row) => row.userId === user.id)) return { ...summary, reviews, canReview: false, reason: "already-reviewed" };
     if (!localPurchasedOrderId(user, product)) return { ...summary, reviews, canReview: false, reason: "not-purchased" };
     return { ...summary, reviews, canReview: true, reason: null };
   }
@@ -76,8 +75,6 @@ export async function getProductReviewState(product: ProductIdentity, user: Publ
       createdAt: row.createdAt.toISOString(),
     }));
     if (!user) return { ...summary, reviews, canReview: false, reason: "signed-out" };
-    const already = rows.some((row) => row.userId === user.id);
-    if (already) return { ...summary, reviews, canReview: false, reason: "already-reviewed" };
     const orderId = await purchasedOrderId(user, product);
     if (!orderId) return { ...summary, reviews, canReview: false, reason: "not-purchased" };
     return { ...summary, reviews, canReview: true, reason: null };
@@ -114,7 +111,7 @@ export async function saveProductReview(
       rating: input.rating,
       comment: cleanText(input.comment, 600),
     });
-    if (!review) return { status: 409, error: "You have already reviewed this product." };
+    if (!review) return { status: 503, error: "Reviews cannot be saved right now." };
     return { status: 200, review: { id: review.id, name: user.name, rating: review.rating, comment: review.comment, createdAt: review.createdAt } };
   }
   try {
@@ -154,9 +151,6 @@ export async function saveProductReview(
       },
     };
   } catch (error) {
-    if (typeof error === "object" && error && "code" in error && (error as { code?: string }).code === "P2002") {
-      return { status: 409, error: "You have already reviewed this product." };
-    }
     console.error(error);
     return { status: 503, error: "Reviews cannot be saved right now." };
   }
