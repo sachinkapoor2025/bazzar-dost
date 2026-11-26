@@ -3,7 +3,7 @@
 import { useId, useState } from "react";
 import { buttonClass, fieldClass } from "@/components/ui";
 
-export function NewsletterForm() {
+export function NewsletterForm({ layout = "stack" }: { layout?: "stack" | "bar" }) {
   const emailId = useId();
   const [message, setMessage] = useState("");
   const [pending, setPending] = useState(false);
@@ -22,6 +22,32 @@ export function NewsletterForm() {
     setMessage(data.message || data.error || "Could not save that email.");
     setPending(false);
     if (response.ok) event.currentTarget.reset();
+  }
+
+  if (layout === "bar") {
+    return (
+      <form onSubmit={onSubmit} className="mt-4">
+        <div className="flex flex-row items-center gap-2.5">
+          <label htmlFor={emailId} className="sr-only">Email address</label>
+          <input
+            id={emailId}
+            name="email"
+            type="email"
+            required
+            autoComplete="email"
+            placeholder="Enter your email address"
+            className="min-h-12 w-full flex-1 rounded-full border-0 bg-white px-5 text-base text-ink outline-none ring-0 placeholder:text-muted/75 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#C8E6C9] sm:text-sm"
+          />
+          <button
+            className="inline-flex min-h-12 shrink-0 items-center justify-center rounded-full bg-[#C8E6C9] px-6 text-sm font-semibold text-forest-900 transition hover:bg-[#B7DCB9] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white disabled:cursor-not-allowed disabled:opacity-60"
+            disabled={pending}
+          >
+            {pending ? "Saving…" : "Subscribe →"}
+          </button>
+        </div>
+        {message ? <p role="status" className="mt-2 text-sm text-cream-50">{message}</p> : null}
+      </form>
+    );
   }
 
   return (

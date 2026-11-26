@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { HomeReviews } from "@/components/home-reviews";
+import { SampleReviews } from "@/components/sample-reviews";
 import { JsonLd } from "@/components/json-ld";
 import { ProductGrid } from "@/components/product-card";
 import { Container, SectionTitle, buttonClass } from "@/components/ui";
@@ -61,22 +62,17 @@ export default async function HomePage() {
           ],
         }}
       />
-      <section className="home-banner relative isolate flex flex-col justify-end overflow-hidden bg-forest-950 text-cream-50">
-        <div className="pointer-events-none absolute inset-0" aria-hidden="true">
-          <picture>
-            <source media="(max-width: 639px)" srcSet="/media/hero-mobile.jpg" />
-            <img src="/media/hero-wallpaper.jpg" alt="" fetchPriority="high" decoding="async" className="absolute inset-0 h-full w-full object-cover object-right sm:object-center" />
-          </picture>
-          <div className="absolute inset-0 bg-gradient-to-r from-forest-950 via-forest-950/88 to-forest-950/45" />
-        </div>
-        <Container className="relative flex h-full min-h-0 flex-col justify-end gap-3 py-5 sm:gap-4 sm:py-8">
-          <div className="max-w-4xl">
-            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-gold-400 sm:text-sm">{site.tagline}</p>
-            <h1 className="mt-2 font-display text-3xl leading-tight sm:text-5xl lg:text-6xl">Practical products for home and everyday use.</h1>
-            <p className="mt-3 line-clamp-3 max-w-2xl text-sm leading-6 text-cream-100 sm:line-clamp-4 sm:text-base sm:leading-7">Kitchen tools, personal care, phone accessories, toys, bags, and outdoor items from the current catalogue. Each price and stock count is the one stored for that product.</p>
-          </div>
-          <Link href="/shop" className={`${buttonClass("gold")} w-fit px-6 py-2.5 text-sm sm:px-8 sm:py-3 sm:text-base`}>Shop now</Link>
-        </Container>
+      <section className="home-banner relative isolate overflow-hidden bg-[#f3f7ef]" aria-labelledby="home-banner-title">
+        <h1 id="home-banner-title" className="sr-only">Everything you need, all in one place.</h1>
+        <Link href="/shop" aria-label="BazaarDost. Everything you need, all in one place. Shop now." className="flex h-full w-full items-center justify-center">
+          <img
+            src="/media/home-banner.jpg"
+            alt=""
+            fetchPriority="high"
+            decoding="async"
+            className="h-full w-full object-contain"
+          />
+        </Link>
       </section>
 
       {data.trending.length > 0 ? (
@@ -165,6 +161,10 @@ export default async function HomePage() {
             <Link href="/about" className="underline">About the shop</Link>
           </p>
         </section>
+      </Container>
+
+      <Container className="pb-8">
+        <SampleReviews />
       </Container>
 
       <Container className="pb-12">
