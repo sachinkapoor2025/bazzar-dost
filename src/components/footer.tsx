@@ -1,61 +1,154 @@
 import Link from "next/link";
 import { NewsletterForm } from "@/components/newsletter-form";
-import { Logo } from "@/components/logo";
 import { Container } from "@/components/ui";
 import { site } from "@/lib/site";
 import type { CategoryLink } from "@/lib/types";
 
-export function Footer({ categories }: { categories: CategoryLink[] }) {
+const linkClass =
+  "text-sm text-white/75 transition hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#C8E6C9]";
+
+function Column({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <footer className="mt-10 border-t border-cream-300 bg-forest-900 pb-24 text-cream-100 md:pb-0">
-      <Container className="grid gap-8 py-10 md:grid-cols-4">
-        <div>
-          <Logo size="footer" />
-          <p className="mt-3 text-sm leading-6 text-cream-200">{site.tagline}</p>
+    <div>
+      <h3 className="text-sm font-semibold text-white">{title}</h3>
+      <ul className="mt-2.5 space-y-1.5">{children}</ul>
+    </div>
+  );
+}
+
+function Item({ href, children }: { href: string; children: React.ReactNode }) {
+  return (
+    <li>
+      <Link href={href} className={linkClass}>{children}</Link>
+    </li>
+  );
+}
+
+function SocialGlyph({ name }: { name: string }) {
+  const common = { className: "h-4 w-4", viewBox: "0 0 24 24", fill: "currentColor", "aria-hidden": true as const };
+  if (name === "Instagram") {
+    return (
+      <svg {...common}>
+        <path d="M7 3h10a4 4 0 0 1 4 4v10a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4V7a4 4 0 0 1 4-4zm10 2H7a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2zm-5 3.2A3.8 3.8 0 1 1 8.2 12 3.8 3.8 0 0 1 12 8.2zm0 1.6A2.2 2.2 0 1 0 14.2 12 2.2 2.2 0 0 0 12 9.8zM17.4 6.9a1 1 0 1 1-1 1 1 1 0 0 1 1-1z" />
+      </svg>
+    );
+  }
+  if (name === "Facebook") {
+    return (
+      <svg {...common}>
+        <path d="M14.5 8.5V6.8c0-.7.5-1 1.2-1H17V3h-2.1C12.2 3 11 4.4 11 6.6v1.9H9v2.7h2V21h3.5v-9.8h2.3l.4-2.7h-2.7z" />
+      </svg>
+    );
+  }
+  if (name === "YouTube") {
+    return (
+      <svg {...common}>
+        <path d="M23 12.2s0-3.2-.4-4.6c-.2-.9-.9-1.6-1.8-1.8C19.2 5.4 12 5.4 12 5.4s-7.2 0-8.8.4c-.9.2-1.6.9-1.8 1.8C1 9 1 12.2 1 12.2s0 3.2.4 4.6c.2.9.9 1.6 1.8 1.8 1.6.4 8.8.4 8.8.4s7.2 0 8.8-.4c.9-.2 1.6-.9 1.8-1.8.4-1.4.4-4.6.4-4.6zM9.8 15.5v-6.6l6.2 3.3-6.2 3.3z" />
+      </svg>
+    );
+  }
+  return <span className="text-xs font-semibold">{name.slice(0, 1)}</span>;
+}
+
+export function Footer({ categories }: { categories: CategoryLink[] }) {
+  const year = new Date().getFullYear();
+
+  return (
+    <footer className="mt-10 bg-[#1A4332] pb-24 text-white md:pb-0">
+      <Container className="py-7 sm:py-8 md:pr-24">
+        <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
+          <Link href="/" className="inline-flex items-center gap-2.5" aria-label="BazaarDost home">
+            <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-white text-lg font-bold leading-none text-[#1A4332]">B</span>
+            <span className="text-lg font-semibold tracking-tight">BazaarDost</span>
+          </Link>
+          <p className="text-sm font-medium text-[#A9D7B4]">Your Shopping Partner</p>
         </div>
-        <div>
-          <h2 className="font-semibold text-gold-400">Shop</h2>
-          <ul className="mt-3 space-y-1 text-sm">
-            <li><Link href="/shop">Shop all</Link></li>
-            <li><Link href="/deals">Deals and offers</Link></li>
-            <li><Link href="/new-arrivals">New arrivals</Link></li>
-            <li><Link href="/catalogue">Catalogue</Link></li>
-            <li><Link href="/wholesale">Wholesale</Link></li>
+
+        <h2 className="mt-5 max-w-3xl text-3xl font-semibold leading-tight tracking-tight sm:text-[2rem]">
+          Everything you need, all in one place.
+        </h2>
+        <p className="mt-2 max-w-2xl text-sm leading-6 text-white/75 sm:text-[15px]">
+          Discover great products, explore categories and enjoy a better shopping experience with BazaarDost.
+        </p>
+
+        <NewsletterForm layout="bar" />
+
+        <nav aria-label="Footer" className="mt-7 grid grid-cols-2 gap-x-6 gap-y-6 sm:gap-x-10 lg:grid-cols-4 lg:gap-x-8">
+          <Column title="Shop">
+            <Item href="/shop">All Products</Item>
+            <Item href="/categories">Popular Categories</Item>
+            <Item href="/new-arrivals">New Arrivals</Item>
+            <Item href="/best-sellers">Best Sellers</Item>
+            <Item href="/deals">Deals and offers</Item>
+            <Item href="/catalogue">Catalogue</Item>
+          </Column>
+          <Column title="Customer Support">
+            <Item href="/contact">Contact Us</Item>
+            <Item href="/faq">FAQs</Item>
+            <Item href="/shipping-policy">Shipping Policy</Item>
+            <Item href="/returns">Returns & Refunds</Item>
+            <Item href="/track">Track an order</Item>
+            {site.supportEmail ? (
+              <li>
+                <a href={`mailto:${site.supportEmail}`} className={linkClass}>{site.supportEmail}</a>
+              </li>
+            ) : null}
+          </Column>
+          <Column title="About BazaarDost">
+            <Item href="/about">Our Story</Item>
+            <Item href="/about">Why Choose Us</Item>
+            <Item href="/wholesale">Sell With Us</Item>
+            <Item href="/about#certificates">Registration certificates</Item>
+          </Column>
+          <Column title="Quick Links">
+            <Item href="/account">My Account</Item>
+            <Item href="/account/orders">My Orders</Item>
+            <Item href="/wishlist">Wishlist</Item>
+            <Item href="/privacy">Privacy Policy</Item>
+          </Column>
+        </nav>
+
+        {categories.length > 0 ? (
+          <ul className="mt-4 flex flex-wrap gap-x-4 gap-y-1.5 border-t border-white/15 pt-3.5">
             {categories.slice(0, 4).map((category) => (
-              <li key={category.slug}><Link href={`/categories/${category.slug}`}>{category.name}</Link></li>
+              <li key={category.slug}>
+                <Link href={`/categories/${category.slug}`} className={linkClass}>{category.name}</Link>
+              </li>
             ))}
           </ul>
-        </div>
-        <div>
-          <h2 className="font-semibold text-gold-400">Help</h2>
-          <ul className="mt-3 space-y-1 text-sm">
-            <li><Link href="/account">My account</Link></li>
-            <li><Link href="/track">Track an order</Link></li>
-            <li><Link href="/about">About</Link></li>
-            <li><Link href="/about#certificates">Registration certificates</Link></li>
-            <li><Link href="/contact">Contact</Link></li>
-            <li><Link href="/faq">FAQ</Link></li>
-            <li><Link href="/shipping-policy">Shipping policy</Link></li>
-            <li><Link href="/returns">Returns</Link></li>
-            <li><Link href="/privacy">Privacy</Link></li>
-            <li><Link href="/terms">Terms</Link></li>
+        ) : null}
+
+        <div className="mt-4 flex items-center justify-between gap-4 border-t border-white/20 pt-3.5">
+          <p className="text-sm font-semibold">Follow us</p>
+          <ul className="flex items-center gap-2">
+            {["Instagram", "Facebook", "YouTube"].map((label) => {
+              const href = site.social.find(([name]) => name === label)?.[1];
+              const iconClass = "inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/30 text-white";
+              return (
+                <li key={label}>
+                  {href ? (
+                    <a href={href} rel="noreferrer" aria-label={label} className={`${iconClass} transition hover:border-white hover:bg-white/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#C8E6C9]`}>
+                      <SocialGlyph name={label} />
+                    </a>
+                  ) : (
+                    <span className={iconClass} aria-hidden="true">
+                      <SocialGlyph name={label} />
+                    </span>
+                  )}
+                </li>
+              );
+            })}
           </ul>
         </div>
-        <div>
-          <h2 className="font-semibold text-gold-400">Updates</h2>
-          <p className="mt-3 text-sm leading-6">Leave your email for catalogue news. It is stored for the store team.</p>
-          <NewsletterForm />
-          {site.supportEmail ? <p className="mt-3 text-sm">{site.supportEmail}</p> : null}
-          {site.social.length > 0 ? (
-            <ul className="mt-3 space-y-1 text-sm">
-              {site.social.map(([label, href]) => (
-                <li key={label}><a href={href} rel="noreferrer">{label}</a></li>
-              ))}
-            </ul>
-          ) : null}
+
+        <div className="mt-3 flex flex-col gap-2 border-t border-white/20 py-3 text-xs text-white/70 sm:flex-row sm:items-center sm:justify-between">
+          <p>© {year} BazaarDost. All rights reserved.</p>
+          <nav aria-label="Legal" className="flex items-center gap-4">
+            <Link href="/privacy" className="transition hover:text-white">Privacy Policy</Link>
+            <Link href="/terms" className="transition hover:text-white">Terms & Conditions</Link>
+          </nav>
         </div>
       </Container>
-      <div className="border-t border-white/10 py-4 text-center text-xs text-cream-200">© {new Date().getFullYear()} BazaarDost</div>
     </footer>
   );
 }
