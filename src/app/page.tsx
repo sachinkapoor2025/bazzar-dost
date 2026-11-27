@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { HomeCollections } from "@/components/home-collections";
 import { HomeReviews } from "@/components/home-reviews";
 import { SampleReviews } from "@/components/sample-reviews";
 import { JsonLd } from "@/components/json-ld";
@@ -74,6 +75,7 @@ export default async function HomePage() {
           />
         </Link>
       </section>
+      <HomeCollections categories={data.categories} />
 
       {data.trending.length > 0 ? (
         <Container className="pt-10 pb-8">

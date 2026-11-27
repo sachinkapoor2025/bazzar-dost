@@ -2,6 +2,7 @@
 
 import { usePathname } from "next/navigation";
 import { ChatWidget } from "@/components/chat-widget";
+import { SiteAnalytics } from "@/components/site-analytics";
 import { VisitBeacon } from "@/components/visit-beacon";
 import { Footer } from "@/components/footer";
 import { Header, MobileDock } from "@/components/header";
@@ -32,6 +33,7 @@ export function StoreChrome({
       <main id="content" className="min-h-[60vh] pb-20 md:pb-8">{children}</main>
       <Footer categories={categories} />
       <ChatWidget />
+      <SiteAnalytics />
       <MobileDock />
     </>
   );

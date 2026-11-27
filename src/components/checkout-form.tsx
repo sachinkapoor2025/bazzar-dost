@@ -1,8 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useCart } from "@/components/cart-provider";
+import { trackStoreEvent } from "@/components/site-analytics";
 import { usePreferences } from "@/components/preferences-provider";
 import { buttonClass, fieldClass, labelClass } from "@/components/ui";
 import { couponDiscount, FREE_SHIPPING_ABOVE, orderTotal, SHIPPING_FLAT_RUPEES, shippingFromRules } from "@/lib/commerce";
@@ -99,6 +100,12 @@ export function CheckoutForm({
   const discount = couponDiscount(subtotal, coupon);
   const shipping = shippingFromRules(Math.max(0, subtotal - discount), shipRules);
   const total = orderTotal(subtotal, discount, shipping);
+  const checkoutTracked = useRef(false);
+  useEffect(() => {
+    if (checkoutTracked.current || payable.length === 0) return;
+    checkoutTracked.current = true;
+    trackStoreEvent("begin_checkout", { currency: "INR", value: total });
+  }, [payable.length, total]);
 
   const cartKey = payable.map((line) => `${line.productId}:${line.qty}:${line.name}`).join("|");
   useEffect(() => {
@@ -183,7 +190,7 @@ export function CheckoutForm({
 
   return (
     <form onSubmit={onSubmit} className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_20rem]">
-      <div className="grid gap-3">
+      <div className="order-2 grid gap-3 lg:order-none">
         {nudge ? <p className="rounded-xl bg-forest-800 px-3 py-2 text-sm text-cream-50">{nudge.title}. {nudge.message} {nudge.href ? <a className="underline" href={nudge.href}>Details</a> : null}</p> : null}
         {addresses.length > 0 ? (
           <div className="flex flex-wrap gap-2">
@@ -196,7 +203,7 @@ export function CheckoutForm({
         <label className={labelClass}>Email<input type="email" className={fieldClass} required value={form.email} onChange={(event) => setForm({ ...form, email: event.target.value })} /></label>
         <label className={labelClass}>Mobile<input className={fieldClass} required value={form.phone} onChange={(event) => setForm({ ...form, phone: event.target.value })} /></label>
         <label className={labelClass}>Address<input className={fieldClass} required value={form.line1} onChange={(event) => setForm({ ...form, line1: event.target.value })} /></label>
-        <label className={labelClass}>Address line 2<input className={fieldClass} value={form.line2} onChange={(event) => setForm({ ...form, line2: event.target.value })} /></label>
+        <label className={labelClass}>Address line 2, optional<input className={fieldClass} value={form.line2} onChange={(event) => setForm({ ...form, line2: event.target.value })} /></label>
         <label className={labelClass}>City<input className={fieldClass} required value={form.city} onChange={(event) => setForm({ ...form, city: event.target.value })} /></label>
         <label className={labelClass}>State
           <select className={fieldClass} value={form.state} onChange={(event) => setForm({ ...form, state: event.target.value })}>
@@ -204,7 +211,7 @@ export function CheckoutForm({
           </select>
         </label>
         <label className={labelClass}>PIN code<input className={fieldClass} required value={form.pincode} onChange={(event) => setForm({ ...form, pincode: event.target.value })} /></label>
-        <label className={labelClass}>Notes<input className={fieldClass} value={form.notes} onChange={(event) => setForm({ ...form, notes: event.target.value })} /></label>
+        <label className={labelClass}>Notes, optional<input className={fieldClass} value={form.notes} onChange={(event) => setForm({ ...form, notes: event.target.value })} /></label>
         <fieldset className="rounded-2xl border border-cream-300 p-3">
           <legend className="px-1 text-sm font-semibold">Payment</legend>
           <label className="flex gap-2 text-sm leading-6">
@@ -213,8 +220,9 @@ export function CheckoutForm({
           </label>
         </fieldset>
       </div>
-      <aside className="h-fit rounded-2xl border border-cream-300 bg-white p-4">
-        <h2 className="font-display text-2xl">Order total</h2>
+      <aside className="order-1 h-fit rounded-2xl border border-cream-300 bg-white p-4 lg:order-none">
+        <h2 className="font-display text-2xl">Payable {formatINR(total)}</h2>
+        <p className="mt-1 text-xs leading-5 text-muted">Shipping is {formatINR(shipping)} now. It is {formatINR(SHIPPING_FLAT_RUPEES)} until the payable product total reaches {formatINR(FREE_SHIPPING_ABOVE)}.</p>
         <ul className="mt-3 space-y-2 text-sm">
           {lines.map((line) => (
             <li key={line.key} className="flex flex-wrap items-start justify-between gap-x-3 gap-y-1">
