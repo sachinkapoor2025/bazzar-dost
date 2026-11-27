@@ -1,13 +1,12 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { HomeCollections } from "@/components/home-collections";
-import { HomeReviews } from "@/components/home-reviews";
 import { SampleReviews } from "@/components/sample-reviews";
 import { JsonLd } from "@/components/json-ld";
 import { ProductGrid } from "@/components/product-card";
 import { Container, SectionTitle, buttonClass } from "@/components/ui";
 import { FREE_SHIPPING_ABOVE, SHIPPING_FLAT_RUPEES } from "@/lib/commerce";
-import { getHomeData, getReviews } from "@/lib/catalog";
+import { getHomeData } from "@/lib/catalog";
 import { formatINR } from "@/lib/format";
 import { absoluteUrl, site } from "@/lib/site";
 
@@ -28,7 +27,7 @@ export const metadata: Metadata = {
 };
 
 export default async function HomePage() {
-  const [data, reviews] = await Promise.all([getHomeData(), getReviews()]);
+  const data = await getHomeData();
 
   return (
     <>
@@ -167,13 +166,6 @@ export default async function HomePage() {
 
       <Container className="pb-8">
         <SampleReviews />
-      </Container>
-
-      <Container className="pb-12">
-        <section aria-labelledby="customer-reviews">
-          <h2 id="customer-reviews" className="font-display text-3xl text-forest-900">Customer reviews</h2>
-          <HomeReviews reviews={reviews} />
-        </section>
       </Container>
 
     </>

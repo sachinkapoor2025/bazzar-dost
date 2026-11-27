@@ -26,8 +26,8 @@ export function NewsletterForm({ layout = "stack" }: { layout?: "stack" | "bar" 
 
   if (layout === "bar") {
     return (
-      <form onSubmit={onSubmit} className="mt-4">
-        <div className="flex flex-row items-center gap-2.5">
+      <form onSubmit={onSubmit} className="mt-2">
+        <div className="flex flex-row items-center gap-2">
           <label htmlFor={emailId} className="sr-only">Email address</label>
           <input
             id={emailId}
@@ -36,10 +36,10 @@ export function NewsletterForm({ layout = "stack" }: { layout?: "stack" | "bar" 
             required
             autoComplete="email"
             placeholder="Enter your email address"
-            className="min-h-12 w-full flex-1 rounded-full border-0 bg-white px-5 text-base text-ink outline-none ring-0 placeholder:text-muted/75 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#C8E6C9] sm:text-sm"
+            className="min-h-9 w-full flex-1 rounded-full border-0 bg-white px-4 text-sm text-ink outline-none ring-0 placeholder:text-muted/75 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#C8E6C9]"
           />
           <button
-            className="inline-flex min-h-12 shrink-0 items-center justify-center rounded-full bg-[#C8E6C9] px-6 text-sm font-semibold text-forest-900 transition hover:bg-[#B7DCB9] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white disabled:cursor-not-allowed disabled:opacity-60"
+            className="inline-flex min-h-9 shrink-0 items-center justify-center rounded-full bg-[#C8E6C9] px-4 text-xs font-semibold text-forest-900 transition hover:bg-[#B7DCB9] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white disabled:cursor-not-allowed disabled:opacity-60"
             disabled={pending}
           >
             {pending ? "Saving…" : "Subscribe →"}

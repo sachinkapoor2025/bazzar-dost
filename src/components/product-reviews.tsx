@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { useId, useState } from "react";
 import { buttonClass, fieldClass, labelClass } from "@/components/ui";
-import { formatDate } from "@/lib/format";
 import { reviewSummary, type ProductReviewState, type PublicProductReview } from "@/lib/product-reviews";
 
 export function ProductReviews({
@@ -64,7 +63,6 @@ export function ProductReviews({
               <p className="text-xs font-semibold text-forest-800">Verified purchase</p>
               <p className="mt-2 text-sm leading-6">{review.comment}</p>
               <p className="mt-3 text-sm font-semibold">{review.name}</p>
-              <p className="text-xs text-muted">{formatDate(review.createdAt)}</p>
             </li>
           ))}
         </ul>
