@@ -72,6 +72,9 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
           );
         });
         setNotice(`${line.name} added to cart.`);
+        void import("@/components/site-analytics").then(({ trackStoreEvent }) => {
+          trackStoreEvent("add_to_cart", { currency: "INR", value: line.unitPrice, item_id: line.productId, item_name: line.name });
+        });
         setDrawerOpen(true);
       },
       setQty(key, qty) {

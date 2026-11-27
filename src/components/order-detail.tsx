@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { OrderProgress } from "@/components/order-progress";
+import { TrackEvent } from "@/components/track-event";
 import { formatDate, formatINR } from "@/lib/format";
 
 export type OrderView = {
@@ -62,6 +63,7 @@ export function toOrderView(order: Omit<OrderView, "createdAt"> & { createdAt: D
 export function OrderDetail({ order, confirmation = false }: { order: OrderView; confirmation?: boolean }) {
   return (
     <article>
+      {confirmation ? <TrackEvent name="purchase" params={{ transaction_id: order.orderNumber, currency: "INR", value: order.total }} /> : null}
       <h1 className="font-display text-4xl">{confirmation ? "Order placed" : "Order"} {order.orderNumber}</h1>
       {confirmation ? <p className="mt-2 text-sm leading-6">The order is recorded and stock has been reserved. Payment status is {order.paymentStatus}. Cash on delivery is collected later and is not marked paid by this page.</p> : null}
       <p className="mt-2 text-sm text-muted">Placed {formatDate(order.createdAt)} · <span className="capitalize">{order.paymentMethod === "cod" ? "Cash on delivery" : order.paymentMethod}</span> · <span className="capitalize">{order.paymentStatus}</span></p>

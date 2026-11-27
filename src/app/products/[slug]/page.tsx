@@ -7,6 +7,7 @@ import { ProductGrid } from "@/components/product-card";
 import { ProductReviews } from "@/components/product-reviews";
 import { PincodeChecker } from "@/components/pincode-checker";
 import { PurchasePanel } from "@/components/purchase-panel";
+import { TrackEvent } from "@/components/track-event";
 import { RecentlyViewed, RecordView } from "@/components/recently-viewed";
 import { Container } from "@/components/ui";
 import { getCurrentUser } from "@/lib/auth";
@@ -52,6 +53,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
   return (
     <Container className="py-6">
       <RecordView slug={product.slug} />
+      <TrackEvent name="view_item" params={{ id: product.id, item_name: product.name, currency: "INR", value: product.price }} />
       <Breadcrumbs
         items={[
           { name: "Home", href: "/" },
