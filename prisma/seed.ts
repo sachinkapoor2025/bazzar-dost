@@ -3,6 +3,7 @@ import path from "node:path";
 import bcrypt from "bcryptjs";
 import { PrismaClient } from "@prisma/client";
 import { categorySvg, productSvg } from "../src/lib/art";
+import { staffAdminEmails } from "../src/lib/staff";
 
 const prisma = new PrismaClient();
 
@@ -553,7 +554,7 @@ async function main() {
     console.log("ADMIN_EMAIL and ADMIN_PASSWORD were not set, so no admin was created.");
   }
 
-  const staffEmails = ["gungun.kalra@mydgv.com", "gungun.kalra@dgv.com", ...(process.env.ADMIN_EMAILS || "").split(",")].map((item) => item.trim().toLowerCase()).filter(Boolean);
+  const staffEmails = staffAdminEmails(process.env.ADMIN_EMAILS);
   for (const staffEmail of new Set(staffEmails)) {
     const staff = await prisma.user.findUnique({ where: { email: staffEmail } });
     if (staff && staff.role !== "admin") {

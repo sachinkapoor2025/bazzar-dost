@@ -18,12 +18,10 @@ body {
   color: #1c1915;
 }
 
-/* The first screen is the announcement, header, and bottom dock. The banner uses what is left. */
+/* On a phone the banner keeps its own wide shape. Larger screens give it the remaining screen height. */
 .home-banner {
-  height: calc(100vh - 16rem);
-  height: calc(100svh - 16rem);
-  max-height: calc(100vh - 16rem);
-  max-height: calc(100svh - 16rem);
+  height: auto;
+  max-height: none;
 }
 
 @media (min-width: 768px) {

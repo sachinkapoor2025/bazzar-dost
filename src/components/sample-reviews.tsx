@@ -1,14 +1,12 @@
-import { formatDate } from "@/lib/format";
-
 const samples = [
-  { name: "Aditi Sharma", rating: 5, comment: "Great shopping experience! The website is easy to navigate, and finding products is very simple.", createdAt: "2026-03-02T10:00:00.000Z" },
-  { name: "Rahul Verma", rating: 5, comment: "Loved the clean website design and smooth shopping experience. Looking forward to shopping again.", createdAt: "2026-03-08T10:00:00.000Z" },
-  { name: "Priya Singh", rating: 4, comment: "A nice platform with a good variety of products. The overall experience was smooth.", createdAt: "2026-03-14T10:00:00.000Z" },
-  { name: "Arjun Mehta", rating: 5, comment: "Very easy to browse different categories. The website feels modern and user-friendly.", createdAt: "2026-03-20T10:00:00.000Z" },
-  { name: "Neha Kapoor", rating: 5, comment: "I really like the simple interface and organized product categories. Great shopping platform.", createdAt: "2026-03-26T10:00:00.000Z" },
-  { name: "Karan Malhotra", rating: 4, comment: "Good website experience with an attractive layout and easy navigation.", createdAt: "2026-04-02T10:00:00.000Z" },
-  { name: "Simran Kaur", rating: 5, comment: "The website is well organized, and browsing products is convenient. Really nice experience.", createdAt: "2026-04-09T10:00:00.000Z" },
-  { name: "Rohan Gupta", rating: 5, comment: "A promising shopping platform with a clean design and smooth user experience.", createdAt: "2026-04-16T10:00:00.000Z" },
+  { name: "Aditi Sharma", rating: 5, comment: "Great shopping experience! The website is easy to navigate, and finding products is very simple." },
+  { name: "Rahul Verma", rating: 5, comment: "Loved the clean website design and smooth shopping experience. Looking forward to shopping again." },
+  { name: "Priya Singh", rating: 4, comment: "A nice platform with a good variety of products. The overall experience was smooth." },
+  { name: "Arjun Mehta", rating: 5, comment: "Very easy to browse different categories. The website feels modern and user-friendly." },
+  { name: "Neha Kapoor", rating: 5, comment: "I really like the simple interface and organized product categories. Great shopping platform." },
+  { name: "Karan Malhotra", rating: 4, comment: "Good website experience with an attractive layout and easy navigation." },
+  { name: "Simran Kaur", rating: 5, comment: "The website is well organized, and browsing products is convenient. Really nice experience." },
+  { name: "Rohan Gupta", rating: 5, comment: "A promising shopping platform with a clean design and smooth user experience." },
 ] as const;
 
 export function SampleReviews() {
@@ -25,7 +23,6 @@ export function SampleReviews() {
             </p>
             <p className="mt-2 text-sm leading-6">{review.comment}</p>
             <p className="mt-3 text-sm font-semibold text-forest-900">{review.name}</p>
-            <p className="text-xs text-muted">{formatDate(review.createdAt)}</p>
           </li>
         ))}
       </ul>

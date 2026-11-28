@@ -3,7 +3,7 @@ import { api } from "@/lib/backend";
 import { selectDailyDeals } from "@/lib/deals";
 import { loadEngagementScores } from "@/lib/engagement";
 import { loadSoldUnits } from "@/lib/sales";
-import { parseRating, parseRupee, priceBounds } from "@/lib/commerce";
+import { FREE_SHIPPING_ABOVE, SHIPPING_FLAT_RUPEES, parseRating, parseRupee, priceBounds } from "@/lib/commerce";
 import { databaseConfigured, readDatabase } from "@/lib/db";
 import { listStoreReviews } from "@/lib/local-reviews";
 import { loadReviewAverages } from "@/lib/product-review-store";
@@ -178,8 +178,21 @@ export function readCatalogQuery(raw: Record<string, string | string[] | undefin
   };
 }
 
+const remembered = new Map<string, { at: number; value: unknown }>();
+
+function remember<T>(key: string, ttlMs: number, load: () => Promise<T>): Promise<T> {
+  const hit = remembered.get(key);
+  if (hit && Date.now() - hit.at < ttlMs) return Promise.resolve(hit.value as T);
+  return load().then((value) => {
+    remembered.set(key, { at: Date.now(), value });
+    return value;
+  });
+}
+
 export async function getCategories(scope: "top" | "all" = "top"): Promise<CategoryLink[]> {
-  return readCatalogue(() => api<CategoryLink[]>(`/categories?scope=${scope}`), () => localCategories(scope));
+  return remember(`categories:${scope}`, 60_000, () =>
+    readCatalogue(() => api<CategoryLink[]>(`/categories?scope=${scope}`), () => localCategories(scope)),
+  );
 }
 
 export async function getCategory(slug: string) {
@@ -212,6 +225,10 @@ export async function relatedProducts(categoryId: string, productId: string): Pr
 }
 
 export async function getAnnouncement() {
+  return remember("announcement", 60_000, loadAnnouncement);
+}
+
+async function loadAnnouncement() {
   try {
     const { liveAnnouncement } = await import("@/lib/admin-records");
     const live = await liveAnnouncement();
@@ -219,14 +236,26 @@ export async function getAnnouncement() {
   } catch (error) {
     console.error(error);
   }
-  return readCatalogue(() => api<{ title: string; message: string; href: string } | null>("/announcement"), () => localHome().announcement);
+  return {
+    title: "Shipping at checkout",
+    message: `Shipping is ₹${SHIPPING_FLAT_RUPEES}, and free when the payable product total reaches ₹${FREE_SHIPPING_ABOVE}.`,
+    href: "/shipping-policy",
+  };
 }
 
 export async function cardsWhere(_where: unknown, take = 24, _orderBy?: unknown): Promise<ProductCardData[]> {
   return readCatalogue(() => api<ProductCardData[]>(`/wholesale?take=${take}`), () => localWholesale(take));
 }
 
+function homeCard(card: ProductCardData): ProductCardData {
+  return { ...card, variants: [], shortDescription: card.shortDescription.slice(0, 180) };
+}
+
 export async function getHomeData() {
+  return remember("home", 60_000, loadHomeData);
+}
+
+async function loadHomeData() {
   const data = await readCatalogue(
     () => api<{
       categories: CategoryLink[];
@@ -251,7 +280,7 @@ export async function getHomeData() {
     ? { products: data.bestSellers, ranked: true }
     : localBestSellers(sold);
   const daily = selectDailyDeals(data.deals, new Date());
-  const preview = <T,>(items: T[]) => items.slice(0, 5);
+  const preview = (items: ProductCardData[]) => items.slice(0, 5).map(homeCard);
   return {
     ...data,
     featured: preview(data.featured),

@@ -5,13 +5,13 @@ import { site } from "@/lib/site";
 import type { CategoryLink } from "@/lib/types";
 
 const linkClass =
-  "text-sm text-white/75 transition hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#C8E6C9]";
+  "text-xs leading-5 text-white/75 transition hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#C8E6C9]";
 
 function Column({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div>
-      <h3 className="text-sm font-semibold text-white">{title}</h3>
-      <ul className="mt-2.5 space-y-1.5">{children}</ul>
+      <h3 className="text-xs font-semibold uppercase tracking-wide text-white">{title}</h3>
+      <ul className="mt-1.5 space-y-1">{children}</ul>
     </div>
   );
 }
@@ -54,26 +54,23 @@ export function Footer({ categories }: { categories: CategoryLink[] }) {
   const year = new Date().getFullYear();
 
   return (
-    <footer className="mt-10 bg-[#1A4332] pb-24 text-white md:pb-0">
-      <Container className="py-7 sm:py-8 md:pr-24">
-        <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
-          <Link href="/" className="inline-flex items-center gap-2.5" aria-label="BazaarDost home">
-            <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-white text-lg font-bold leading-none text-[#1A4332]">B</span>
-            <span className="text-lg font-semibold tracking-tight">BazaarDost</span>
+    <footer className="mt-6 bg-[#1A4332] pb-24 text-white md:pb-0">
+      <Container className="py-4 md:pr-24">
+        <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1">
+          <Link href="/" className="inline-flex items-center gap-2" aria-label="BazaarDost home">
+            <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-white text-sm font-bold leading-none text-[#1A4332]">B</span>
+            <span className="text-base font-semibold tracking-tight">BazaarDost</span>
           </Link>
-          <p className="text-sm font-medium text-[#A9D7B4]">Your Shopping Partner</p>
+          <p className="text-xs font-medium text-[#A9D7B4]">Your Shopping Partner</p>
         </div>
 
-        <h2 className="mt-5 max-w-3xl text-3xl font-semibold leading-tight tracking-tight sm:text-[2rem]">
+        <h2 className="mt-2 max-w-3xl text-lg font-semibold leading-snug tracking-tight">
           Everything you need, all in one place.
         </h2>
-        <p className="mt-2 max-w-2xl text-sm leading-6 text-white/75 sm:text-[15px]">
-          Discover great products, explore categories and enjoy a better shopping experience with BazaarDost.
-        </p>
 
         <NewsletterForm layout="bar" />
 
-        <nav aria-label="Footer" className="mt-7 grid grid-cols-2 gap-x-6 gap-y-6 sm:gap-x-10 lg:grid-cols-4 lg:gap-x-8">
+        <nav aria-label="Footer" className="mt-4 grid grid-cols-2 gap-x-4 gap-y-3 sm:gap-x-8 lg:grid-cols-4">
           <Column title="Shop">
             <Item href="/shop">All Products</Item>
             <Item href="/categories">Popular Categories</Item>
@@ -109,7 +106,7 @@ export function Footer({ categories }: { categories: CategoryLink[] }) {
         </nav>
 
         {categories.length > 0 ? (
-          <ul className="mt-4 flex flex-wrap gap-x-4 gap-y-1.5 border-t border-white/15 pt-3.5">
+          <ul className="mt-3 flex flex-wrap gap-x-3 gap-y-1 border-t border-white/15 pt-2">
             {categories.slice(0, 4).map((category) => (
               <li key={category.slug}>
                 <Link href={`/categories/${category.slug}`} className={linkClass}>{category.name}</Link>
@@ -118,12 +115,12 @@ export function Footer({ categories }: { categories: CategoryLink[] }) {
           </ul>
         ) : null}
 
-        <div className="mt-4 flex items-center justify-between gap-4 border-t border-white/20 pt-3.5">
-          <p className="text-sm font-semibold">Follow us</p>
+        <div className="mt-3 flex items-center justify-between gap-3 border-t border-white/20 pt-2">
+          <p className="text-xs font-semibold">Follow us</p>
           <ul className="flex items-center gap-2">
             {["Instagram", "Facebook", "YouTube"].map((label) => {
               const href = site.social.find(([name]) => name === label)?.[1];
-              const iconClass = "inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/30 text-white";
+              const iconClass = "inline-flex h-7 w-7 items-center justify-center rounded-full border border-white/30 text-white";
               return (
                 <li key={label}>
                   {href ? (
@@ -141,7 +138,7 @@ export function Footer({ categories }: { categories: CategoryLink[] }) {
           </ul>
         </div>
 
-        <div className="mt-3 flex flex-col gap-2 border-t border-white/20 py-3 text-xs text-white/70 sm:flex-row sm:items-center sm:justify-between">
+        <div className="mt-2 flex flex-col gap-1 border-t border-white/20 py-2 text-xs text-white/70 sm:flex-row sm:items-center sm:justify-between">
           <p>© {year} BazaarDost. All rights reserved.</p>
           <nav aria-label="Legal" className="flex items-center gap-4">
             <Link href="/privacy" className="transition hover:text-white">Privacy Policy</Link>
