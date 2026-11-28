@@ -6,7 +6,7 @@ import { JsonLd } from "@/components/json-ld";
 import { ProductGrid } from "@/components/product-card";
 import { Container, SectionTitle, buttonClass } from "@/components/ui";
 import { FREE_SHIPPING_ABOVE, SHIPPING_FLAT_RUPEES } from "@/lib/commerce";
-import { getHomeData } from "@/lib/catalog";
+import { getHomeBestSelling, getHomeData } from "@/lib/catalog";
 import { formatINR } from "@/lib/format";
 import { absoluteUrl, site } from "@/lib/site";
 
@@ -27,7 +27,7 @@ export const metadata: Metadata = {
 };
 
 export default async function HomePage() {
-  const data = await getHomeData();
+  const [data, bestSelling] = await Promise.all([getHomeData(), getHomeBestSelling()]);
 
   return (
     <>
@@ -94,27 +94,11 @@ export default async function HomePage() {
         </Container>
       ) : null}
 
-      {data.arrivals.length > 0 ? (
+      {bestSelling.length > 0 ? (
         <Container className="pb-8 [content-visibility:auto] [contain-intrinsic-size:auto_32rem]">
-          <SectionTitle id="arrivals" title="New arrivals" action={<ViewAll href="/new-arrivals" />} />
-          <p className="mb-4 max-w-3xl text-base leading-7 text-muted">Products added to the catalogue in the last 90 days.</p>
-          <ProductGrid products={data.arrivals} layout="home" imagePixels={320} />
-        </Container>
-      ) : null}
-
-      {data.searched.length > 0 ? (
-        <Container className="pb-8 [content-visibility:auto] [contain-intrinsic-size:auto_32rem]">
-          <SectionTitle id="searched" title="Most searched products" action={<ViewAll href="/most-searched" />} />
-          <p className="mb-4 max-w-3xl text-base leading-7 text-muted">Products opened from search.</p>
-          <ProductGrid products={data.searched} layout="home" imagePixels={320} />
-        </Container>
-      ) : null}
-
-      {data.deals.length > 0 ? (
-        <Container className="pb-8 [content-visibility:auto] [contain-intrinsic-size:auto_32rem]">
-          <SectionTitle id="deals" title="Deals and offers" action={<ViewAll href="/deals" />} />
-          <p className="mb-4 max-w-3xl text-base leading-7 text-muted">Products whose selling price is lower than the compare-at price stored in the catalogue.</p>
-          <ProductGrid products={data.deals} layout="home" imagePixels={320} />
+          <SectionTitle id="best-selling" title="Best selling products" />
+          <p className="mb-4 max-w-3xl text-base leading-7 text-muted">Astronaut lamp, panda lamp, and three more lamps from the catalogue.</p>
+          <ProductGrid products={bestSelling} layout="home" imagePixels={320} />
         </Container>
       ) : null}
 

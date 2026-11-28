@@ -251,6 +251,20 @@ function homeCard(card: ProductCardData): ProductCardData {
   return { ...card, variants: [], shortDescription: card.shortDescription.slice(0, 180) };
 }
 
+const HOME_BEST_SELLING_SLUGS = [
+  "astronaut-star-projection-light",
+  "panda-night-lamp",
+  "ocean-wave-water-ripple-lamp",
+  "3d-crystal-ball-night-lamp",
+  "3d-7-color-changing-moon-night-rechargeable-night-lamp-for-bedroom-for-adults-and-kids-home-room-beautiful-indoor-lighting",
+];
+
+export async function getHomeBestSelling() {
+  const cards = await productsBySlugs([...HOME_BEST_SELLING_SLUGS]);
+  const order = new Map(HOME_BEST_SELLING_SLUGS.map((slug, index) => [slug, index]));
+  return cards.sort((a, b) => (order.get(a.slug) ?? 99) - (order.get(b.slug) ?? 99)).map(homeCard);
+}
+
 export async function getHomeData() {
   return remember("home", 60_000, loadHomeData);
 }
