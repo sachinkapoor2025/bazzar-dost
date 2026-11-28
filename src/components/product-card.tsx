@@ -44,7 +44,7 @@ export function ProductImage({
   );
 }
 
-export function ProductCard({ product, eager = false }: { product: ProductCardData; eager?: boolean }) {
+export function ProductCard({ product, eager = false, imagePixels = 400 }: { product: ProductCardData; eager?: boolean; imagePixels?: number }) {
   const cart = useCart();
   const wishlist = useWishlist();
   const compare = useCompare();
@@ -78,7 +78,7 @@ export function ProductCard({ product, eager = false }: { product: ProductCardDa
   return (
     <article className="group flex h-full flex-col overflow-hidden rounded-2xl border border-cream-300 bg-white shadow-card">
       <Link href={`/products/${product.slug}`} className="relative block aspect-square overflow-hidden bg-cream-100" onClick={() => trackProductClick(product.slug)}>
-        <ProductImage src={product.image} alt={product.imageAlt} eager={eager} />
+        <ProductImage src={product.image} alt={product.imageAlt} eager={eager} pixels={imagePixels} />
         {!product.inStock ? (
           <span className="absolute bottom-3 left-3 rounded-full bg-ink/85 px-2 py-1 text-xs font-semibold text-white">Out of stock</span>
         ) : null}
@@ -157,12 +157,12 @@ function trackProductClick(slug: string) {
   fetch(`/api/products/${encodeURIComponent(slug)}/click`, { method: "POST", keepalive: true }).catch(() => undefined);
 }
 
-export function ProductGrid({ products, priorityCount = 0, layout = "catalog" }: { products: ProductCardData[]; priorityCount?: number; layout?: "catalog" | "home" }) {
+export function ProductGrid({ products, priorityCount = 0, layout = "catalog", imagePixels = 400 }: { products: ProductCardData[]; priorityCount?: number; layout?: "catalog" | "home"; imagePixels?: number }) {
   const columns = layout === "home" ? "grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5" : "grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6";
   return (
     <div className={`grid ${columns}`}>
       {products.map((product, index) => (
-        <ProductCard key={product.id} product={product} eager={index < priorityCount} />
+        <ProductCard key={product.id} product={product} eager={index < priorityCount} imagePixels={layout === "home" ? imagePixels : 400} />
       ))}
     </div>
   );

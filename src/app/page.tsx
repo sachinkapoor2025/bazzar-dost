@@ -10,7 +10,7 @@ import { getHomeData } from "@/lib/catalog";
 import { formatINR } from "@/lib/format";
 import { absoluteUrl, site } from "@/lib/site";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 60;
 
 function ViewAll({ href }: { href: string }) {
   return (
@@ -70,7 +70,9 @@ export default async function HomePage() {
             alt=""
             fetchPriority="high"
             decoding="async"
-            className="h-full w-full object-contain"
+            width={1024}
+            height={341}
+            className="h-auto w-full object-cover md:h-full md:object-contain"
           />
         </Link>
       </section>
@@ -80,7 +82,7 @@ export default async function HomePage() {
         <Container className="pt-10 pb-8">
           <SectionTitle id="trending" title="Trending products" action={<ViewAll href="/trending" />} />
           <p className="mb-4 max-w-3xl text-base leading-7 text-muted">Products shoppers open most often. The order follows recorded page views, not a hand-picked list.</p>
-          <ProductGrid products={data.trending} priorityCount={2} layout="home" />
+          <ProductGrid products={data.trending} layout="home" imagePixels={320} />
         </Container>
       ) : null}
 
@@ -88,7 +90,7 @@ export default async function HomePage() {
         <Container className="pt-10 pb-8 [content-visibility:auto] [contain-intrinsic-size:auto_32rem]">
           <SectionTitle id="featured" title="Featured products" action={<ViewAll href="/featured" />} />
           <p className="mb-4 max-w-3xl text-base leading-7 text-muted">Highlights marked in the catalogue.</p>
-          <ProductGrid products={data.featured} layout="home" />
+          <ProductGrid products={data.featured} layout="home" imagePixels={320} />
         </Container>
       ) : null}
 
@@ -96,7 +98,7 @@ export default async function HomePage() {
         <Container className="pb-8 [content-visibility:auto] [contain-intrinsic-size:auto_32rem]">
           <SectionTitle id="arrivals" title="New arrivals" action={<ViewAll href="/new-arrivals" />} />
           <p className="mb-4 max-w-3xl text-base leading-7 text-muted">Products added to the catalogue in the last 90 days.</p>
-          <ProductGrid products={data.arrivals} layout="home" />
+          <ProductGrid products={data.arrivals} layout="home" imagePixels={320} />
         </Container>
       ) : null}
 
@@ -104,7 +106,7 @@ export default async function HomePage() {
         <Container className="pb-8 [content-visibility:auto] [contain-intrinsic-size:auto_32rem]">
           <SectionTitle id="searched" title="Most searched products" action={<ViewAll href="/most-searched" />} />
           <p className="mb-4 max-w-3xl text-base leading-7 text-muted">Products opened from search.</p>
-          <ProductGrid products={data.searched} layout="home" />
+          <ProductGrid products={data.searched} layout="home" imagePixels={320} />
         </Container>
       ) : null}
 
@@ -112,7 +114,7 @@ export default async function HomePage() {
         <Container className="pb-8 [content-visibility:auto] [contain-intrinsic-size:auto_32rem]">
           <SectionTitle id="deals" title="Deals and offers" action={<ViewAll href="/deals" />} />
           <p className="mb-4 max-w-3xl text-base leading-7 text-muted">Products whose selling price is lower than the compare-at price stored in the catalogue.</p>
-          <ProductGrid products={data.deals} layout="home" />
+          <ProductGrid products={data.deals} layout="home" imagePixels={320} />
         </Container>
       ) : null}
 
@@ -120,7 +122,7 @@ export default async function HomePage() {
         <Container className="pb-8 [content-visibility:auto] [contain-intrinsic-size:auto_32rem]">
           <SectionTitle id="trusted" title="Most trusted and best selling" action={<ViewAll href="/best-sellers" />} />
           <p className="mb-4 max-w-3xl text-base leading-7 text-muted">Products customers have ordered. Cancelled orders are left out.</p>
-          <ProductGrid products={data.bestSellers} layout="home" />
+          <ProductGrid products={data.bestSellers} layout="home" imagePixels={320} />
         </Container>
       ) : null}
 

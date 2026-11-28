@@ -6,10 +6,10 @@ import { getAnnouncement, getCategories } from "@/lib/catalog";
 import { site } from "@/lib/site";
 import "./globals.css";
 
-const display = Fraunces({ subsets: ["latin"], variable: "--font-display" });
-const sans = Outfit({ subsets: ["latin"], variable: "--font-sans" });
+const display = Fraunces({ subsets: ["latin"], variable: "--font-display", display: "swap", preload: false });
+const sans = Outfit({ subsets: ["latin"], variable: "--font-sans", display: "swap" });
 
-export const dynamic = "force-dynamic";
+export const revalidate = 60;
 
 export const metadata: Metadata = {
   metadataBase: new URL(site.url),
@@ -49,6 +49,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   return (
     <html lang="en" className={`${display.variable} ${sans.variable}`}>
       <body className="font-sans">
+        <link rel="preconnect" href="https://cdn.shopify.com" crossOrigin="" />
         <a href="#content" className="skip-link">Skip to content</a>
         <Providers>
           <StoreChrome categories={categories} announcement={announcement}>{children}</StoreChrome>
