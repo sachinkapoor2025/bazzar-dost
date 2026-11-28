@@ -7,7 +7,7 @@ import bcrypt from "bcryptjs";
 import { cookies } from "next/headers";
 import { ApiError, api } from "@/lib/backend";
 import { prisma, databaseConfigured, isUniqueConstraint } from "@/lib/db";
-import { roleForEmail } from "@/lib/staff";
+import { effectiveRole, roleForEmail } from "@/lib/staff";
 import type { PublicUser } from "@/lib/types";
 
 type StoredAccount = PublicUser & {
@@ -124,7 +124,7 @@ export async function registerAccount(input: {
   if (remoteApi()) {
     try {
       const user = await api<PublicUser>("/auth/register", { body: { ...input, email } });
-      return { ok: true, user };
+      return { ok: true, user: { ...user, email, role: effectiveRole(email, user.role) } };
     } catch (error) {
       if (error instanceof ApiError) return { ok: false, status: error.status, error: error.message };
       throw error;
@@ -174,7 +174,7 @@ export async function loginAccount(emailInput: string, password: string): Promis
   if (remoteApi()) {
     try {
       const user = await api<PublicUser>("/auth/login", { body: { email, password } });
-      return { ok: true, user };
+      return { ok: true, user: { ...user, email: user.email.trim().toLowerCase(), role: effectiveRole(user.email, user.role) } };
     } catch (error) {
       if (error instanceof ApiError) return { ok: false, status: error.status, error: error.message };
       throw error;
@@ -182,14 +182,13 @@ export async function loginAccount(emailInput: string, password: string): Promis
   }
 
   if (databaseConfigured()) {
-    const user = await prisma.user.findUnique({ where: { email } });
+    const user = await prisma.user.findFirst({ where: { email: { equals: email, mode: "insensitive" } } });
     if (!user || !(await bcrypt.compare(password, user.passwordHash))) return { ok: false, status: 401, error: BAD_LOGIN };
-    let role = user.role;
-    if (roleForEmail(user.email) === "admin" && role !== "admin") {
+    const role = effectiveRole(user.email, user.role);
+    if (role === "admin" && user.role !== "admin") {
       await prisma.user.update({ where: { id: user.id }, data: { role: "admin" } });
-      role = "admin";
     }
-    return { ok: true, user: { id: user.id, email: user.email, name: user.name, phone: user.phone, role } };
+    return { ok: true, user: { id: user.id, email: user.email.trim().toLowerCase(), name: user.name, phone: user.phone, role } };
   }
 
   const rows = await knownAccounts();
