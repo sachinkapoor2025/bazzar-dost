@@ -2,8 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/lib/auth";
-import { databaseConfigured, readDatabase } from "@/lib/db";
-import { datedOrder, listLocalOrders } from "@/lib/local-orders";
+import { readDatabase } from "@/lib/db";
 import { formatDate, formatINR } from "@/lib/format";
 import { orderStatusLabel } from "@/lib/order-progress";
 
@@ -12,9 +11,7 @@ export const metadata: Metadata = { title: "Order history", robots: { index: fal
 export default async function OrdersPage() {
   const user = await getCurrentUser();
   if (!user) redirect("/login?next=/account/orders");
-  const orders = databaseConfigured()
-    ? await readDatabase([], (client) => client.order.findMany({ where: { userId: user.id }, orderBy: { createdAt: "desc" } }))
-    : listLocalOrders().filter((order) => order.userId === user.id).map(datedOrder);
+  const orders = await readDatabase([], (client) => client.order.findMany({ where: { userId: user.id }, orderBy: { createdAt: "desc" } }));
   return (
     <div>
       <h2 className="font-display text-3xl text-forest-900">Orders</h2>
