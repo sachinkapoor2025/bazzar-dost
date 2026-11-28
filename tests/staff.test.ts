@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { isAdminRole, roleForEmail } from "../src/lib/staff";
+import { effectiveRole, isAdminRole, roleForEmail } from "../src/lib/staff";
 
 test("admin role is granted only from the server allowlist", () => {
   assert.equal(roleForEmail("gungun.kalra@mydgv.com", ""), "admin");
@@ -14,4 +14,8 @@ test("admin role is granted only from the server allowlist", () => {
   assert.equal(isAdminRole("admin"), true);
   assert.equal(isAdminRole("customer"), false);
   assert.equal(isAdminRole(undefined), false);
+  assert.equal(effectiveRole("bazaardost.info@gmail.com", "customer"), "admin");
+  assert.equal(effectiveRole("  BazaarDost.Info@gmail.com  ", "customer"), "admin");
+  assert.equal(effectiveRole("shopper@example.com", "admin"), "admin");
+  assert.equal(effectiveRole("shopper@example.com", "customer"), "customer");
 });

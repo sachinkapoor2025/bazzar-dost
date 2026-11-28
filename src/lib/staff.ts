@@ -16,3 +16,9 @@ export function roleForEmail(email: string, envValue = process.env.ADMIN_EMAILS)
 export function isAdminRole(role: unknown): boolean {
   return role === "admin";
 }
+
+/** Allowlisted staff stay admins. A stored admin role is kept for every other account. */
+export function effectiveRole(email: string, storedRole: unknown): "admin" | "customer" {
+  if (roleForEmail(email) === "admin" || isAdminRole(storedRole)) return "admin";
+  return "customer";
+}

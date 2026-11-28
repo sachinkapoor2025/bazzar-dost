@@ -3,7 +3,7 @@ import { cookies } from "next/headers";
 import { SignJWT, jwtVerify } from "jose";
 import bcrypt from "bcryptjs";
 import { getSessionSecret, SESSION_COOKIE } from "@/lib/secret";
-import { roleForEmail } from "@/lib/staff";
+import { effectiveRole } from "@/lib/staff";
 import type { PublicUser } from "@/lib/types";
 
 const cookieOptions = {
@@ -25,7 +25,8 @@ export async function verifyPassword(password: string, hash: string): Promise<bo
 export async function signSession(user: PublicUser): Promise<string | null> {
   const secret = getSessionSecret();
   if (!secret) return null;
-  return new SignJWT({ role: user.role, email: user.email, name: user.name, phone: user.phone })
+  const email = user.email.trim().toLowerCase();
+  return new SignJWT({ role: effectiveRole(email, user.role), email, name: user.name, phone: user.phone })
     .setProtectedHeader({ alg: "HS256" })
     .setSubject(user.id)
     .setIssuedAt()
@@ -57,7 +58,7 @@ export async function getCurrentUser(): Promise<PublicUser | null> {
       email: payload.email,
       name: payload.name,
       phone: typeof payload.phone === "string" ? payload.phone : "",
-      role: roleForEmail(payload.email) === "admin" ? "admin" : typeof payload.role === "string" ? payload.role : "customer",
+      role: effectiveRole(payload.email, payload.role),
     };
   } catch {
     return null;
