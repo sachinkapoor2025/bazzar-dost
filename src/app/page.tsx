@@ -10,7 +10,7 @@ import { getHomeData } from "@/lib/catalog";
 import { formatINR } from "@/lib/format";
 import { absoluteUrl, site } from "@/lib/site";
 
-export const revalidate = 60;
+export const dynamic = "force-dynamic";
 
 function ViewAll({ href }: { href: string }) {
   return (

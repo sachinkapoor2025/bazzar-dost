@@ -9,7 +9,7 @@ import "./globals.css";
 const display = Fraunces({ subsets: ["latin"], variable: "--font-display", display: "swap", preload: false });
 const sans = Outfit({ subsets: ["latin"], variable: "--font-sans", display: "swap" });
 
-export const revalidate = 60;
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   metadataBase: new URL(site.url),
@@ -39,7 +39,7 @@ export const metadata: Metadata = {
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   let categories: Awaited<ReturnType<typeof getCategories>> = [];
-  let announcement: Awaited<ReturnType<typeof getAnnouncement>> = null;
+  let announcement: Awaited<ReturnType<typeof getAnnouncement>> | null = null;
   try {
     [categories, announcement] = await Promise.all([getCategories(), getAnnouncement()]);
   } catch (error) {
